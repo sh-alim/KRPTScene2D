@@ -1,0 +1,16 @@
+.vs
+x64
+*/.vs
+*/x64
+*/*/.vs
+*/*/x64
+**.vcxproj.user
+doc
+linux/bin
+linux/obj
+linux/.vs
+opi/build
+win/.vs
+win/x64
+
+
