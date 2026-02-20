@@ -1,0 +1,303 @@
+//####################################################################################################
+//#
+//####################################################################################################
+
+#include "KRPTScene.h"
+//#include "KRPTSceneItem.h"
+
+//####################################################################################################
+//#
+//####################################################################################################
+
+KRPTScene::KRPTScene(QWidget *canvas) noexcept
+    : _canvas(canvas) , _item(new KRPTSceneItem(this, nullptr)), _mousePressedItem(nullptr)
+{
+//    _item->addMust(
+//            SceneItem::Must::ClipChilds
+//        ,
+//        SceneItem::Must::MousePressEvent
+//    );
+}
+
+KRPTScene::~KRPTScene() noexcept
+{
+    delete _item;
+}
+
+//****************************************************************************************************
+//*
+//****************************************************************************************************
+
+void KRPTScene::setGeometry(const QRectF &geometry) noexcept
+{
+    bool isMove   = !qFuzzyCompare(_item->geometry().topLeft(), geometry.topLeft());
+    bool isResize = !qFuzzyCompare(_item->geometry().size(), geometry.size());
+    if(!isMove && ! isResize)return;
+    QRectF oldGeometry = _item->geometry();
+    _item->setGeometry(geometry);
+    SceneTransformEvent::Ptr e = SceneTransformEvent::get(geometry, oldGeometry, 
+        _item->angle(), _item->angle(), _item->scale(), _item->scale(), 
+        isMove, isResize, false, false);
+    transformEvent(e.get());
+}
+
+void KRPTScene::setPos(const QPointF &pos) noexcept
+{
+    setGeometry(QRectF(pos, _item->size()));
+}
+
+void KRPTScene::setPos(double x, double y) noexcept
+{
+    setPos(QPointF(x, y));
+}
+
+void KRPTScene::setSize(const QSizeF &size) noexcept
+{
+    setGeometry(QRectF(_item->pos(), size));
+}
+
+void KRPTScene::setSize(double width, double height) noexcept
+{
+    setSize(QSizeF(width, height));
+}
+
+void KRPTScene::setX(double x) noexcept
+{
+    setPos(QPointF(x, _item->y()));
+}
+
+void KRPTScene::setY(double y) noexcept
+{
+    setPos(QPointF(_item->x(), y));
+}
+
+void KRPTScene::setWidth(double width) noexcept
+{
+    setSize(QSizeF(width, _item->height()));
+}
+
+void KRPTScene::setHeight(double height) noexcept
+{
+    setSize(QSizeF(_item->width(), height));
+}
+
+//****************************************************************************************************
+//*
+//****************************************************************************************************
+
+KRPTSceneItem* KRPTScene::itemFromPos(const QPointF &pos, CompFn comp) noexcept
+{
+    QPointF p = _item->transformInv().map(pos);
+    return itemFromPosImpl(p, comp, _item);
+}
+
+KRPTScene::Items KRPTScene::itemsFromPos(const QPointF &pos, CompFn comp, bool one) noexcept
+{
+    QPointF p = _item->transformInv().map(pos);
+    return std::move(itemsFromPosImpl(p, comp, _item, one));
+}
+
+//****************************************************************************************************
+//*
+//****************************************************************************************************
+
+void KRPTScene::update() noexcept
+{
+    _canvas->update();
+}
+
+//****************************************************************************************************
+//*
+//****************************************************************************************************
+
+void KRPTScene::transformEvent(SceneTransformEvent *e) noexcept
+{
+}
+
+void KRPTScene::mousePressEvent(SceneMouseEvent *e) noexcept
+{
+    QPointF mousePos = e->pos();
+    auto item = itemFromPos(mousePos, [](KRPTSceneItem *item)
+    {
+        return item->must(KRPTSceneItem::Must::MousePressEvent);
+    });
+//    if(!item)item = _item;
+    if(item)
+    {
+    #if 0
+        item->mousePressImpl(SceneMouseEvent::get(item->mapFromScene(mousePos), e->btns()).get());
+    #else
+        QPointF p = item->mapFromScene(mousePos);
+        item->mousePressImpl(SceneMouseEvent::get(p, e->btns()).get());
+        _mousePressedItem = item;
+        _mousePressedItemPos = item->pos() -  item->mapToParent(p);
+    #endif
+    #if 0
+        QPointF p0 = _mousePressedItem->mapFromScene(mousePos);
+        QPointF p1 = _mousePressedItem->mapToParent(p0);
+        qDebug() << mousePos << p0;
+    #endif
+    }
+    _lastMousePos = mousePos;
+    update();
+}
+
+void KRPTScene::mouseReleaseEvent(SceneMouseEvent *e) noexcept
+{
+    QPointF mousePos = e->pos();
+    if(_mousePressedItem)
+    {
+        if(_mousePressedItem->must(KRPTSceneItem::Must::MouseReleaseEvent))
+        {
+            _mousePressedItem->mouseMoveImpl(
+                SceneMouseEvent::get(_mousePressedItem->mapFromScene(mousePos), e->btns()).get());
+        }
+        _mousePressedItem->_borderColor = QColor(255, 255, 255);
+//        _mousePressedItem = nullptr;
+    }
+    update();
+}
+
+void KRPTScene::mouseMoveEvent(SceneMouseEvent *e) noexcept
+{
+    QPointF mousePos = e->pos();
+    if(_mousePressedItem)
+    {
+        if(_mousePressedItem->must(KRPTSceneItem::Must::MouseMoveEvent))
+        {
+            _mousePressedItem->mouseMoveImpl(
+                SceneMouseEvent::get(_mousePressedItem->mapFromScene(mousePos), e->btns()).get());
+        }
+    #if 1
+        QPointF p0 = _mousePressedItem->mapFromScene(mousePos);
+        QPointF p1 = _mousePressedItem->mapToParent(p0);
+        _mousePressedItem->setPos(p1 + _mousePressedItemPos);
+    #endif
+    }
+    update();
+}
+
+void KRPTScene::whellEvent(SceneMouseEvent *e) noexcept
+{
+    QPointF mousePos = e->pos();
+#if 0
+    if(_mousePressedItem)
+    {
+        if(_mousePressedItem->must(SceneItem::Must::WhellEvent))
+        {
+            _mousePressedItem->whellImpl(
+                SceneMouseEvent::get(_mousePressedItem->mapFromScene(mousePos), e->btns(), e->delta()).get());
+        }
+    }
+#else
+    auto item = itemFromPos(mousePos, [](KRPTSceneItem *item)
+    {
+        return item->must(KRPTSceneItem::Must::WhellEvent);
+    });
+    if(item)
+    {
+        item->whellImpl(
+            SceneMouseEvent::get(item->mapFromScene(mousePos), e->btns(), e->delta()).get());
+
+
+        item->rotate(e->delta() > 0 ? 1 : -1);
+
+    }
+#endif
+    update();
+}
+
+void KRPTScene::paintEvent(QPainter &painter) noexcept
+{
+    paintImpl(painter, _item);
+}
+
+//****************************************************************************************************
+//*
+//****************************************************************************************************
+
+KRPTSceneItem* KRPTScene::itemFromPosImpl(const QPointF &pos, CompFn comp, KRPTSceneItem *item) noexcept
+{
+    auto res = itemsFromPosImpl(pos, comp, item, false);
+    return !res.empty() ? res.back() : nullptr;
+}
+
+KRPTScene::Items KRPTScene::itemsFromPosImpl(const QPointF &pos, CompFn comp, KRPTSceneItem *item, 
+    bool one, uint32_t level) noexcept
+{
+    const Items &childs = item->childItems();
+    Items res;
+    auto it = childs.crbegin();
+    for(; it != childs.crend(); ++it)
+    {
+        KRPTSceneItem *child = *it;
+        QPointF p = child->mapFromParent(pos);
+        if(child->must(KRPTSceneItem::Must::NoClipChilds))
+            res.splice(res.begin(), std::move(itemsFromPosImpl(p, comp, child, one, level + 1)));
+        if(child->rect().contains(p))
+        {
+            if(!child->must(KRPTSceneItem::Must::NoClipChilds))
+                res.splice(res.begin(), std::move(itemsFromPosImpl(p, comp, child, one, level + 1)));
+            if(comp(child))res.push_front(child);
+            if(one)break;
+        }
+    }
+    return std::move(res);
+}
+
+void KRPTScene::paintImpl(QPainter &painter, KRPTSceneItem *item) noexcept
+{
+#if 0
+//    if(!item || !item->visible())return;
+    painter.save();
+    painter.setTransform(item->transform(), true);
+    if(!item->must(KRPTSceneItem::Must::NoClipChilds))
+    {
+//        painter.setClipRect(item->_rect.adjusted(0, 0, 0.5, 0.5), Qt::ClipOperation::IntersectClip);
+    }
+    if(item->visibleInVieport())
+        item->paintBackground(painter);
+    for(auto &item : item->_childItems)
+    {
+        paintImpl(painter, item);
+    }
+    if(item->visibleInVieport())
+        item->paintForeground(painter);
+    painter.restore();
+#else
+    painter.save();
+    painter.setTransform(item->transform(), true);
+    if(!item->must(KRPTSceneItem::Must::NoClipChilds))
+    {
+        painter.setClipRect(item->_rect.adjusted(0, 0, 0.5, 0.5), Qt::ClipOperation::IntersectClip);
+    }
+    item->paintBackground(painter);
+
+    for(auto &item : item->_childItems)
+    {
+        paintImpl(painter, item);
+    }
+
+    item->paintForeground(painter);
+    painter.restore();
+
+
+#if 0
+    if(item->visibleInVieport())
+    {
+    painter.save();
+    QPen pen(QColor(0, 255, 0));
+    painter.setPen(pen);
+
+//    painter.drawRect(item->bBoxMapToClip());
+//    painter.drawPolygon(item->clipPolygon());
+
+//    painter.drawPolygon(item->_clipPolygon);
+
+    painter.restore();
+    }
+#endif
+
+#endif
+}
+
