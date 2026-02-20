@@ -64,23 +64,9 @@ QRectF KRPTSceneItem::bBox() noexcept
 {
     if(!_dirty[Dirty::BBox])return _bBox;
     _dirty -= Dirty::BBox;
-    QPointF p[4];
     QTransform t;
     transform(_rect, _angle, _scale, t);
-    p[0] = t.map(_rect.topLeft    ());
-    p[1] = t.map(_rect.topRight   ());
-    p[2] = t.map(_rect.bottomRight());
-    p[3] = t.map(_rect.bottomLeft ());
-    QPointF pMin(std::numeric_limits<double>::max(), std::numeric_limits<double>::max());
-    QPointF pMax;
-    for(int i = 0; i < 4; ++i)
-    {
-        if(p[i].x() < pMin.x())pMin.setX(p[i].x());
-        if(p[i].y() < pMin.y())pMin.setY(p[i].y());
-        if(p[i].x() > pMax.x())pMax.setX(p[i].x());
-        if(p[i].y() > pMax.y())pMax.setY(p[i].y());
-    }
-    _bBox.setRect(pMin.x(), pMin.y(), pMax.x() - pMin.x(), pMax.y() - pMin.y());
+    bBox(t, _rect, _bBox);
     return _bBox;
 }
 
@@ -104,6 +90,13 @@ bool KRPTSceneItem::setGeometry(const QRectF &geometry) noexcept
     _dirty += Dirty::TransformInv   ;
     _dirty += Dirty::BBoxMapToParent;
     _dirty += Dirty::Visibled       ;
+
+//    if(isMove)
+        ++_genTransform;
+    if(_parent)
+        _parent->_dirty += Dirty::Visibled       ;
+
+
     if(isResize)_dirty += Dirty::BBox;
     SceneTransformEvent::Ptr e = SceneTransformEvent::get(geometry, oldGeometry, 
         _angle, _angle, _scale, _scale, isMove, isResize, false, false);
@@ -171,8 +164,11 @@ void KRPTSceneItem::setAngle(double angle) noexcept
     _dirty += Dirty::TransformInv   ;
     _dirty += Dirty::BBox           ;
     _dirty += Dirty::BBoxMapToParent;
-//    _dirty += Dirty::BBoxMapToClip  ;
     _dirty += Dirty::Visibled       ;
+
+    ++_genTransform;
+//    ++_genVisible;
+
     _angle = angle;
     SceneTransformEvent::Ptr e = SceneTransformEvent::get(_geometry, _geometry, 
         _angle, oldAngle, _scale, _scale, false, false, true, false);
@@ -188,6 +184,10 @@ void KRPTSceneItem::setScale(double scale) noexcept
     _dirty += Dirty::BBox           ;
     _dirty += Dirty::BBoxMapToParent;
     _dirty += Dirty::Visibled       ;
+
+    ++_genTransform;
+//    ++_genVisible;
+
     _scale = scale;
     SceneTransformEvent::Ptr e = SceneTransformEvent::get(_geometry, _geometry, 
     _angle, _angle, _scale, oldScale, false, false, false, true);
@@ -408,7 +408,8 @@ void KRPTSceneItem::paintBackground(QPainter &painter) noexcept
 
 void KRPTSceneItem::paintForeground(QPainter &painter) noexcept
 {
-//    , _borderColor);
+    QPen pen(_borderColor);
+    painter.setPen(pen);
     painter.drawRect(_rect);
 }
 
@@ -454,4 +455,231 @@ QPointF KRPTSceneItem::transformShift(QTransform &t, TransSrc src, const QPointF
             break;
     }
     return p0 - t.map(p1);
+}
+
+void KRPTSceneItem::bBox(const QTransform &transform, const QRectF &rect, QRectF &bBox) noexcept 
+{
+    QPointF p[4];
+    p[0] = transform.map(_rect.topLeft    ());
+    p[1] = transform.map(_rect.topRight   ());
+    p[2] = transform.map(_rect.bottomRight());
+    p[3] = transform.map(_rect.bottomLeft ());
+    QPointF pMin(std::numeric_limits<double>::max(), std::numeric_limits<double>::max());
+    QPointF pMax;
+    for(int i = 0; i < 4; ++i)
+    {
+        if(p[i].x() < pMin.x())pMin.setX(p[i].x());
+        if(p[i].y() < pMin.y())pMin.setY(p[i].y());
+        if(p[i].x() > pMax.x())pMax.setX(p[i].x());
+        if(p[i].y() > pMax.y())pMax.setY(p[i].y());
+    }
+    bBox.setRect(pMin.x(), pMin.y(), pMax.x() - pMin.x(), pMax.y() - pMin.y());
+}
+
+QRectF KRPTSceneItem::bBox(const QTransform &transform, const QRectF &rect) noexcept 
+{
+    QRectF ret;
+    bBox(transform, rect, ret);
+    return ret;
+}
+//====================================================================================================
+
+bool KRPTSceneItem::transformFromParent(TransformCache **transformCache, KRPTSceneItem *parent) noexcept 
+{
+    if(_transformCache.empty())
+    {
+        KRPTSceneItem *item = this;
+        while(item)
+        {
+            _transformCache.emplace_back(item, item->_parent);
+            item = item->_parent;
+        }
+    }
+    *transformCache = nullptr;
+    bool dirty = false;
+    QTransform transform;
+    for(auto &cache : _transformCache)
+    {
+        *transformCache = &cache;
+        if(cache.genTransform != cache.item->_genTransform)
+        {
+            dirty = true;
+            cache.genTransform = cache.item->_genTransform;
+        }
+        if(dirty)
+        {
+            cache.transform = transform * cache.item->transform();
+//            cache.dirtyBBox = true;
+        }
+        transform = cache.transform;
+        if(cache.item == parent)break;
+    }
+    return dirty;
+}
+
+
+QRectF KRPTSceneItem::sceneBBox() noexcept 
+{
+#if 0
+    if(!_parent)return _rect;
+
+    TransformCache *transformCache = nullptr;
+    bool dirty = transformFromParent(&transformCache, _scene->_item);
+
+//    QTransform transform;
+//    bool dirty = transformFromParent(transform, _scene->_item);
+    if(dirty)
+    {
+//        qDebug() << "---";
+//        _sceneBBox = bBox(transform, _rect);
+//        if(transformCache->dirtyBBox)
+        {
+            _sceneBBox = bBox(transformCache->transform, _rect);
+//            transformCache->dirtyBBox = false;
+        }
+//        else{qDebug() << "---";}
+    }
+
+    return _sceneBBox;
+#else
+    if(!_parent)return _rect;
+
+    if(_transformCache.empty())
+    {
+        KRPTSceneItem *item = this;
+//        KRPTSceneItem *item = _parent;
+        while(item)
+        {
+            _transformCache.emplace_back(item, item->_parent);
+            item = item->_parent;
+        }
+    }
+    bool dirty = false;
+    QTransform transform;
+    for(auto &cache : _transformCache)
+    {
+        if(cache.item->_dirty[Dirty::Transform] || cache.genTransform != cache.item->_genTransform)
+        {
+            dirty = true;
+            cache.genTransform = cache.item->_genTransform;
+        }
+        if(dirty)
+        {
+            cache.transform = transform * cache.item->transform();
+        }
+        transform = cache.transform;
+    }
+
+    if(dirty)
+    {
+        bBox(transform, _rect, _sceneBBox);
+    }
+
+    return _sceneBBox;
+#endif
+}
+
+bool KRPTSceneItem::visibleInView() noexcept 
+{
+    if(!_parent)return true;
+    if(_transformCache.empty())
+    {
+        KRPTSceneItem *item = this;
+        while(item)
+        {
+            _transformCache.emplace_back(item, item->_parent);
+            item = item->_parent;
+        }
+    }
+
+    bool visible = true;
+    bool dirty = false;
+    QTransform *transform = nullptr;
+    for(auto &cache : _transformCache)
+    {
+//        if(cache.genTransform == 0 || cache.genTransform != cache.item->_genTransform)
+        if(cache.item->_dirty[Dirty::Transform] || cache.genTransform != cache.item->_genTransform)
+        {
+            dirty = true;
+            cache.genTransform = cache.item->_genTransform;
+        }
+        if(dirty)
+        {
+            cache.transform = transform ? *transform * cache.item->transform() : cache.item->transform();
+            bBox(cache.transform, _rect, cache.bBox);
+            cache.visible = !cache.parent || cache.parent->_rect.intersects(cache.bBox);
+            if(cache.parent)
+                cache.genParentTransform = cache.parent->_genTransform;
+        }else
+        {
+            if(!cache.parent)cache.visible = true; else
+            if(cache.genParentTransform != cache.parent->_genTransform)
+            {
+                cache.visible = cache.parent->_rect.intersects(cache.bBox);
+                cache.genParentTransform = cache.parent->_genTransform;
+            }
+        }
+
+//        else{qDebug() << "==>";}
+
+        if(!cache.visible)
+        {
+            visible = cache.visible;
+            break;
+        }
+        transform = &cache.transform;
+    }
+
+//    if(ch && dirty)
+//        qDebug() << "==>" << (uintptr_t)this << visible << dirty;
+
+    return visible;
+}
+
+const KRPTSceneItem::ItemsList &KRPTSceneItem::visibleChildItems() noexcept
+{
+    bool dirty = _dirty[Dirty::Visibled];
+    _dirty -= Dirty::Visibled;
+
+#if 0
+    if(_transformCache.empty())
+    {
+        KRPTSceneItem *item = this;
+        while(item)
+        {
+            _transformCache.emplace_back(item, item->_parent);
+            item = item->_parent;
+        }
+        dirty = true;
+    }
+#endif
+
+    for(auto &cache : _transformCache)
+    {
+        if(cache.parent && cache.genVisibleChildItems != cache.parent->_genTransform)
+        {
+            dirty = true;
+            cache.genVisibleChildItems = cache.parent->_genTransform;
+            break;
+        }
+    }
+
+    if(!dirty)
+        _borderColor = QColor(255, 255, 255);
+    else
+        _borderColor = QColor(255, 255, 0);
+
+    if(!dirty)
+        return _visibleChildItems;
+
+    _visibleChildItems.clear();
+
+
+    for(auto &item : _childItems)
+    {
+        if(item->visibleInView())
+            _visibleChildItems.emplace_back(item);
+    }
+
+    return _visibleChildItems;
 }

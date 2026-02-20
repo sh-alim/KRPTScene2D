@@ -179,6 +179,10 @@ protected:
                                          double scale, QTransform &transform)    noexcept;
     QPointF transformShift              (QTransform &transform, 
                                          TransSrc src, const QPointF &pt)        noexcept;
+    void    bBox                        (const QTransform &transform, 
+                                         const QRectF &rect, QRectF &bBox)       noexcept;
+    QRectF  bBox                        (const QTransform &transform, 
+                                         const QRectF &rect)                     noexcept;
 protected:
     KRPTFlag<Dirty> _dirty           ;
     KRPTFlag<Must>  _must            ;
@@ -196,8 +200,41 @@ protected:
     QTransform      _transformInv    ;
     QRectF          _bBox            ;
     QRectF          _bBoxMapToParent ;
-    QRectF          _bBoxMapToClip   ;
     QColor          _borderColor     ;
     QColor          _backgroundColor ;
+
+//====================================================================================================
+public:
+    struct TransformCache
+    {
+        TransformCache(KRPTSceneItem *item, KRPTSceneItem *parent) : item(item), parent(parent){}
+        KRPTSceneItem *item;
+        KRPTSceneItem *parent;
+        QTransform     transform;
+        uint32_t       genTransform = 0;
+        uint32_t       genParentTransform = 0;
+        uint32_t       genVisibleChildItems = 0;
+
+        QRectF  bBox;
+        bool    visible = false;
+
+
+    };
+    std::list<TransformCache> _transformCache;
+    uint32_t _genTransform = 0;
+
+
+
+    QRectF  _sceneBBox;
+    bool transformFromParent(TransformCache **transformCache, KRPTSceneItem *parent = nullptr) noexcept;
+    QRectF sceneBBox() noexcept;
+    ItemsList _visibleChildItems;
+
+
+    bool visibleInView() noexcept;
+    const ItemsList  & visibleChildItems()                         noexcept;
+
+    bool ch = false;
+
 };
 

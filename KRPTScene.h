@@ -92,6 +92,7 @@ private:
 
 class KRPTScene
 {
+    friend class KRPTSceneItem;
     friend class KRPTSceneWidget;
     using CompFn = const std::function<bool(KRPTSceneItem*)>&;
     using Items  = std::list<KRPTSceneItem*>;

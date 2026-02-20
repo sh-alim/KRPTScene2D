@@ -200,7 +200,8 @@ void KRPTScene::whellEvent(SceneMouseEvent *e) noexcept
             SceneMouseEvent::get(item->mapFromScene(mousePos), e->btns(), e->delta()).get());
 
 
-        item->rotate(e->delta() > 0 ? 1 : -1);
+//        item->rotate(e->delta() > 0 ? 1 : -1);
+        item->setSize(item->width() + (e->delta() > 0 ? 10 : -10), item->height());
 
     }
 #endif
@@ -225,7 +226,8 @@ KRPTSceneItem* KRPTScene::itemFromPosImpl(const QPointF &pos, CompFn comp, KRPTS
 KRPTScene::Items KRPTScene::itemsFromPosImpl(const QPointF &pos, CompFn comp, KRPTSceneItem *item, 
     bool one, uint32_t level) noexcept
 {
-    const Items &childs = item->childItems();
+//    const Items &childs = item->childItems();
+    const Items &childs = item->visibleChildItems();
     Items res;
     auto it = childs.crbegin();
     for(; it != childs.crend(); ++it)
@@ -248,6 +250,7 @@ KRPTScene::Items KRPTScene::itemsFromPosImpl(const QPointF &pos, CompFn comp, KR
 void KRPTScene::paintImpl(QPainter &painter, KRPTSceneItem *item) noexcept
 {
 #if 0
+#if 1
 //    if(!item || !item->visible())return;
     painter.save();
     painter.setTransform(item->transform(), true);
@@ -255,49 +258,66 @@ void KRPTScene::paintImpl(QPainter &painter, KRPTSceneItem *item) noexcept
     {
 //        painter.setClipRect(item->_rect.adjusted(0, 0, 0.5, 0.5), Qt::ClipOperation::IntersectClip);
     }
-    if(item->visibleInVieport())
-        item->paintBackground(painter);
+    if(item->visibleInView())
+//        item->paintBackground(painter);
+        item->paintForeground(painter);
+
     for(auto &item : item->_childItems)
     {
         paintImpl(painter, item);
     }
-    if(item->visibleInVieport())
-        item->paintForeground(painter);
+//    if(item->visibleInView())
+//        item->paintForeground(painter);
     painter.restore();
 #else
+
+
+#if 1
+    QPen pen(QColor(0, 255, 0));
+    painter.setPen(pen);
+
+
+//    item->visibleInView();
+
+    QRectF b = item->sceneBBox();
+//    if(!b.intersects(rect()))return;
+
+    painter.drawRect(b);
+
+    for(auto &item : item->_childItems)
+    {
+        paintImpl(painter, item);
+    }
+
+
+//    painter.drawPolygon(item->_clipPolygon);
+
+#endif
+#endif
+
+#else
+
     painter.save();
     painter.setTransform(item->transform(), true);
     if(!item->must(KRPTSceneItem::Must::NoClipChilds))
     {
-        painter.setClipRect(item->_rect.adjusted(0, 0, 0.5, 0.5), Qt::ClipOperation::IntersectClip);
+//        painter.setClipRect(item->_rect.adjusted(0, 0, 0.5, 0.5), Qt::ClipOperation::IntersectClip);
     }
-    item->paintBackground(painter);
+//    if(item->visibleInView())
+//        item->paintBackground(painter);
+        item->paintForeground(painter);
 
-    for(auto &item : item->_childItems)
+    const auto &items = item->visibleChildItems();
+
+    for(auto &item : items)
     {
         paintImpl(painter, item);
     }
-
-    item->paintForeground(painter);
+//    if(item->visibleInView())
+//        item->paintForeground(painter);
     painter.restore();
 
-
-#if 0
-    if(item->visibleInVieport())
-    {
-    painter.save();
-    QPen pen(QColor(0, 255, 0));
-    painter.setPen(pen);
-
-//    painter.drawRect(item->bBoxMapToClip());
-//    painter.drawPolygon(item->clipPolygon());
-
-//    painter.drawPolygon(item->_clipPolygon);
-
-    painter.restore();
-    }
 #endif
 
-#endif
 }
 

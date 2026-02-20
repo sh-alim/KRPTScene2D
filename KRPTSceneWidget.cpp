@@ -24,12 +24,13 @@ KRPTSceneWidget::KRPTSceneWidget(QWidget *parent) noexcept
         (
 //            KRPTSceneItem::Must::NoClipChilds,
             KRPTSceneItem::Must::MousePressEvent,
-            KRPTSceneItem::Must::MouseMoveEvent
+            KRPTSceneItem::Must::MouseMoveEvent,
+            KRPTSceneItem::Must::WhellEvent
         );
 
     int x = 0;
     int y = 0;
-    for(int i = 0; i < 4; ++i)
+    for(int i = 0; i < 1; ++i)
     {
 //        item->addMust(
 //            SceneItem::Must::ClipChilds,
@@ -42,7 +43,8 @@ KRPTSceneWidget::KRPTSceneWidget(QWidget *parent) noexcept
         (
             KRPTSceneItem::Must::NoClipChilds,
             KRPTSceneItem::Must::MousePressEvent,
-            KRPTSceneItem::Must::MouseMoveEvent
+            KRPTSceneItem::Must::MouseMoveEvent,
+            KRPTSceneItem::Must::WhellEvent
         );
         x += 500;
         if(i % 2)
@@ -56,7 +58,7 @@ KRPTSceneWidget::KRPTSceneWidget(QWidget *parent) noexcept
 
         int x1 = 0;
         int y1 = 20;
-        for(int i = 0; i < 50000; ++i)
+        for(int i = 0; i < 5; ++i)
         {
             if((i % 10) == 0)
             {
@@ -68,11 +70,12 @@ KRPTSceneWidget::KRPTSceneWidget(QWidget *parent) noexcept
             child1->addMust(
 //            KRPTSceneItem::Must::ClipChilds,
                 KRPTSceneItem::Must::MousePressEvent,
-                KRPTSceneItem::Must::MouseMoveEvent
+                KRPTSceneItem::Must::MouseMoveEvent,
+                KRPTSceneItem::Must::WhellEvent
             );
 //            child1->setAngle(i * 10);
             child1->setGeometry(QRectF(x1, y1, 50, 50));
-
+            child1->ch = true;
             x1 += 50;
 //            qDebug() << (i % 10);
 
