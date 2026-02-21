@@ -22,14 +22,16 @@ public:
         uint32_t       genTransform = 0;
         uint32_t       genParentTransform = 0;
         uint32_t       genVisibleChildItems = 0;
+        uint32_t       genScale = 0;
 
         QRectF         bBox;
         bool           visible = false;
     };
 private:
     std::list<Cache> _cache;
-    uint32_t _genTransform = 0;
-
+    uint32_t         _genTransform = 0;
+    uint32_t         _genScale = 0;
+    double           _sceneScale = 1;
 };
 
 //####################################################################################################
@@ -86,8 +88,12 @@ const KRPTSceneItem::ItemsList& KRPTSceneItem::visibleChildItems() noexcept
 
 const QTransform& KRPTSceneItem::transform() noexcept 
 {
+#if 0
     if(!_dirty[Dirty::Transform])return _transform;
     _dirty -= Dirty::Transform;
+#else
+    if(!dirtyTransform())return _transform;
+#endif
     transform(_geometry, _angle, _scale, _transform);
     return _transform;
 }
@@ -239,6 +245,7 @@ void KRPTSceneItem::setScale(double scale) noexcept
     if(_parent)
         _parent->_dirty += Dirty::VisibleChildItems;
     ++_data->_genTransform;
+    ++_data->_genScale;
     _scale = scale;
     SceneTransformEvent::Ptr e = SceneTransformEvent::get(_geometry, _geometry, 
     _angle, _angle, _scale, oldScale, false, false, false, true);
@@ -481,15 +488,16 @@ void KRPTSceneItem::updateGeometry() noexcept
 
 void KRPTSceneItem::transform(const QRectF &rect, double angle, double scale, QTransform &transform) noexcept 
 {
+    double tscale = !must(KRPTSceneItem::Must::NoScale) ? scale : scale *= 1.0 / _data->_sceneScale;
     transform.reset();
     transform.translate(rect.x(), rect.y());
-    if(!qFuzzyIsNull(angle) || !qFuzzyCompare(scale, 1))
+    if(!qFuzzyIsNull(angle) || !qFuzzyCompare(tscale, 1))
     {
         double wd2 = rect.width () / 2.0;
         double hd2 = rect.height() / 2.0;
         transform.translate(wd2, hd2);
-        if(!qFuzzyCompare(scale, 1))transform.scale (scale, scale);
-        if(!qFuzzyIsNull(angle    ))transform.rotate(angle       );
+        if(!qFuzzyCompare(tscale, 1))transform.scale (tscale, tscale);
+        if(!qFuzzyIsNull (angle    ))transform.rotate(angle         );
         transform.translate(-wd2, -hd2);
     }
 }
@@ -551,6 +559,12 @@ bool KRPTSceneItem::updateCache() noexcept
             item = item->_parent;
         }
     }
+
+    _state += State::VisibledInView;
+    _state += State::NeedPaint;
+    _state += State::NeedChildPaint;
+
+
     bool dirty = false;
     bool firstDirty = true;
     QTransform *transform = nullptr;
@@ -579,23 +593,16 @@ bool KRPTSceneItem::updateCache() noexcept
         }
         if(dirtyVisible)
         {
-            if(firstDirty)
-            {
-                firstDirty = false;
-                _state += State::VisibledInView;
-                _state += State::NeedPaint;
-                _state += State::NeedChildPaint;
-            }
             if(!cache.parent)cache.visible = true; else
                 cache.visible = cache.parent->must(KRPTSceneItem::Must::NoClipChilds) ? true :
                 cache.parent->_rect.intersects(cache.bBox);
-            if(!cache.visible)
-            {
-                _state -= State::VisibledInView;
-                _state -= State::NeedPaint;
-                if(cache.parent && !must(KRPTSceneItem::Must::NoClipChilds))
-                    _state -= State::NeedChildPaint;
-            }
+        }
+        if(!cache.visible)
+        {
+            _state -= State::VisibledInView;
+            _state -= State::NeedPaint;
+            if(cache.parent && !must(KRPTSceneItem::Must::NoClipChilds))
+                _state -= State::NeedChildPaint;
         }
         transform = &cache.transform;
     }
@@ -607,10 +614,30 @@ bool KRPTSceneItem::updateCache() noexcept
     return dirty;
 }
 
+bool KRPTSceneItem::dirtyTransform() noexcept
+{
+    bool dirty = _dirty[Dirty::Transform];
+    _dirty -= Dirty::Transform;
+    if(!must(KRPTSceneItem::Must::NoScale))return dirty;
+    _data->_sceneScale = 1;
+    for(auto &cache : _data->_cache)
+    {
+        if(cache.parent && cache.genScale != cache.parent->_data->_genScale)
+        {
+            dirty = true;
+            cache.genScale = cache.parent->_data->_genScale;
+        }
+        if(cache.item != this)
+        _data->_sceneScale *= cache.item->_scale;
+    }
+    return dirty;
+}
+
 bool KRPTSceneItem::dirtyVisibleChildItems() noexcept
 {
     bool dirty = _dirty[Dirty::VisibleChildItems];
     _dirty -= Dirty::VisibleChildItems;
+    if(dirty)return dirty;
     for(auto &cache : _data->_cache)
     {
         if(cache.parent && cache.genVisibleChildItems != cache.parent->_data->_genTransform)

@@ -66,6 +66,8 @@ public:
         WhellEvent              = 0x0040,
         ChildTransformEvent     = 0x0080,
 
+        NoScale                 = 0x0100,
+
         All                     = 0xFFFF,
     };
     enum class TransSrc : uint8_t{Self, Parent, Scene};
@@ -196,6 +198,7 @@ protected:
     QRectF  bBox                        (const QTransform &transform, 
                                          const QRectF &rect)                     noexcept;
     bool    updateCache                 ()                                       noexcept;
+    bool    dirtyTransform              ()                                       noexcept;
     bool    dirtyVisibleChildItems      ()                                       noexcept;
 protected:
     KRPTSceneItemData *_data;
@@ -221,5 +224,8 @@ protected:
     QRectF             _bBoxMapToParent  ;
     QColor             _borderColor      ;
     QColor             _backgroundColor  ;
+
+public:
+    bool _ch = false;
 };
 

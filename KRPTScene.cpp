@@ -203,11 +203,11 @@ void KRPTScene::whellEvent(SceneMouseEvent *e) noexcept
 //        item->rotate(e->delta() > 0 ? 1 : -1);
 //        item->setSize(item->width() + (e->delta() > 0 ? 10 : -10), item->height());
 
-        double angle = item->angle() + e->delta() > 0 ? 1 : -1;
+//        double angle = item->angle() + e->delta() > 0 ? 1 : -1;
 //        item->rotateAround(angle, mousePos, KRPTSceneItem::TransSrc::Scene);
 
-//        double scale = item->scale() * e->delta() > 0 ? 1.1 : 0.9;
-//        item->scaleFromPoint(scale, mousePos, KRPTSceneItem::TransSrc::Scene);
+        double scale = item->scale() * e->delta() > 0 ? 1.1 : 0.9;
+        item->scaleFromPoint(scale, mousePos, KRPTSceneItem::TransSrc::Scene);
     }
 #endif
     update();
@@ -215,7 +215,11 @@ void KRPTScene::whellEvent(SceneMouseEvent *e) noexcept
 
 void KRPTScene::paintEvent(QPainter &painter) noexcept
 {
+    QElapsedTimer t; t.start();
+
     paintImpl(painter, _item);
+
+    qDebug() << t.elapsed();
 }
 
 //****************************************************************************************************
@@ -256,7 +260,11 @@ void KRPTScene::paintImpl(QPainter &painter, KRPTSceneItem *item) noexcept
 {
     painter.setRenderHint(QPainter::Antialiasing);
     painter.save();
+
     painter.setTransform(item->transform(), true);
+//    painter.setTransform(item->sceneTransform());
+
+
     if(!item->must(KRPTSceneItem::Must::NoClipChilds))
     {
 //        painter.setClipRect(item->_rect.adjusted(0, 0, 0.5, 0.5), Qt::ClipOperation::IntersectClip);

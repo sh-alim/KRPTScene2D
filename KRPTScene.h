@@ -10,8 +10,10 @@
 
 #include <memory>
 #include "KRPTSceneItem.h"
-#include "KRPTFlag.h"
+//#include "KRPTFlag.h"
 #include <QWidget>
+
+#include <QElapsedTimer>
 
 //####################################################################################################
 //#
