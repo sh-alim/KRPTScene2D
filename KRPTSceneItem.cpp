@@ -581,7 +581,9 @@ QRectF KRPTSceneItem::sceneBBox() noexcept
 
 bool KRPTSceneItem::visibleInView() noexcept 
 {
+//    if(!_parent || must(KRPTSceneItem::Must::NoClipChilds))return true;
     if(!_parent)return true;
+
     if(_transformCache.empty())
     {
         KRPTSceneItem *item = this;
@@ -591,18 +593,18 @@ bool KRPTSceneItem::visibleInView() noexcept
             item = item->_parent;
         }
     }
-
     bool visible = true;
     bool dirty = false;
     QTransform *transform = nullptr;
     for(auto &cache : _transformCache)
     {
-//        if(cache.genTransform == 0 || cache.genTransform != cache.item->_genTransform)
         if(cache.item->_dirty[Dirty::Transform] || cache.genTransform != cache.item->_genTransform)
         {
             dirty = true;
             cache.genTransform = cache.item->_genTransform;
         }
+
+    #if 0
         if(dirty)
         {
             cache.transform = transform ? *transform * cache.item->transform() : cache.item->transform();
@@ -620,8 +622,35 @@ bool KRPTSceneItem::visibleInView() noexcept
             }
         }
 
-//        else{qDebug() << "==>";}
+    #else
+        bool dirtyVisible = false;
+        if(dirty)
+        {
+            cache.transform = transform ? *transform * cache.item->transform() : cache.item->transform();
+            bBox(cache.transform, _rect, cache.bBox);
+            if(cache.parent)
+                cache.genParentTransform = cache.parent->_genTransform;
+            dirtyVisible = true;
+        }else
+        {
+            if(cache.parent && cache.genParentTransform != cache.parent->_genTransform)
+            {
+                cache.genParentTransform = cache.parent->_genTransform;
+                dirtyVisible = true;
+            }
+        }
+        if(dirtyVisible)
+        {
+//            if(!cache.parent || must(KRPTSceneItem::Must::NoClipChilds))cache.visible = true; else
+            if(!cache.parent)cache.visible = true; else
+            cache.visible = cache.parent->must(KRPTSceneItem::Must::NoClipChilds) ? true :
+            cache.parent->_rect.intersects(cache.bBox);
 
+//            cache.visible = cache.parent->_rect.intersects(cache.bBox);
+
+        }
+    #endif
+//        else{qDebug() << "==>";}
         if(!cache.visible)
         {
             visible = cache.visible;
@@ -629,10 +658,6 @@ bool KRPTSceneItem::visibleInView() noexcept
         }
         transform = &cache.transform;
     }
-
-//    if(ch && dirty)
-//        qDebug() << "==>" << (uintptr_t)this << visible << dirty;
-
     return visible;
 }
 

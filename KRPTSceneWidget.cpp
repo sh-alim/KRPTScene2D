@@ -22,7 +22,7 @@ KRPTSceneWidget::KRPTSceneWidget(QWidget *parent) noexcept
 
     _item->addMust
         (
-//            KRPTSceneItem::Must::NoClipChilds,
+            KRPTSceneItem::Must::NoClipChilds,
             KRPTSceneItem::Must::MousePressEvent,
             KRPTSceneItem::Must::MouseMoveEvent,
             KRPTSceneItem::Must::WhellEvent
@@ -58,7 +58,7 @@ KRPTSceneWidget::KRPTSceneWidget(QWidget *parent) noexcept
 
         int x1 = 0;
         int y1 = 20;
-        for(int i = 0; i < 5; ++i)
+        for(int i = 0; i < 50000; ++i)
         {
             if((i % 10) == 0)
             {
