@@ -153,7 +153,7 @@ void KRPTScene::mouseReleaseEvent(SceneMouseEvent *e) noexcept
                 SceneMouseEvent::get(_mousePressedItem->mapFromScene(mousePos), e->btns()).get());
         }
         _mousePressedItem->_borderColor = QColor(255, 255, 255);
-//        _mousePressedItem = nullptr;
+        _mousePressedItem = nullptr;
     }
     update();
 }
@@ -200,9 +200,14 @@ void KRPTScene::whellEvent(SceneMouseEvent *e) noexcept
             SceneMouseEvent::get(item->mapFromScene(mousePos), e->btns(), e->delta()).get());
 
 
-        item->rotate(e->delta() > 0 ? 1 : -1);
+//        item->rotate(e->delta() > 0 ? 1 : -1);
 //        item->setSize(item->width() + (e->delta() > 0 ? 10 : -10), item->height());
 
+        double angle = item->angle() + e->delta() > 0 ? 1 : -1;
+//        item->rotateAround(angle, mousePos, KRPTSceneItem::TransSrc::Scene);
+
+//        double scale = item->scale() * e->delta() > 0 ? 1.1 : 0.9;
+//        item->scaleFromPoint(scale, mousePos, KRPTSceneItem::TransSrc::Scene);
     }
 #endif
     update();
@@ -249,56 +254,7 @@ KRPTScene::Items KRPTScene::itemsFromPosImpl(const QPointF &pos, CompFn comp, KR
 
 void KRPTScene::paintImpl(QPainter &painter, KRPTSceneItem *item) noexcept
 {
-#if 0
-#if 1
-//    if(!item || !item->visible())return;
-    painter.save();
-    painter.setTransform(item->transform(), true);
-    if(!item->must(KRPTSceneItem::Must::NoClipChilds))
-    {
-//        painter.setClipRect(item->_rect.adjusted(0, 0, 0.5, 0.5), Qt::ClipOperation::IntersectClip);
-    }
-    if(item->visibleInView())
-//        item->paintBackground(painter);
-        item->paintForeground(painter);
-
-    for(auto &item : item->_childItems)
-    {
-        paintImpl(painter, item);
-    }
-//    if(item->visibleInView())
-//        item->paintForeground(painter);
-    painter.restore();
-#else
-
-
-#if 1
-    QPen pen(QColor(0, 255, 0));
-    painter.setPen(pen);
-
-
-//    item->visibleInView();
-
-    QRectF b = item->sceneBBox();
-//    if(!b.intersects(rect()))return;
-
-    painter.drawRect(b);
-
-    for(auto &item : item->_childItems)
-    {
-        paintImpl(painter, item);
-    }
-
-
-//    painter.drawPolygon(item->_clipPolygon);
-
-#endif
-#endif
-
-#else
-
     painter.setRenderHint(QPainter::Antialiasing);
-
     painter.save();
     painter.setTransform(item->transform(), true);
     if(!item->must(KRPTSceneItem::Must::NoClipChilds))
@@ -317,8 +273,5 @@ void KRPTScene::paintImpl(QPainter &painter, KRPTSceneItem *item) noexcept
     if(item->needPaint())
         item->paintForeground(painter);
     painter.restore();
-
-#endif
-
 }
 

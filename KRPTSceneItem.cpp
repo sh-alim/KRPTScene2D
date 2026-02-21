@@ -9,21 +9,26 @@
 //#
 //####################################################################################################
 
-class KRPTSceneItemCache
+class KRPTSceneItemData
 {
 friend class KRPTSceneItem;
 public:
-    KRPTSceneItemCache(KRPTSceneItem *item, KRPTSceneItem *parent) : item(item), parent(parent){}
-private:
-    KRPTSceneItem *item;
-    KRPTSceneItem *parent;
-    QTransform     transform;
-    uint32_t       genTransform = 0;
-    uint32_t       genParentTransform = 0;
-    uint32_t       genVisibleChildItems = 0;
+    struct Cache
+    {
+        Cache(KRPTSceneItem *item, KRPTSceneItem *parent) : item(item), parent(parent){}
+        KRPTSceneItem *item;
+        KRPTSceneItem *parent;
+        QTransform     transform;
+        uint32_t       genTransform = 0;
+        uint32_t       genParentTransform = 0;
+        uint32_t       genVisibleChildItems = 0;
 
-    QRectF  bBox;
-    bool    visible = false;
+        QRectF         bBox;
+        bool           visible = false;
+    };
+private:
+    std::list<Cache> _cache;
+    uint32_t _genTransform = 0;
 
 };
 
@@ -32,7 +37,7 @@ private:
 //####################################################################################################
 
 KRPTSceneItem::KRPTSceneItem(KRPTScene *scene, KRPTSceneItem *parent) noexcept
-    : _scene(scene), _parent(parent), /*_clipParent(nullptr),*/ _dirty(Dirty::All), _updateLocked(false), 
+    : _scene(scene), _parent(parent), _data(new KRPTSceneItemData()), _dirty(Dirty::All), _updateLocked(false), 
       _visible(true), _angle(0), _scale(1), _borderColor(255, 255, 255), _backgroundColor(100, 100, 100)
 {
 }
@@ -41,6 +46,7 @@ KRPTSceneItem::~KRPTSceneItem() noexcept
 {
     for(auto &child : _childItems)
         delete child;
+    delete _data;
 }
 
 //****************************************************************************************************
@@ -143,7 +149,7 @@ bool KRPTSceneItem::setGeometry(const QRectF &geometry) noexcept
     _dirty += Dirty::VisibleChildItems;
     if(_parent)
         _parent->_dirty += Dirty::VisibleChildItems;
-    ++_genTransform;
+    ++_data->_genTransform;
     if(isResize)_dirty += Dirty::BBox;
     SceneTransformEvent::Ptr e = SceneTransformEvent::get(geometry, oldGeometry, 
         _angle, _angle, _scale, _scale, isMove, isResize, false, false);
@@ -214,7 +220,7 @@ void KRPTSceneItem::setAngle(double angle) noexcept
     _dirty += Dirty::VisibleChildItems;
     if(_parent)
         _parent->_dirty += Dirty::VisibleChildItems;
-    ++_genTransform;
+    ++_data->_genTransform;
     _angle = angle;
     SceneTransformEvent::Ptr e = SceneTransformEvent::get(_geometry, _geometry, 
         _angle, oldAngle, _scale, _scale, false, false, true, false);
@@ -232,7 +238,7 @@ void KRPTSceneItem::setScale(double scale) noexcept
     _dirty += Dirty::VisibleChildItems;
     if(_parent)
         _parent->_dirty += Dirty::VisibleChildItems;
-    ++_genTransform;
+    ++_data->_genTransform;
     _scale = scale;
     SceneTransformEvent::Ptr e = SceneTransformEvent::get(_geometry, _geometry, 
     _angle, _angle, _scale, oldScale, false, false, false, true);
@@ -536,24 +542,24 @@ QRectF KRPTSceneItem::bBox(const QTransform &transform, const QRectF &rect) noex
 
 bool KRPTSceneItem::updateCache() noexcept 
 {
-    if(_transformCache.empty())
+    if(_data->_cache.empty())
     {
         KRPTSceneItem *item = this;
         while(item)
         {
-            _transformCache.emplace_back(item, item->_parent);
+            _data->_cache.emplace_back(item, item->_parent);
             item = item->_parent;
         }
     }
     bool dirty = false;
     bool firstDirty = true;
     QTransform *transform = nullptr;
-    for(auto &cache : _transformCache)
+    for(auto &cache : _data->_cache)
     {
-        if(cache.item->_dirty[Dirty::Transform] || cache.genTransform != cache.item->_genTransform)
+        if(cache.item->_dirty[Dirty::Transform] || cache.genTransform != cache.item->_data->_genTransform)
         {
             dirty = true;
-            cache.genTransform = cache.item->_genTransform;
+            cache.genTransform = cache.item->_data->_genTransform;
         }
         bool dirtyVisible = false;
         if(dirty)
@@ -561,13 +567,13 @@ bool KRPTSceneItem::updateCache() noexcept
             cache.transform = transform ? *transform * cache.item->transform() : cache.item->transform();
             bBox(cache.transform, _rect, cache.bBox);
             if(cache.parent)
-                cache.genParentTransform = cache.parent->_genTransform;
+                cache.genParentTransform = cache.parent->_data->_genTransform;
             dirtyVisible = true;
         }else
         {
-            if(cache.parent && cache.genParentTransform != cache.parent->_genTransform)
+            if(cache.parent && cache.genParentTransform != cache.parent->_data->_genTransform)
             {
-                cache.genParentTransform = cache.parent->_genTransform;
+                cache.genParentTransform = cache.parent->_data->_genTransform;
                 dirtyVisible = true;
             }
         }
@@ -605,26 +611,17 @@ bool KRPTSceneItem::dirtyVisibleChildItems() noexcept
 {
     bool dirty = _dirty[Dirty::VisibleChildItems];
     _dirty -= Dirty::VisibleChildItems;
-    for(auto &cache : _transformCache)
+    for(auto &cache : _data->_cache)
     {
-        if(cache.parent && cache.genVisibleChildItems != cache.parent->_genTransform)
+        if(cache.parent && cache.genVisibleChildItems != cache.parent->_data->_genTransform)
         {
             dirty = true;
-            cache.genVisibleChildItems = cache.parent->_genTransform;
+            cache.genVisibleChildItems = cache.parent->_data->_genTransform;
             break;
         }
     }
     return dirty;
 }
-
-//====================================================================================================
-
-
-
-
-
-
-//==============================================================================================
 
 
 
