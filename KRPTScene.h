@@ -113,16 +113,16 @@ public:
         return _item;
     }
 public:
-    const QRectF     & geometry           ()                                 const noexcept {return _item->geometry     ();}
-    const QRectF     & rect               ()                                 const noexcept {return _item->rect         ();}
-    QPointF            pos                ()                                 const noexcept {return _item->pos          ();}
-    QSizeF             size               ()                                 const noexcept {return _item->size         ();}
-    double             x                  ()                                 const noexcept {return _item->x            ();}
-    double             y                  ()                                 const noexcept {return _item->y            ();}
-    double             width              ()                                 const noexcept {return _item->width        ();}
-    double             height             ()                                 const noexcept {return _item->height       ();}
-    const QTransform & transform          ()                                       noexcept {return _item->transform    ();}
-    QTransform         foolTransform      ()                                       noexcept {return _item->foolTransform();}
+    const QRectF     & geometry           ()                                 const noexcept {return _item->geometry      ();}
+    const QRectF     & rect               ()                                 const noexcept {return _item->rect          ();}
+    QPointF            pos                ()                                 const noexcept {return _item->pos           ();}
+    QSizeF             size               ()                                 const noexcept {return _item->size          ();}
+    double             x                  ()                                 const noexcept {return _item->x             ();}
+    double             y                  ()                                 const noexcept {return _item->y             ();}
+    double             width              ()                                 const noexcept {return _item->width         ();}
+    double             height             ()                                 const noexcept {return _item->height        ();}
+    const QTransform & transform          ()                                       noexcept {return _item->transform     ();}
+    QTransform         sceneTransform     ()                                       noexcept {return _item->sceneTransform();}
     void               setGeometry        (const QRectF &geometry)                 noexcept;
     void               setPos             (const QPointF &pos)                     noexcept;
     void               setPos             (double x, double y)                     noexcept;

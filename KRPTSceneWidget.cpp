@@ -41,7 +41,7 @@ KRPTSceneWidget::KRPTSceneWidget(QWidget *parent) noexcept
         child->setGeometry(QRectF(x, y, 500, 500));
         child->addMust
         (
-            KRPTSceneItem::Must::NoClipChilds,
+//            KRPTSceneItem::Must::NoClipChilds,
             KRPTSceneItem::Must::MousePressEvent,
             KRPTSceneItem::Must::MouseMoveEvent,
             KRPTSceneItem::Must::WhellEvent
@@ -58,7 +58,7 @@ KRPTSceneWidget::KRPTSceneWidget(QWidget *parent) noexcept
 
         int x1 = 0;
         int y1 = 20;
-        for(int i = 0; i < 50000; ++i)
+        for(int i = 0; i < 5; ++i)
         {
             if((i % 10) == 0)
             {
@@ -75,7 +75,6 @@ KRPTSceneWidget::KRPTSceneWidget(QWidget *parent) noexcept
             );
 //            child1->setAngle(i * 10);
             child1->setGeometry(QRectF(x1, y1, 50, 50));
-            child1->ch = true;
             x1 += 50;
 //            qDebug() << (i % 10);
 

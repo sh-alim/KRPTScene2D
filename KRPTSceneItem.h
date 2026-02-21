@@ -24,6 +24,7 @@
 class KRPTScene;
 class SceneMouseEvent;
 class SceneTransformEvent;
+class KRPTSceneItemCache;
 
 //####################################################################################################
 //#
@@ -37,11 +38,21 @@ friend class KRPTScene;
         No                      = 0x00,
         Transform               = 0x01,
         TransformInv            = 0x02,
-        BBox                    = 0x04,
-        BBoxMapToParent         = 0x08,
-        Visibled                = 0x20,
+        SceneTransformInv       = 0x04,
+        BBox                    = 0x08,
+        BBoxMapToParent         = 0x10,
+        VisibleChildItems       = 0x20,
         All                     = 0xFF,
     };
+    enum class State : uint8_t
+    {
+        No                      = 0x00,
+        VisibledInView          = 0x01,
+        NeedPaint               = 0x02,
+        NeedChildPaint          = 0x04,
+        All                     = 0xFF,
+    };
+
 public:
     enum class Must : uint16_t
     {
@@ -90,6 +101,7 @@ public:
     KRPTScene        * scene            ()                        const noexcept {return _scene             ;}
     KRPTSceneItem    * parent           ()                        const noexcept {return _parent            ;}
     const ItemsList  & childItems       ()                        const noexcept {return _childItems        ;}
+    const ItemsList  & visibleChildItems()                              noexcept;
     bool               visible          ()                        const noexcept {return _visible           ;}
     const QRectF     & geometry         ()                        const noexcept {return _geometry          ;}
     const QRectF     & rect             ()                        const noexcept {return _rect              ;}
@@ -105,9 +117,8 @@ public:
     double             scale            ()                        const noexcept {return _scale             ;}
     const QTransform & transform        ()                              noexcept;
     const QTransform & transformInv     ()                              noexcept;
-    QTransform         foolTransform    ()                              noexcept;
-    QTransform         foolTransformInv ()                              noexcept;
-
+    const QTransform & sceneTransform   ()                              noexcept;
+    const QTransform & sceneTransformInv()                              noexcept;
     QRectF             bBox             ()                              noexcept;
     QRectF             bBoxMapToParent  ()                              noexcept;
     QColor             borderColor      ()                        const noexcept {return _borderColor       ;}
@@ -150,6 +161,7 @@ public:
     QPointF            mapFromScene     (const QPointF   &p)                     noexcept;
     QPolygonF          mapFromScene     (const QRectF    &r)                     noexcept;
     QPolygonF          mapFromScene     (const QPolygonF &p)                     noexcept;
+    bool               needPaint        ()                                 const noexcept;
 public:
     virtual void addChildEvent          (KRPTSceneItem       *item)              noexcept;
     virtual void delChildEvent          (KRPTSceneItem       *item)              noexcept;
@@ -183,28 +195,35 @@ protected:
                                          const QRectF &rect, QRectF &bBox)       noexcept;
     QRectF  bBox                        (const QTransform &transform, 
                                          const QRectF &rect)                     noexcept;
+    bool    updateCache                 ()                                       noexcept;
+    bool    dirtyVisibleChildItems      ()                                       noexcept;
 protected:
-    KRPTFlag<Dirty> _dirty           ;
-    KRPTFlag<Must>  _must            ;
-    KRPTScene      *_scene           ;
-    KRPTSceneItem  *_parent          ;
-    ItemsList       _childItems      ;
-    IndexMap        _index           ;
-    bool            _updateLocked    ;
-    bool            _visible         ;
-    QRectF          _geometry        ;
-    QRectF          _rect            ;
-    double          _angle           ;
-    double          _scale           ;
-    QTransform      _transform       ;
-    QTransform      _transformInv    ;
-    QRectF          _bBox            ;
-    QRectF          _bBoxMapToParent ;
-    QColor          _borderColor     ;
-    QColor          _backgroundColor ;
+    KRPTFlag<Dirty> _dirty            ;
+    KRPTFlag<Must>  _must             ;
+    KRPTFlag<State> _state            ;
+    KRPTScene      *_scene            ;
+    KRPTSceneItem  *_parent           ;
+    ItemsList       _childItems       ;
+    ItemsList       _visibleChildItems;
+    IndexMap        _index            ;
+    bool            _updateLocked     ;
+    bool            _visible          ;
+    QRectF          _geometry         ;
+    QRectF          _rect             ;
+    double          _angle            ;
+    double          _scale            ;
+    QTransform      _transform        ;
+    QTransform      _transformInv     ;
+    QTransform      _sceneTransform   ;
+    QTransform      _sceneTransformInv;
+    QRectF          _bBox             ;
+    QRectF          _bBoxMapToParent  ;
+    QColor          _borderColor      ;
+    QColor          _backgroundColor  ;
 
 //====================================================================================================
-public:
+//public:
+
     struct TransformCache
     {
         TransformCache(KRPTSceneItem *item, KRPTSceneItem *parent) : item(item), parent(parent){}
@@ -223,18 +242,6 @@ public:
     std::list<TransformCache> _transformCache;
     uint32_t _genTransform = 0;
 
-
-
-    QRectF  _sceneBBox;
-    bool transformFromParent(TransformCache **transformCache, KRPTSceneItem *parent = nullptr) noexcept;
-    QRectF sceneBBox() noexcept;
-    ItemsList _visibleChildItems;
-
-
-    bool visibleInView() noexcept;
-    const ItemsList  & visibleChildItems()                         noexcept;
-
-    bool ch = false;
-
+    std::list<KRPTSceneItemCache*> _cache;
 };
 

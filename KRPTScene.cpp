@@ -200,8 +200,8 @@ void KRPTScene::whellEvent(SceneMouseEvent *e) noexcept
             SceneMouseEvent::get(item->mapFromScene(mousePos), e->btns(), e->delta()).get());
 
 
-//        item->rotate(e->delta() > 0 ? 1 : -1);
-        item->setSize(item->width() + (e->delta() > 0 ? 10 : -10), item->height());
+        item->rotate(e->delta() > 0 ? 1 : -1);
+//        item->setSize(item->width() + (e->delta() > 0 ? 10 : -10), item->height());
 
     }
 #endif
@@ -297,15 +297,16 @@ void KRPTScene::paintImpl(QPainter &painter, KRPTSceneItem *item) noexcept
 
 #else
 
+    painter.setRenderHint(QPainter::Antialiasing);
+
     painter.save();
     painter.setTransform(item->transform(), true);
     if(!item->must(KRPTSceneItem::Must::NoClipChilds))
     {
 //        painter.setClipRect(item->_rect.adjusted(0, 0, 0.5, 0.5), Qt::ClipOperation::IntersectClip);
     }
-//    if(item->visibleInView())
-//        item->paintBackground(painter);
-        item->paintForeground(painter);
+    if(item->needPaint())
+        item->paintBackground(painter);
 
     const auto &items = item->visibleChildItems();
 
@@ -313,8 +314,8 @@ void KRPTScene::paintImpl(QPainter &painter, KRPTSceneItem *item) noexcept
     {
         paintImpl(painter, item);
     }
-//    if(item->visibleInView())
-//        item->paintForeground(painter);
+    if(item->needPaint())
+        item->paintForeground(painter);
     painter.restore();
 
 #endif
