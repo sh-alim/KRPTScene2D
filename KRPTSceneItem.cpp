@@ -66,12 +66,14 @@ bool KRPTSceneItem::delChild(KRPTSceneItem *item) noexcept
 
 const KRPTSceneItem::ItemsList& KRPTSceneItem::visibleChildItems() noexcept
 {
+    if(_childItems.empty())return _childItems;
     bool dirty = dirtyVisibleChildItems();
     if(!dirty)
         _borderColor = QColor(255, 255, 255);
     else
         _borderColor = QColor(255, 255, 0);
 
+#if 1
     if(!dirty)
         return _visibleChildItems;
     _visibleChildItems.clear();
@@ -84,6 +86,16 @@ const KRPTSceneItem::ItemsList& KRPTSceneItem::visibleChildItems() noexcept
             _visibleChildItems.emplace_back(item);
     }
     return _visibleChildItems;
+#else
+    _visibleChildItems.clear();
+    for(auto &item : _childItems)
+    {
+        item->updateCache();
+        _visibleChildItems.emplace_back(item);
+    }
+    return _visibleChildItems;
+
+#endif
 }
 
 const QTransform& KRPTSceneItem::transform() noexcept 
@@ -371,6 +383,12 @@ bool KRPTSceneItem::needPaint() const noexcept
     return needPaint;
 }
 
+bool KRPTSceneItem::needChildPaint() const noexcept
+{
+    bool needPaint = (!_parent || _state[State::NeedChildPaint]) && _visible;
+    return needPaint;
+}
+
 //****************************************************************************************************
 //*
 //****************************************************************************************************
@@ -559,12 +577,9 @@ bool KRPTSceneItem::updateCache() noexcept
             item = item->_parent;
         }
     }
-
     _state += State::VisibledInView;
     _state += State::NeedPaint;
     _state += State::NeedChildPaint;
-
-
     bool dirty = false;
     bool firstDirty = true;
     QTransform *transform = nullptr;

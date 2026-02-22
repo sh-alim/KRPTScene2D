@@ -58,7 +58,8 @@ KRPTSceneWidget::KRPTSceneWidget(QWidget *parent) noexcept
 
         int x1 = 0;
         int y1 = 20;
-        for(int i = 0; i < 50000; ++i)
+//        for(int i = 0; i < 100000; ++i)
+        for(int i = 0; i < 10; ++i)
         {
             if((i % 10) == 0)
             {
@@ -77,7 +78,7 @@ KRPTSceneWidget::KRPTSceneWidget(QWidget *parent) noexcept
 //            child1->setAngle(i * 10);
             child1->setGeometry(QRectF(x1, y1, 50, 50));
 
-            if(i == 109)
+            if(i == 9)
                 child1->_ch = true;
 
             x1 += 50;

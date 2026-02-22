@@ -269,16 +269,19 @@ void KRPTScene::paintImpl(QPainter &painter, KRPTSceneItem *item) noexcept
     {
 //        painter.setClipRect(item->_rect.adjusted(0, 0, 0.5, 0.5), Qt::ClipOperation::IntersectClip);
     }
-    if(item->needPaint())
-        item->paintBackground(painter);
+//    if(item->needPaint())
+//        item->paintBackground(painter);
 
-    const auto &items = item->visibleChildItems();
-
-    for(auto &item : items)
+//    if(item->needChildPaint())
     {
-        paintImpl(painter, item);
+        const auto &items = item->visibleChildItems();
+        for(auto &item : items)
+        {
+            paintImpl(painter, item);
+        }
     }
-    if(item->needPaint())
+
+//    if(item->needPaint())
         item->paintForeground(painter);
     painter.restore();
 }

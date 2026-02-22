@@ -164,6 +164,8 @@ public:
     QPolygonF          mapFromScene     (const QRectF    &r)                     noexcept;
     QPolygonF          mapFromScene     (const QPolygonF &p)                     noexcept;
     bool               needPaint        ()                                 const noexcept;
+    bool               needChildPaint   ()                                 const noexcept;
+
 public:
     virtual void addChildEvent          (KRPTSceneItem       *item)              noexcept;
     virtual void delChildEvent          (KRPTSceneItem       *item)              noexcept;
