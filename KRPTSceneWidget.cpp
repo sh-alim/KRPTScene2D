@@ -18,7 +18,7 @@ KRPTSceneWidget::KRPTSceneWidget(QWidget *parent) noexcept
 
 #if 1
     _item = _scene->addItem<KRPTSceneItem>();
-    _item->setGeometry(QRectF(10, 10, 1000, 1000));
+    _item->setGeometry(QRectF(10, 10, 100000, 100000));
 
     _item->addMust
         (
@@ -30,7 +30,8 @@ KRPTSceneWidget::KRPTSceneWidget(QWidget *parent) noexcept
 
     int x = 0;
     int y = 0;
-    for(int i = 0; i < 1; ++i)
+//    for(int i = 0; i < 100000; ++i)
+    for(int i = 0; i < 10; ++i)
     {
 //        item->addMust(
 //            SceneItem::Must::ClipChilds,
@@ -38,7 +39,7 @@ KRPTSceneWidget::KRPTSceneWidget(QWidget *parent) noexcept
 //        );
 
         auto child = _item->addChild<KRPTSceneItem>();
-        child->setGeometry(QRectF(x, y, 500, 500));
+        child->setGeometry(QRectF(x, y, 25, 25));
         child->addMust
         (
 //            KRPTSceneItem::Must::NoClipChilds,
@@ -46,20 +47,20 @@ KRPTSceneWidget::KRPTSceneWidget(QWidget *parent) noexcept
             KRPTSceneItem::Must::MouseMoveEvent,
             KRPTSceneItem::Must::WhellEvent
         );
-        x += 500;
-        if(i % 2)
+        x += 25;
+        if((i % 1000) == 0)
         {
             x = 0;
-            y += 500;
+            y += 25;
         }
 
 //        child->setAngle(i * 10);
 //        child->setScale(i * 0.5);
-
+    #if 0
         int x1 = 0;
         int y1 = 20;
-//        for(int i = 0; i < 100000; ++i)
-        for(int i = 0; i < 10; ++i)
+        for(int i = 0; i < 100000; ++i)
+//        for(int i = 0; i < 10; ++i)
         {
             if((i % 10) == 0)
             {
@@ -86,6 +87,7 @@ KRPTSceneWidget::KRPTSceneWidget(QWidget *parent) noexcept
 
 
         }
+    #endif
     }
 #else
     _item = _scene->addItem<KRPTSceneItem>();

@@ -3,20 +3,44 @@
 //####################################################################################################
 
 #include "KRPTScene.h"
-//#include "KRPTSceneItem.h"
+
+//####################################################################################################
+//#
+//####################################################################################################
+
+class KRPTSceneRoot : public KRPTSceneItem
+{
+public:
+    KRPTSceneRoot(KRPTScene *scene, KRPTSceneItem *parent) noexcept;
+protected:
+    void paintBackground(QPainter &painter) noexcept override;
+    void paintForeground(QPainter &painter) noexcept override;
+};
+
+KRPTSceneRoot::KRPTSceneRoot(KRPTScene *scene, KRPTSceneItem *parent) noexcept
+    : KRPTSceneItem(scene, parent)
+{
+}
+
+void KRPTSceneRoot::paintBackground(QPainter &painter) noexcept
+{
+    painter.fillRect(_rect, _backgroundColor);
+}
+
+void KRPTSceneRoot::paintForeground(QPainter &painter) noexcept
+{
+    QPen pen(_borderColor);
+    painter.setPen(pen);
+    painter.drawRect(_rect);
+}
 
 //####################################################################################################
 //#
 //####################################################################################################
 
 KRPTScene::KRPTScene(QWidget *canvas) noexcept
-    : _canvas(canvas) , _item(new KRPTSceneItem(this, nullptr)), _mousePressedItem(nullptr)
+    : _canvas(canvas) , _item(new KRPTSceneRoot(this, nullptr)), _mousePressedItem(nullptr)
 {
-//    _item->addMust(
-//            SceneItem::Must::ClipChilds
-//        ,
-//        SceneItem::Must::MousePressEvent
-//    );
 }
 
 KRPTScene::~KRPTScene() noexcept
@@ -27,6 +51,66 @@ KRPTScene::~KRPTScene() noexcept
 //****************************************************************************************************
 //*
 //****************************************************************************************************
+
+const QRectF& KRPTScene::geometry() const noexcept 
+{
+    return _item->geometry();
+}
+
+const QRectF& KRPTScene::rect() const noexcept 
+{
+    return _item->rect();
+}
+
+QPointF KRPTScene::pos() const noexcept 
+{
+    return _item->pos();
+}
+
+QSizeF KRPTScene::size() const noexcept 
+{
+    return _item->size();
+}
+
+double KRPTScene::x() const noexcept 
+{
+    return _item->x();
+}
+
+double KRPTScene::y() const noexcept 
+{
+    return _item->y();
+}
+
+double KRPTScene::width() const noexcept 
+{
+    return _item->width();
+}
+
+double KRPTScene::height() const noexcept 
+{
+    return _item->height();
+}
+
+const QTransform& KRPTScene::transform() const noexcept 
+{
+    return _item->transform();
+}
+
+const QTransform& KRPTScene::sceneTransform() const noexcept 
+{
+    return _item->sceneTransform();
+}
+
+QColor KRPTScene::borderColor() const noexcept 
+{
+    return _item->_borderColor;
+}
+
+QColor KRPTScene::backgroundColor() const noexcept 
+{
+    return _item->_backgroundColor;
+}
 
 void KRPTScene::setGeometry(const QRectF &geometry) noexcept
 {
@@ -81,6 +165,16 @@ void KRPTScene::setHeight(double height) noexcept
     setSize(QSizeF(_item->width(), height));
 }
 
+void KRPTScene::setBorderColor(const QColor &color) noexcept
+{
+    _item->setBorderColor(color);
+}
+
+void KRPTScene::setBackgroundColor(const QColor &color) noexcept
+{
+    _item->setBackgroundColor(color);
+}
+
 //****************************************************************************************************
 //*
 //****************************************************************************************************
@@ -131,6 +225,13 @@ void KRPTScene::mousePressEvent(SceneMouseEvent *e) noexcept
         item->mousePressImpl(SceneMouseEvent::get(p, e->btns()).get());
         _mousePressedItem = item;
         _mousePressedItemPos = item->pos() -  item->mapToParent(p);
+
+//        auto itm = item->addChild<KRPTSceneItem>();
+//        itm->setGeometry(QRectF(p.x(), p.y(), 20, 20));
+//        if(item->parent())
+//            item->parent()->delChild(item);
+//        _mousePressedItem = nullptr;
+
     #endif
     #if 0
         QPointF p0 = _mousePressedItem->mapFromScene(mousePos);
@@ -235,7 +336,6 @@ KRPTSceneItem* KRPTScene::itemFromPosImpl(const QPointF &pos, CompFn comp, KRPTS
 KRPTScene::Items KRPTScene::itemsFromPosImpl(const QPointF &pos, CompFn comp, KRPTSceneItem *item, 
     bool one, uint32_t level) noexcept
 {
-//    const Items &childs = item->childItems();
     const Items &childs = item->visibleChildItems();
     Items res;
     auto it = childs.crbegin();
@@ -260,19 +360,14 @@ void KRPTScene::paintImpl(QPainter &painter, KRPTSceneItem *item) noexcept
 {
     painter.setRenderHint(QPainter::Antialiasing);
     painter.save();
-
     painter.setTransform(item->transform(), true);
-//    painter.setTransform(item->sceneTransform());
-
-
     if(!item->must(KRPTSceneItem::Must::NoClipChilds))
     {
-//        painter.setClipRect(item->_rect.adjusted(0, 0, 0.5, 0.5), Qt::ClipOperation::IntersectClip);
+        painter.setClipRect(item->_rect.adjusted(0, 0, 0.5, 0.5), Qt::ClipOperation::IntersectClip);
     }
-//    if(item->needPaint())
-//        item->paintBackground(painter);
-
-//    if(item->needChildPaint())
+    if(item->needPaint())
+        item->paintBackground(painter);
+    if(item->needChildPaint())
     {
         const auto &items = item->visibleChildItems();
         for(auto &item : items)
@@ -280,8 +375,7 @@ void KRPTScene::paintImpl(QPainter &painter, KRPTSceneItem *item) noexcept
             paintImpl(painter, item);
         }
     }
-
-//    if(item->needPaint())
+    if(item->needPaint())
         item->paintForeground(painter);
     painter.restore();
 }

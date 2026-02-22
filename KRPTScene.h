@@ -10,7 +10,6 @@
 
 #include <memory>
 #include "KRPTSceneItem.h"
-//#include "KRPTFlag.h"
 #include <QWidget>
 
 #include <QElapsedTimer>
@@ -115,16 +114,19 @@ public:
         return _item;
     }
 public:
-    const QRectF     & geometry           ()                                 const noexcept {return _item->geometry      ();}
-    const QRectF     & rect               ()                                 const noexcept {return _item->rect          ();}
-    QPointF            pos                ()                                 const noexcept {return _item->pos           ();}
-    QSizeF             size               ()                                 const noexcept {return _item->size          ();}
-    double             x                  ()                                 const noexcept {return _item->x             ();}
-    double             y                  ()                                 const noexcept {return _item->y             ();}
-    double             width              ()                                 const noexcept {return _item->width         ();}
-    double             height             ()                                 const noexcept {return _item->height        ();}
-    const QTransform & transform          ()                                       noexcept {return _item->transform     ();}
-    QTransform         sceneTransform     ()                                       noexcept {return _item->sceneTransform();}
+    const QRectF     & geometry           ()                                 const noexcept;
+    const QRectF     & rect               ()                                 const noexcept;
+    QPointF            pos                ()                                 const noexcept;
+    QSizeF             size               ()                                 const noexcept;
+    double             x                  ()                                 const noexcept;
+    double             y                  ()                                 const noexcept;
+    double             width              ()                                 const noexcept;
+    double             height             ()                                 const noexcept;
+    const QTransform & transform          ()                                 const noexcept;
+    const QTransform & sceneTransform     ()                                 const noexcept;
+    QColor             borderColor        ()                                 const noexcept;
+    QColor             backgroundColor    ()                                 const noexcept;
+
     void               setGeometry        (const QRectF &geometry)                 noexcept;
     void               setPos             (const QPointF &pos)                     noexcept;
     void               setPos             (double x, double y)                     noexcept;
@@ -134,6 +136,10 @@ public:
     void               setY               (double y)                               noexcept;
     void               setWidth           (double width)                           noexcept;
     void               setHeight          (double height)                          noexcept;
+
+    void               setBorderColor    (const QColor &color)                     noexcept;
+    void               setBackgroundColor(const QColor &color)                     noexcept;
+
 public:
     KRPTSceneItem    * itemFromPos        (const QPointF &pos, CompFn comp)        noexcept;
     Items              itemsFromPos       (const QPointF &, CompFn comp, bool one) noexcept;
