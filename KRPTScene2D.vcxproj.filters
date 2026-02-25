@@ -40,6 +40,12 @@
     <ClCompile Include="KRPTSceneItem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="KRPTSceneAnimItem.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="KRPTSceneAnim.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="MainProcess.h">
@@ -57,6 +63,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="KRPTSceneItem.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="KRPTSceneAnimItem.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="KRPTSceneAnim.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

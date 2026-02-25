@@ -45,7 +45,7 @@ friend class KRPTScene;
         VisibledInView          = 0x01,
         NeedPaint               = 0x02,
         NeedChildPaint          = 0x04,
-        All                     = 0xFF,
+        All                     = 0xFF
     };
 public:
     enum class Must : uint16_t
@@ -60,10 +60,7 @@ public:
         TransformEvent          = 0x0040,
         WhellEvent              = 0x0080,
         ChildTransformEvent     = 0x0100,
-    #if 0
-        ParentTransformEvent    = 0x0200,
-    #endif
-        All                     = 0xFFFF,
+        All                     = 0xFFFF
     };
     enum class TransSrc : uint8_t{Self, Parent, Scene};
 public:
@@ -170,9 +167,6 @@ protected:
     virtual void       mouseReleaseEvent   (SceneMouseEvent     *e   )              noexcept;
     virtual void       mouseMoveEvent      (SceneMouseEvent     *e   )              noexcept;
     virtual void       whellEvent          (SceneMouseEvent     *e   )              noexcept;
-#if 0
-    virtual void       parentTransformEvent(SceneTransformEvent *e   )              noexcept;
-#endif
     virtual void       childTransformEvent (KRPTSceneItem       *item,
                                             SceneTransformEvent *e   )              noexcept;
 protected:

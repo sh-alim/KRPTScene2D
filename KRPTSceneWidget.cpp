@@ -31,14 +31,14 @@ KRPTSceneWidget::KRPTSceneWidget(QWidget *parent) noexcept
     int x = 0;
     int y = 0;
 //    for(int i = 0; i < 100000; ++i)
-    for(int i = 0; i < 10; ++i)
+    for(int i = 0; i < 1; ++i)
     {
 //        item->addMust(
 //            SceneItem::Must::ClipChilds,
 //            SceneItem::Must::MousePressEvent
 //        );
 
-        auto child = _item->addChild<KRPTSceneItem>();
+        auto child = _item->addChild<KRPTSceneAnimItem>();
         child->setGeometry(QRectF(x, y, 25, 25));
         child->addMust
         (

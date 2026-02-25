@@ -250,7 +250,7 @@ void KRPTSceneItem::setVisible(bool visible) noexcept
 bool KRPTSceneItem::setGeometry(const QRectF &geometry) noexcept
 {
     bool isMove   = !qFuzzyCompare(_geometry.topLeft(), geometry.topLeft());
-    bool isResize = !qFuzzyCompare(_geometry.size(), geometry.size());
+    bool isResize = !qFuzzyCompare(_geometry.size   (), geometry.size   ());
     if(!isMove && ! isResize)return false;
     QRectF oldGeometry = _geometry;
     _geometry = geometry;
@@ -263,16 +263,14 @@ bool KRPTSceneItem::setGeometry(const QRectF &geometry) noexcept
         _parent->_dirty += Dirty::VisibleChildItems;
     ++_data->genTransform;
     if(isResize)_dirty += Dirty::BBox;
-    SceneTransformEvent::Ptr e = SceneTransformEvent::get(geometry, oldGeometry, 
-        _angle, _angle, _scale, _scale, isMove, isResize, false, false);
-    if(must(Must::TransformEvent))transformImpl(e.get());
-    if(_parent && _parent->must(Must::ChildTransformEvent))
-       _parent->childTransformEvent(this, e.get());
-#if 0
-    if(must(Must::ParentTransformEvent))
+    if(must(Must::TransformEvent) || (_parent && _parent->must(Must::ChildTransformEvent)))
     {
+        SceneTransformEvent::Ptr e = SceneTransformEvent::get(geometry, oldGeometry, 
+            _angle, _angle, _scale, _scale, isMove, isResize, false, false);
+        if(must(Must::TransformEvent))transformImpl(e.get());
+        if(_parent && _parent->must(Must::ChildTransformEvent))
+            _parent->childTransformEvent(this, e.get());
     }
-#endif
     return true;
 }
 
