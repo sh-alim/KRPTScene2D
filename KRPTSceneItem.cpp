@@ -4,6 +4,7 @@
 
 #include "KRPTSceneItem.h"
 #include "KRPTScene.h"
+#include "KRPTSceneAnim.h"
 
 //####################################################################################################
 //#
@@ -13,8 +14,9 @@ class KRPTSceneItemData
 {
 friend class KRPTSceneItem;
 public:
-    KRPTSceneItemData()
-        : genTransform(0), genScale(0), sceneScale(1) {}
+    KRPTSceneItemData(KRPTSceneItem *owner)
+        : owner(owner), genTransform(0), genScale(0), sceneScale(1) {}
+public:
     struct Cache
     {
         Cache(KRPTSceneItem *item, KRPTSceneItem *parent) 
@@ -32,11 +34,125 @@ public:
         bool           visible             ;
         bool           nextDirty           ;  
     };
+    struct Anim
+    {
+        using Values = std::vector<std::pair<double, double>>;
+        using Map = std::map<uint32_t, std::unique_ptr<Anim>>;
+
+        Anim () noexcept : anim(nullptr) {}
+        ~Anim() noexcept {if(anim)anim->deleteLater();}
+
+        int duration() const {return anim ? anim->duration() : 0;}
+
+        void set(const QRectF &r0, const QRectF &r1)
+        {
+            values.resize(4);
+            values[0].first  = r0.x();
+            values[0].second = r1.x();
+            values[1].first  = r0.y();
+            values[1].second = r1.y();
+            values[2].first  = r0.width ();
+            values[2].second = r1.width ();
+            values[3].first  = r0.height();
+            values[3].second = r1.height();
+        }
+
+    #if 0
+        void get(QRectF &r0, QRectF &r1)
+        {
+            if(values.size() < 4)return;
+            r0.setX(values[0].first );
+            r1.setX(values[0].second);
+            r0.setY(values[1].first );
+            r1.setY(values[1].second);
+            r0.setWidth (values[2].first );
+            r1.setWidth (values[2].second);
+            r0.setHeight(values[3].first );
+            r1.setHeight(values[3].second);
+        }
+
+        void stop()
+        {
+            if(!anim)return;
+            anim->stop();
+        }
+
+        void start(uint32_t duration)
+        {
+//        auto a = _data->addAnim(0);
+//        a->set(_geometry, geometry);
+//        a->start(1000);
+
+
+            if(!anim)return;
+            anim->stop();
+            anim->setDuration(duration);
+            anim->start();
+        }
+    #endif
+        KRPTSceneAnim *anim  ;
+        Values         values;
+    };
+
+    void startAnim(uint32_t id, uint32_t duration, const QRectF &start, const QRectF &end)
+    {
+        Anim *anim = addAnim(id);
+        KRPTSceneAnim *sceneAnim = anim->anim;
+        sceneAnim->stop();
+        anim->set(start, end);
+        sceneAnim->setDuration(duration);
+        sceneAnim->start();
+    }
+    void stopAnim(uint32_t id)
+    {
+        deleteAnim(id);
+    }
 private:
-    std::list<Cache> cache       ;
-    uint32_t         genTransform;
-    uint32_t         genScale    ;
-    double           sceneScale  ;
+    Anim* anim(uint32_t id) noexcept
+    {
+        auto findAnim = anims.find(0);
+        return findAnim != anims.end() ? findAnim->second.get() : nullptr;
+    }
+    Anim* addAnim(uint32_t id) noexcept
+    {
+        auto findAnim = anims.find(id);
+        if(findAnim == anims.end())
+        {
+            findAnim = anims.emplace(0, std::make_unique<KRPTSceneItemData::Anim>()).first;
+            if(!animFunction)animFunction = std::bind(&KRPTSceneItemData::animEvent, this, 
+                std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
+            findAnim->second->anim = new KRPTSceneAnim(id, animFunction);
+        }
+        return findAnim->second.get();
+    }
+    void deleteAnim(uint32_t id) noexcept
+    {
+        auto findAnim = anims.find(id);
+        if(findAnim == anims.end())return;
+        findAnim->second->anim->stop();
+        anims.erase(findAnim);
+    }
+    void animEvent(uint32_t id, int time, double progress) noexcept
+    {
+        auto anim = this->anim(id);
+        if(!anim)return;
+        std::vector<double> v;
+        KRPTSceneAnim::interpolate(anim->values, v, progress);
+        owner->animEvent(id, v);
+        if(anim->duration() == time)
+        {
+            deleteAnim(id);
+//            qDebug() << id;
+        }
+    }
+private:
+    KRPTSceneItem       *owner       ;
+    std::list<Cache>     cache       ;
+    uint32_t             genTransform;
+    uint32_t             genScale    ;
+    double               sceneScale  ;
+    Anim::Map            anims       ;
+    KRPTSceneAnim::Event animFunction;
 };
 
 //####################################################################################################
@@ -44,7 +160,7 @@ private:
 //####################################################################################################
 
 KRPTSceneItem::KRPTSceneItem(KRPTScene *scene, KRPTSceneItem *parent) noexcept
-    : _scene(scene), _parent(parent), _data(new KRPTSceneItemData()), _dirty(Dirty::All), 
+    : _scene(scene), _parent(parent), _data(new KRPTSceneItemData(this)), _dirty(Dirty::All), 
       _updateLocked(false), _visible(true), _angle(0), _scale(1), _borderColor(255, 255, 255), 
       _backgroundColor(50, 50, 50)
 {
@@ -247,155 +363,137 @@ void KRPTSceneItem::setVisible(bool visible) noexcept
     _visible = visible;
 }
 
-bool KRPTSceneItem::setGeometry(const QRectF &geometry) noexcept
+//###########################################
+//###########################################
+
+void KRPTSceneItem::animEvent(uint32_t id, const std::vector<double> &value) noexcept
 {
-    bool isMove   = !qFuzzyCompare(_geometry.topLeft(), geometry.topLeft());
-    bool isResize = !qFuzzyCompare(_geometry.size   (), geometry.size   ());
-    if(!isMove && ! isResize)return false;
-    QRectF oldGeometry = _geometry;
-    _geometry = geometry;
-    _rect.setSize(_geometry.size());
-    _dirty += Dirty::Transform        ;
-    _dirty += Dirty::TransformInv     ;
-    _dirty += Dirty::BBoxMapToParent  ;
-    _dirty += Dirty::VisibleChildItems;
-    if(_parent)
-        _parent->_dirty += Dirty::VisibleChildItems;
-    ++_data->genTransform;
-    if(isResize)_dirty += Dirty::BBox;
-    if(must(Must::TransformEvent) || (_parent && _parent->must(Must::ChildTransformEvent)))
+    QRectF geometry;
+    geometry.setX     (value[0]);
+    geometry.setY     (value[1]);
+    geometry.setWidth (value[2]);
+    geometry.setHeight(value[3]);
+    setGeometryImpl(geometry);
+    update();
+}
+
+//###########################################
+
+bool KRPTSceneItem::setGeometry(const QRectF &geometry, bool anim) noexcept
+{
+#if 1
+//    bool isMove   = !qFuzzyCompare(_geometry.topLeft(), geometry.topLeft());
+//    bool isResize = !qFuzzyCompare(_geometry.size   (), geometry.size   ());
+
+    if(!anim)
     {
-        SceneTransformEvent::Ptr e = SceneTransformEvent::get(geometry, oldGeometry, 
-            _angle, _angle, _scale, _scale, isMove, isResize, false, false);
-        if(must(Must::TransformEvent))transformImpl(e.get());
-        if(_parent && _parent->must(Must::ChildTransformEvent))
-            _parent->childTransformEvent(this, e.get());
+        _data->startAnim(0, 1000, _geometry, geometry);
+        return true;
+    }else
+    {
+        _data->stopAnim(0);
+        return setGeometryImpl(geometry);
     }
-    return true;
+#endif
 }
 
-bool KRPTSceneItem::setGeometry(const QPointF &pos, const QSizeF &size) noexcept
+bool KRPTSceneItem::setGeometry(const QPointF &pos, const QSizeF &size, bool anim) noexcept
 {
-    return setGeometry(QRectF(pos, size));
+    return setGeometry(QRectF(pos, size), anim);
 }
 
-bool KRPTSceneItem::setGeometry(double x, double y, double w, double h) noexcept
+bool KRPTSceneItem::setGeometry(double x, double y, double w, double h, bool anim) noexcept
 {
-    return setGeometry(QPointF(x, y), QSizeF(w, h));
+    return setGeometry(QPointF(x, y), QSizeF(w, h), anim);
 }
 
-void KRPTSceneItem::setPos(const QPointF &pos) noexcept
+void KRPTSceneItem::setPos(const QPointF &pos, bool anim) noexcept
 {
-    setGeometry(QRectF(pos, _geometry.size()));
+    setGeometry(QRectF(pos, _geometry.size()), anim);
 }
 
-void KRPTSceneItem::setPos(double x, double y) noexcept
+void KRPTSceneItem::setPos(double x, double y, bool anim) noexcept
 {
-    setPos(QPointF(x, y));
+    setPos(QPointF(x, y), anim);
 }
 
-void KRPTSceneItem::setSize(const QSizeF &size) noexcept
+void KRPTSceneItem::setSize(const QSizeF &size, bool anim) noexcept
 {
-    setGeometry(QRectF(_geometry.topLeft(), size));
+    setGeometry(QRectF(_geometry.topLeft(), size), anim);
 }
 
-void KRPTSceneItem::setSize(double w, double h) noexcept
+void KRPTSceneItem::setSize(double w, double h, bool anim) noexcept
 {
-    setSize(QSize(w, h));
+    setSize(QSize(w, h), anim);
 }
 
-void KRPTSceneItem::setX(double x) noexcept
+void KRPTSceneItem::setX(double x, bool anim) noexcept
 {
-    setPos(QPointF(x, _geometry.y()));
+    setPos(QPointF(x, _geometry.y()), anim);
 }
 
-void KRPTSceneItem::setY(double y) noexcept
+void KRPTSceneItem::setY(double y, bool anim) noexcept
 {
-    setPos(QPointF(_geometry.x(), y));
+    setPos(QPointF(_geometry.x(), y), anim);
 }
 
-void KRPTSceneItem::setWidth(double w) noexcept
+void KRPTSceneItem::setWidth(double w, bool anim) noexcept
 {
-    setSize(QSizeF(w, _geometry.height()));
+    setSize(QSizeF(w, _geometry.height()), anim);
 }
 
-void KRPTSceneItem::setHeight(double h) noexcept
+void KRPTSceneItem::setHeight(double h, bool anim) noexcept
 {
-    setSize(QSizeF(_geometry.width(), h));
+    setSize(QSizeF(_geometry.width(), h), anim);
 }
 
-void KRPTSceneItem::setAngle(double angle) noexcept
+void KRPTSceneItem::setAngle(double angle, bool anim) noexcept
 {
-    if(qFuzzyCompare(_angle, angle))return;
-    double oldAngle = _angle;
-    _dirty += Dirty::Transform        ;
-    _dirty += Dirty::TransformInv     ;
-    _dirty += Dirty::BBox             ;
-    _dirty += Dirty::BBoxMapToParent  ;
-    _dirty += Dirty::VisibleChildItems;
-    if(_parent)
-        _parent->_dirty += Dirty::VisibleChildItems;
-    ++_data->genTransform;
-    _angle = angle;
-    SceneTransformEvent::Ptr e = SceneTransformEvent::get(_geometry, _geometry, 
-        _angle, oldAngle, _scale, _scale, false, false, true, false);
-    if(must(Must::TransformEvent))transformImpl(e.get());
+    setAngleImpl(angle);
 }
 
-void KRPTSceneItem::setScale(double scale) noexcept
+void KRPTSceneItem::setScale(double scale, bool anim) noexcept
 {
-    if(qFuzzyCompare(_scale, scale))return;
-    double oldScale = _scale;
-    _dirty += Dirty::Transform        ;
-    _dirty += Dirty::TransformInv     ;
-    _dirty += Dirty::BBox             ;
-    _dirty += Dirty::BBoxMapToParent  ;
-    _dirty += Dirty::VisibleChildItems;
-    if(_parent)
-        _parent->_dirty += Dirty::VisibleChildItems;
-    ++_data->genTransform;
-    ++_data->genScale;
-    _scale = scale;
-    SceneTransformEvent::Ptr e = SceneTransformEvent::get(_geometry, _geometry, 
-    _angle, _angle, _scale, oldScale, false, false, false, true);
-    if(must(Must::TransformEvent))transformImpl(e.get());
+    setScaleImpl(scale);
 }
 
-void KRPTSceneItem::translate(const QPointF &pos) noexcept
+void KRPTSceneItem::translate(const QPointF &pos, bool anim) noexcept
 {
-    setPos(_geometry.topLeft() + pos);
+    setPos(_geometry.topLeft() + pos, anim);
 }
 
-void KRPTSceneItem::translate(double x, double y) noexcept
+void KRPTSceneItem::translate(double x, double y, bool anim) noexcept
 {
-    translate(QPointF(x, y));
+    translate(QPointF(x, y), anim);
 }
 
-void KRPTSceneItem::rotate(double angle) noexcept
+void KRPTSceneItem::rotate(double angle, bool anim) noexcept
 {
-    setAngle(_angle + angle);
+    setAngle(_angle + angle, anim);
 }
 
-void KRPTSceneItem::rotateAround(double angle, const QPointF &pt, TransSrc src) noexcept
+void KRPTSceneItem::rotateAround(double angle, const QPointF &pt, 
+    TransSrc src, bool anim) noexcept
 {
     QTransform t;
     transform(_geometry, angle + _angle, _scale, t);
     _geometry.translate(transformShift(t, src, pt));
-    rotate(angle);
+    rotate(angle), anim;
 }
 
-void KRPTSceneItem::scaleMul(double scale) noexcept
+void KRPTSceneItem::scaleMul(double scale, bool anim) noexcept
 {
-    setScale(_scale * scale);
+    setScale(_scale * scale, anim);
 }
 
-void KRPTSceneItem::scaleFromPoint(double scale, const QPointF &pt, TransSrc src) noexcept
+void KRPTSceneItem::scaleFromPoint(double scale, const QPointF &pt, 
+    TransSrc src, bool anim) noexcept
 {
 #if 1
     QTransform t;
     transform(_geometry, _angle, _scale * scale, t);
     _geometry.translate(transformShift(t, src, pt));
-    scaleMul(scale);
+    scaleMul(scale, anim);
 #else
     QTransform t;
     transform(_geometry, _angle, scale, t);
@@ -566,6 +664,72 @@ bool KRPTSceneItem::delChildImpl(KRPTSceneItem *item, KRPTSceneItem *parent) noe
     delete item;
     _dirty += Dirty::VisibleChildItems;
     updateGeometry();
+    return true;
+}
+
+bool KRPTSceneItem::setGeometryImpl(const QRectF &geometry) noexcept
+{
+    bool isMove   = !qFuzzyCompare(_geometry.topLeft(), geometry.topLeft());
+    bool isResize = !qFuzzyCompare(_geometry.size   (), geometry.size   ());
+    if(!isMove && ! isResize)return false;
+    QRectF oldGeometry = _geometry;
+    _geometry = geometry;
+    _rect.setSize(_geometry.size());
+    _dirty += Dirty::Transform        ;
+    _dirty += Dirty::TransformInv     ;
+    _dirty += Dirty::BBoxMapToParent  ;
+    _dirty += Dirty::VisibleChildItems;
+    if(_parent)
+        _parent->_dirty += Dirty::VisibleChildItems;
+    ++_data->genTransform;
+    if(isResize)_dirty += Dirty::BBox;
+    if(must(Must::TransformEvent) || (_parent && _parent->must(Must::ChildTransformEvent)))
+    {
+        SceneTransformEvent::Ptr e = SceneTransformEvent::get(geometry, oldGeometry, 
+            _angle, _angle, _scale, _scale, isMove, isResize, false, false);
+        if(must(Must::TransformEvent))transformImpl(e.get());
+        if(_parent && _parent->must(Must::ChildTransformEvent))
+            _parent->childTransformEvent(this, e.get());
+    }
+    return true;
+}
+
+bool KRPTSceneItem::setAngleImpl(double angle) noexcept
+{
+    if(qFuzzyCompare(_angle, angle))return false;
+    double oldAngle = _angle;
+    _dirty += Dirty::Transform        ;
+    _dirty += Dirty::TransformInv     ;
+    _dirty += Dirty::BBox             ;
+    _dirty += Dirty::BBoxMapToParent  ;
+    _dirty += Dirty::VisibleChildItems;
+    if(_parent)
+        _parent->_dirty += Dirty::VisibleChildItems;
+    ++_data->genTransform;
+    _angle = angle;
+    SceneTransformEvent::Ptr e = SceneTransformEvent::get(_geometry, _geometry, 
+        _angle, oldAngle, _scale, _scale, false, false, true, false);
+    if(must(Must::TransformEvent))transformImpl(e.get());
+    return true;
+}
+
+bool KRPTSceneItem::setScaleImpl(double scale) noexcept
+{
+    if(qFuzzyCompare(_scale, scale))return false;
+    double oldScale = _scale;
+    _dirty += Dirty::Transform        ;
+    _dirty += Dirty::TransformInv     ;
+    _dirty += Dirty::BBox             ;
+    _dirty += Dirty::BBoxMapToParent  ;
+    _dirty += Dirty::VisibleChildItems;
+    if(_parent)
+        _parent->_dirty += Dirty::VisibleChildItems;
+    ++_data->genTransform;
+    ++_data->genScale;
+    _scale = scale;
+    SceneTransformEvent::Ptr e = SceneTransformEvent::get(_geometry, _geometry, 
+    _angle, _angle, _scale, oldScale, false, false, false, true);
+    if(must(Must::TransformEvent))transformImpl(e.get());
     return true;
 }
 

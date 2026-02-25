@@ -38,7 +38,7 @@ KRPTSceneWidget::KRPTSceneWidget(QWidget *parent) noexcept
 //            SceneItem::Must::MousePressEvent
 //        );
 
-        auto child = _item->addChild<KRPTSceneAnimItem>();
+        auto child = _item->addChild<KRPTSceneItem>();
         child->setGeometry(QRectF(x, y, 25, 25));
         child->addMust
         (
@@ -90,6 +90,8 @@ KRPTSceneWidget::KRPTSceneWidget(QWidget *parent) noexcept
     #endif
     }
 #else
+
+    #if 0
     _item = _scene->addItem<KRPTSceneItem>();
     _item->setGeometry(QRectF(10, 10, 600, 600));
     _item->addMust
@@ -110,7 +112,6 @@ KRPTSceneWidget::KRPTSceneWidget(QWidget *parent) noexcept
         KRPTSceneItem::Must::MouseMoveEvent
     );
 
-    #if 1
     item = item->addChild<KRPTSceneItem>();
     item->setGeometry(QRectF(10, 10, 200, 200));
     item->addMust
@@ -138,6 +139,7 @@ KRPTSceneWidget::KRPTSceneWidget(QWidget *parent) noexcept
 
 KRPTSceneWidget::~KRPTSceneWidget() noexcept
 {
+    delete _scene;
 }
 
 //****************************************************************************************************

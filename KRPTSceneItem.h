@@ -27,7 +27,9 @@ class KRPTSceneItemData  ;
 
 class KRPTSceneItem
 {
-friend class KRPTScene;
+friend class KRPTScene        ;
+friend class KRPTSceneItemData;
+protected:
     enum class Dirty : uint8_t
     {
         No                      = 0x00,
@@ -120,28 +122,34 @@ public:
     QColor             backgroundColor     ()                                 const noexcept {return _backgroundColor   ;}
 
     void               setVisible          (bool visible)                           noexcept;
-    bool               setGeometry         (const QRectF &geometry)                 noexcept;
-    bool               setGeometry         (const QPointF &pos, const QSizeF &size) noexcept;
+    bool               setGeometry         (const QRectF &geometry, 
+                                            bool anim = false)                      noexcept;
+    bool               setGeometry         (const QPointF &pos, const QSizeF &size, 
+                                            bool anim = false)                      noexcept;
     bool               setGeometry         (double x, double y, 
-                                            double w, double h)                     noexcept;
-    void               setPos              (const QPointF &pos)                     noexcept;
-    void               setPos              (double x, double y)                     noexcept;
-    void               setSize             (const QSizeF &size)                     noexcept;
-    void               setSize             (double w, double h)                     noexcept;
-    void               setX                (double x)                               noexcept;
-    void               setY                (double y)                               noexcept;
-    void               setWidth            (double w)                               noexcept;
-    void               setHeight           (double h)                               noexcept;
-    void               setAngle            (double angle)                           noexcept;
-    void               setScale            (double scale)                           noexcept;
-    void               translate           (const QPointF &pos)                     noexcept;
-    void               translate           (double dx, double dy)                   noexcept;
-    void               rotate              (double angle)                           noexcept;
+                                            double w, double h, 
+                                            bool anim = false)                      noexcept;
+    void               setPos              (const QPointF &pos, 
+                                            bool anim = false)                      noexcept;
+    void               setPos              (double x, double y, 
+                                            bool anim = false)                      noexcept;
+    void               setSize             (const QSizeF &size, bool anim = false)  noexcept;
+    void               setSize             (double w, double h, bool anim = false)  noexcept;
+    void               setX                (double x, bool anim = false)            noexcept;
+    void               setY                (double y, bool anim = false)            noexcept;
+    void               setWidth            (double w, bool anim = false)            noexcept;
+    void               setHeight           (double h, bool anim = false)            noexcept;
+    void               setAngle            (double angle, bool anim = false)        noexcept;
+    void               setScale            (double scale, bool anim = false)        noexcept;
+    void               translate           (const QPointF &pos, bool anim = false)  noexcept;
+    void               translate           (double dx, double dy, 
+                                            bool anim = false)                      noexcept;
+    void               rotate              (double angle, bool anim = false)        noexcept;
     void               rotateAround        (double angle, const QPointF &pt, 
-                                            TransSrc src)                           noexcept;
-    void               scaleMul            (double scale)                           noexcept;
+                                            TransSrc src, bool anim = false)        noexcept;
+    void               scaleMul            (double scale, bool anim = false)        noexcept;
     void               scaleFromPoint      (double scale, const QPointF &pt, 
-                                            TransSrc src)                           noexcept;
+                                            TransSrc src, bool anim = false)        noexcept;
     void               setBorderColor      (const QColor &color)                    noexcept;
     void               setBackgroundColor  (const QColor &color)                    noexcept;
     void               lockUpdate          (bool lock)                              noexcept;
@@ -169,12 +177,17 @@ protected:
     virtual void       whellEvent          (SceneMouseEvent     *e   )              noexcept;
     virtual void       childTransformEvent (KRPTSceneItem       *item,
                                             SceneTransformEvent *e   )              noexcept;
+    virtual void       animEvent           (uint32_t id, 
+                                            const std::vector<double> &value)       noexcept;
 protected:
     virtual void       update              ()                                       noexcept;
     virtual void       addChildImpl        (KRPTSceneItem::Ptr item,
                                             KRPTSceneItem *parent    )              noexcept;
     virtual bool       delChildImpl        (KRPTSceneItem *item,
                                             KRPTSceneItem *parent    )              noexcept;
+    virtual bool       setGeometryImpl     (const QRectF &geometry   )              noexcept;
+    virtual bool       setAngleImpl        (double angle)                           noexcept;
+    virtual bool       setScaleImpl        (double scale)                           noexcept;
     virtual void       transformImpl       (SceneTransformEvent    *e)              noexcept;
     virtual void       mousePressImpl      (SceneMouseEvent        *e)              noexcept;
     virtual void       mouseReleaseImpl    (SceneMouseEvent        *e)              noexcept;

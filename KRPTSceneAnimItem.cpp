@@ -24,15 +24,14 @@ KRPTSceneAnimItem::KRPTSceneAnimItem(KRPTScene *scene, KRPTSceneItem *parent) no
 //        KRPTSceneItem::Must::WhellEvent
     );
 
-    KRPTSceneAnim::Event event = std::bind(&KRPTSceneAnimItem::animEvent, this, 
-        std::placeholders::_1,
-        std::placeholders::_2,
-        std::placeholders::_3
-    );
+//    KRPTSceneAnim::Event event = std::bind(&KRPTSceneAnimItem::animEvent, this, 
+//        std::placeholders::_1,
+//        std::placeholders::_2,
+//        std::placeholders::_3
+//    );
 
-    _anim = new KRPTSceneAnim(this, 0, event);
-
-    _anim->start();
+//    _anim = new KRPTSceneAnim(this, 0, event);
+//    _anim->start();
 }
 
 KRPTSceneAnimItem::~KRPTSceneAnimItem() noexcept
