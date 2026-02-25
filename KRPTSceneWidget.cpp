@@ -210,7 +210,7 @@ SceneMouseEvent::Ptr KRPTSceneWidget::createMouseSceneEvent(QMouseEvent *e) noex
     if(e->buttons() & Qt::LeftButton  )btns += SceneMouseEvent::Btn::Left  ;
     if(e->buttons() & Qt::RightButton )btns += SceneMouseEvent::Btn::Right ;
     if(e->buttons() & Qt::MiddleButton)btns += SceneMouseEvent::Btn::Middle;
-    return SceneMouseEvent::get(e->position(), btns);
+    return SceneMouseEvent::get(e->position(), btns, QPointF());
 }
 
 SceneMouseEvent::Ptr KRPTSceneWidget::createWheelSceneEvent(QWheelEvent *e) noexcept
@@ -219,5 +219,5 @@ SceneMouseEvent::Ptr KRPTSceneWidget::createWheelSceneEvent(QWheelEvent *e) noex
     if(e->buttons() & Qt::LeftButton  )btns += SceneMouseEvent::Btn::Left  ;
     if(e->buttons() & Qt::RightButton )btns += SceneMouseEvent::Btn::Right ;
     if(e->buttons() & Qt::MiddleButton)btns += SceneMouseEvent::Btn::Middle;
-    return SceneMouseEvent::get(e->position(), btns, e->angleDelta().y());
+    return SceneMouseEvent::get(e->position(), btns, QPointF(), e->angleDelta());
 }

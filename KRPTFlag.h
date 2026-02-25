@@ -4,6 +4,10 @@
 
 #pragma once
 
+#include <type_traits>
+#include <cstdint>
+#include <utility>
+
 //####################################################################################################
 //#
 //####################################################################################################
@@ -19,40 +23,29 @@ public:
     KRPTFlag() : _flag(0){}
     KRPTFlag(T flag) : _flag(static_cast<TFlag>(flag)){}
     TFlag flag() const noexcept {return _flag;}
-    template<typename ... Args> inline void up(Args&& ... args) noexcept
-    {
-        _flag |= _or(std::forward<Args>(args)...);
-    }
-    template<typename ... Args> inline void down(Args&& ... args) noexcept
-    {
-        _flag &= ~_or(std::forward<Args>(args)...);
-    }
-    template<typename ... Args> inline bool upped(Args&& ... args) const noexcept
-    {
-        return _flag & _or(std::forward<Args>(args)...);
-    }
-    template<typename ... Args> inline bool uppedAll(Args&& ... args) const noexcept
-    {
-        return _flag > 0 && (_flag & _or(std::forward<Args>(args)...)) == _flag;
-    }
-    template<typename T> inline void operator += (T arg) noexcept
-    {
-        up(std::forward<T>(arg));
-    }
-    template<typename T> inline void operator -= (T arg) noexcept
-    {
-        down(std::forward<T>(arg));
-    }
-    template<typename ... Args> inline bool operator()(Args&& ... args) const noexcept
-    {
-        return uppedAll(std::forward<Args>(args)...);
-    }
-    template<typename ... Args> inline bool operator[](Args&& ... args) const noexcept
-    {
-        return upped(std::forward<Args>(args)...);
-    }
+    template<typename ... Args> constexpr inline void up(Args&& ... args) noexcept
+    {_flag |= _or(std::forward<Args>(args)...);}
+    template<typename ... Args> constexpr inline void down(Args&& ... args) noexcept
+    {_flag &= ~_or(std::forward<Args>(args)...);}
+    template<typename ... Args> constexpr inline bool upped(Args&& ... args) const noexcept
+    {return _flag & _or(std::forward<Args>(args)...);}
+    template<typename ... Args> constexpr inline bool uppedAll(Args&& ... args) const noexcept
+    {return _flag > 0 && (_flag & _or(std::forward<Args>(args)...)) == _flag;}
+    template<typename T1> constexpr inline void operator += (T1 arg) noexcept
+    {up(std::forward<T1>(arg));}
+    inline void operator += (KRPTFlag arg) noexcept {_flag |= arg._flag;}
+    template<typename T1> constexpr inline void operator -= (T1 arg) noexcept
+    {down(std::forward<T1>(arg));}
+    template<typename ... Args> constexpr inline bool operator()(Args&& ... args) const noexcept
+    {return uppedAll(std::forward<Args>(args)...);}
+    template<typename ... Args> constexpr inline bool operator[](Args&& ... args) const noexcept
+    {return upped(std::forward<Args>(args)...);}
+    friend constexpr inline bool operator == (KRPTFlag lhs, KRPTFlag rhs) noexcept
+    {return lhs._flag == rhs._flag;}
+    friend constexpr inline bool operator < (KRPTFlag lhs, KRPTFlag rhs) noexcept
+    {return lhs._flag < rhs._flag;}
 private:
-    template<typename ... Args> inline TFlag _or(Args&& ... args) const noexcept
+    template<typename ... Args> constexpr inline TFlag _or(Args&& ... args) const noexcept
     {
         static_assert((std::is_same_v<T, std::remove_reference_t<Args&&>>&& ...), 
             "argument type must be flag enum"); 

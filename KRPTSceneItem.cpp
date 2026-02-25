@@ -44,8 +44,9 @@ private:
 //####################################################################################################
 
 KRPTSceneItem::KRPTSceneItem(KRPTScene *scene, KRPTSceneItem *parent) noexcept
-    : _scene(scene), _parent(parent), _data(new KRPTSceneItemData()), _dirty(Dirty::All), _updateLocked(false), 
-      _visible(true), _angle(0), _scale(1), _borderColor(255, 255, 255), _backgroundColor(100, 100, 100)
+    : _scene(scene), _parent(parent), _data(new KRPTSceneItemData()), _dirty(Dirty::All), 
+      _updateLocked(false), _visible(true), _angle(0), _scale(1), _borderColor(255, 255, 255), 
+      _backgroundColor(50, 50, 50)
 {
 }
 
@@ -144,6 +145,11 @@ double KRPTSceneItem::bottom() const noexcept
     return _geometry.bottom();
 }
 
+QPointF KRPTSceneItem::center() const noexcept 
+{
+    return _geometry.center();
+}
+
 double KRPTSceneItem::angle() const noexcept 
 {
     return _angle;
@@ -236,6 +242,11 @@ QRectF KRPTSceneItem::bBoxMapToParent() noexcept
     return _bBoxMapToParent;
 }
 
+void KRPTSceneItem::setVisible(bool visible) noexcept
+{
+    _visible = visible;
+}
+
 bool KRPTSceneItem::setGeometry(const QRectF &geometry) noexcept
 {
     bool isMove   = !qFuzzyCompare(_geometry.topLeft(), geometry.topLeft());
@@ -257,6 +268,11 @@ bool KRPTSceneItem::setGeometry(const QRectF &geometry) noexcept
     if(must(Must::TransformEvent))transformImpl(e.get());
     if(_parent && _parent->must(Must::ChildTransformEvent))
        _parent->childTransformEvent(this, e.get());
+#if 0
+    if(must(Must::ParentTransformEvent))
+    {
+    }
+#endif
     return true;
 }
 
@@ -377,10 +393,17 @@ void KRPTSceneItem::scaleMul(double scale) noexcept
 
 void KRPTSceneItem::scaleFromPoint(double scale, const QPointF &pt, TransSrc src) noexcept
 {
+#if 1
     QTransform t;
     transform(_geometry, _angle, _scale * scale, t);
     _geometry.translate(transformShift(t, src, pt));
     scaleMul(scale);
+#else
+    QTransform t;
+    transform(_geometry, _angle, scale, t);
+    _geometry.translate(transformShift(t, src, pt));
+    setScale(scale);
+#endif
 }
 
 void KRPTSceneItem::setBorderColor(const QColor &color) noexcept 
@@ -503,6 +526,12 @@ void KRPTSceneItem::mouseMoveEvent(SceneMouseEvent *e) noexcept
 void KRPTSceneItem::whellEvent(SceneMouseEvent *e) noexcept
 {
 }
+
+#if 0
+void KRPTSceneItem::parentTransformEvent(SceneTransformEvent *e) noexcept
+{
+}
+#endif
 
 void KRPTSceneItem::childTransformEvent(KRPTSceneItem *item, SceneTransformEvent *e) noexcept
 {

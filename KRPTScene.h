@@ -12,8 +12,6 @@
 #include "KRPTSceneItem.h"
 #include <QWidget>
 
-#include <QElapsedTimer>
-
 //####################################################################################################
 //#
 //####################################################################################################
@@ -31,19 +29,23 @@ public:
     enum class Btn : uint8_t {No = 0x00, Left = 0x01, Right = 0x02, Middle = 0x04};
     using Btns = KRPTFlag<Btn>;
 public:
-    SceneMouseEvent(const QPointF &pos, Btns btns, int32_t delta)
-        : _pos(pos), _btns(btns), _delta(delta) {}
-    static SceneMouseEvent::Ptr get(const QPointF &pos, Btns btns, int32_t delta = 0)
+    SceneMouseEvent(const QPointF &pos, Btns btns, const QPointF &scenePos, const QPointF &delta)
+        : _pos(pos), _scenePos(scenePos), _btns(btns), _delta(delta) {}
+
+    static SceneMouseEvent::Ptr get(const QPointF &pos, Btns btns, const QPointF &scenePos,
+        const QPointF &delta = QPointF())
     {
-        return std::make_unique<SceneMouseEvent>(pos, btns, delta);
+        return std::make_unique<SceneMouseEvent>(pos, btns, scenePos, delta);
     }
-    Btns    btns () const noexcept {return _btns ;}
-    QPointF pos  () const noexcept {return _pos  ;}
-    int32_t delta() const noexcept {return _delta;}
+    Btns    btns    () const noexcept {return _btns    ;}
+    QPointF pos     () const noexcept {return _pos     ;}
+    QPointF scenePos() const noexcept {return _scenePos;}
+    QPointF delta   () const noexcept {return _delta   ;}
 private:
-    Btns    _btns ;
-    QPointF _pos  ;
-    int32_t _delta;
+    Btns    _btns    ;
+    QPointF _pos     ;
+    QPointF _scenePos;
+    QPointF _delta   ;
 };
 
 class SceneTransformEvent
@@ -122,6 +124,7 @@ public:
     double             y                  ()                                 const noexcept;
     double             width              ()                                 const noexcept;
     double             height             ()                                 const noexcept;
+    QPointF            center             ()                                 const noexcept;
     const QTransform & transform          ()                                 const noexcept;
     const QTransform & sceneTransform     ()                                 const noexcept;
     QColor             borderColor        ()                                 const noexcept;
@@ -145,6 +148,13 @@ public:
     Items              itemsFromPos       (const QPointF &, CompFn comp, bool one) noexcept;
 public:
     virtual void       update             ()                                       noexcept;
+public:
+    void               transformEvent     (SceneTransformEvent *e)                 noexcept;
+    void               mousePressEvent    (SceneMouseEvent     *e)                 noexcept;
+    void               mouseReleaseEvent  (SceneMouseEvent     *e)                 noexcept;
+    void               mouseMoveEvent     (SceneMouseEvent     *e)                 noexcept;
+    void               whellEvent         (SceneMouseEvent     *e)                 noexcept;
+    void               paintEvent         (QPainter &painter     )                 noexcept;
 protected:
     KRPTSceneItem    * itemFromPosImpl    (const QPointF &pos, CompFn comp, 
                                            KRPTSceneItem *item)                    noexcept;
@@ -152,13 +162,6 @@ protected:
                                            KRPTSceneItem *item, bool one, 
                                            uint32_t level = 0)                     noexcept;
     void               paintImpl          (QPainter &painter, KRPTSceneItem *item) noexcept;
-private:
-    void               transformEvent     (SceneTransformEvent *e)                 noexcept;
-    void               mousePressEvent    (SceneMouseEvent     *e)                 noexcept;
-    void               mouseReleaseEvent  (SceneMouseEvent     *e)                 noexcept;
-    void               mouseMoveEvent     (SceneMouseEvent     *e)                 noexcept;
-    void               whellEvent         (SceneMouseEvent     *e)                 noexcept;
-    void               paintEvent         (QPainter &painter     )                 noexcept;
 private:
     QWidget       * _canvas            ;
     KRPTSceneItem * _item              ;

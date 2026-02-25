@@ -92,6 +92,11 @@ double KRPTScene::height() const noexcept
     return _item->height();
 }
 
+QPointF KRPTScene::center() const noexcept 
+{
+    return _item->center();
+}
+
 const QTransform& KRPTScene::transform() const noexcept 
 {
     return _item->transform();
@@ -219,10 +224,16 @@ void KRPTScene::mousePressEvent(SceneMouseEvent *e) noexcept
     if(item)
     {
     #if 0
-        item->mousePressImpl(SceneMouseEvent::get(item->mapFromScene(mousePos), e->btns()).get());
+        item->mousePressImpl(SceneMouseEvent::get(item->mapFromScene(mousePos), e->btns(), mousePos).get());
+        _mousePressedItem = item;
+
+//        QPointF p = item->mapFromScene(mousePos);
+//        item->mousePressImpl(SceneMouseEvent::get(p, e->btns()).get());
+//        _mousePressedItemPos = item->pos() - item->mapToParent(p);
+
     #else
         QPointF p = item->mapFromScene(mousePos);
-        item->mousePressImpl(SceneMouseEvent::get(p, e->btns()).get());
+        item->mousePressImpl(SceneMouseEvent::get(item->mapFromScene(mousePos), e->btns(), mousePos).get());
         _mousePressedItem = item;
         _mousePressedItemPos = item->pos() -  item->mapToParent(p);
 
@@ -250,8 +261,8 @@ void KRPTScene::mouseReleaseEvent(SceneMouseEvent *e) noexcept
     {
         if(_mousePressedItem->must(KRPTSceneItem::Must::MouseReleaseEvent))
         {
-            _mousePressedItem->mouseMoveImpl(
-                SceneMouseEvent::get(_mousePressedItem->mapFromScene(mousePos), e->btns()).get());
+            _mousePressedItem->mouseReleaseImpl(
+                SceneMouseEvent::get(_mousePressedItem->mapFromScene(mousePos), e->btns(), mousePos).get());
         }
         _mousePressedItem->_borderColor = QColor(255, 255, 255);
         _mousePressedItem = nullptr;
@@ -267,7 +278,7 @@ void KRPTScene::mouseMoveEvent(SceneMouseEvent *e) noexcept
         if(_mousePressedItem->must(KRPTSceneItem::Must::MouseMoveEvent))
         {
             _mousePressedItem->mouseMoveImpl(
-                SceneMouseEvent::get(_mousePressedItem->mapFromScene(mousePos), e->btns()).get());
+                SceneMouseEvent::get(_mousePressedItem->mapFromScene(mousePos), e->btns(), mousePos).get());
         }
     #if 1
         QPointF p0 = _mousePressedItem->mapFromScene(mousePos);
@@ -284,7 +295,7 @@ void KRPTScene::whellEvent(SceneMouseEvent *e) noexcept
 #if 0
     if(_mousePressedItem)
     {
-        if(_mousePressedItem->must(SceneItem::Must::WhellEvent))
+        if(_mousePressedItem->must(KRPTSceneItem::Must::WhellEvent))
         {
             _mousePressedItem->whellImpl(
                 SceneMouseEvent::get(_mousePressedItem->mapFromScene(mousePos), e->btns(), e->delta()).get());
@@ -298,17 +309,14 @@ void KRPTScene::whellEvent(SceneMouseEvent *e) noexcept
     if(item)
     {
         item->whellImpl(
-            SceneMouseEvent::get(item->mapFromScene(mousePos), e->btns(), e->delta()).get());
-
+            SceneMouseEvent::get(item->mapFromScene(mousePos), e->btns(), mousePos, e->delta()).get());
 
 //        item->rotate(e->delta() > 0 ? 1 : -1);
 //        item->setSize(item->width() + (e->delta() > 0 ? 10 : -10), item->height());
-
 //        double angle = item->angle() + e->delta() > 0 ? 1 : -1;
 //        item->rotateAround(angle, mousePos, KRPTSceneItem::TransSrc::Scene);
-
-        double scale = item->scale() * e->delta() > 0 ? 1.1 : 0.9;
-        item->scaleFromPoint(scale, mousePos, KRPTSceneItem::TransSrc::Scene);
+//        double scale = item->scale() * e->delta() > 0 ? 1.1 : 0.9;
+//        item->scaleFromPoint(scale, mousePos, KRPTSceneItem::TransSrc::Scene);
     }
 #endif
     update();
@@ -316,11 +324,7 @@ void KRPTScene::whellEvent(SceneMouseEvent *e) noexcept
 
 void KRPTScene::paintEvent(QPainter &painter) noexcept
 {
-    QElapsedTimer t; t.start();
-
     paintImpl(painter, _item);
-
-    qDebug() << t.elapsed();
 }
 
 //****************************************************************************************************
@@ -363,7 +367,7 @@ void KRPTScene::paintImpl(QPainter &painter, KRPTSceneItem *item) noexcept
     painter.setTransform(item->transform(), true);
     if(!item->must(KRPTSceneItem::Must::NoClipChilds))
     {
-        painter.setClipRect(item->_rect.adjusted(0, 0, 0.5, 0.5), Qt::ClipOperation::IntersectClip);
+//        painter.setClipRect(item->_rect.adjusted(0, 0, 0.5, 0.5), Qt::ClipOperation::IntersectClip);
     }
     if(item->needPaint())
         item->paintBackground(painter);
