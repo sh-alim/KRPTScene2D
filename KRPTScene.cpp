@@ -243,6 +243,10 @@ void KRPTScene::mousePressEvent(SceneMouseEvent *e) noexcept
 //            item->parent()->delChild(item);
 //        _mousePressedItem = nullptr;
 
+//        item->setPos(item->pos(), true);
+//        item->rotate(45, true);
+        item->scaleMul(1.1, true);
+
     #endif
     #if 0
         QPointF p0 = _mousePressedItem->mapFromScene(mousePos);
@@ -283,7 +287,7 @@ void KRPTScene::mouseMoveEvent(SceneMouseEvent *e) noexcept
     #if 1
         QPointF p0 = _mousePressedItem->mapFromScene(mousePos);
         QPointF p1 = _mousePressedItem->mapToParent(p0);
-        _mousePressedItem->setPos(p1 + _mousePressedItemPos);
+        _mousePressedItem->setPos(p1 + _mousePressedItemPos, true);
     #endif
     }
     update();

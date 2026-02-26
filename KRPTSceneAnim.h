@@ -21,77 +21,84 @@
 class KRPTSceneAnim : public QAbstractAnimation
 {
 public:
-    using Event = std::function<void(uint32_t, int, double)>;
+    using Values = std::vector<double>;
+    using Event  = std::function<void(uint32_t, int, double)>;
 public:
     template<typename T> inline static T interpolate(const T &f, const T &t, qreal progress)
     {
         return T(f + (t - f) * progress);
     }
-#if 0
-    template<> inline static QPointF interpolate(const QPointF &p1, const QPointF &p2, qreal progress)
+    inline static void interpolate(const std::vector<double> &start, const std::vector<double> &end, 
+        double progress, std::vector<double> &current)
     {
-        return QPointF(interpolate(p1.x(), p2.x(), progress), interpolate(p1.y(), p2.y(), progress));
+        assert(start.size() == end.size());
+        assert(start.size() == current.size());
+//        double discrepancy = 0;
+        for(size_t i = 0; i < start.size(); ++i)
+        {
+            current[i] = interpolate(start[i], end[i], progress);
+//            discrepancy += std::abs(current[i] - end[i]);
+        }
     }
-    template<> inline static QSizeF interpolate(const QSizeF &s1, const QSizeF &s2, qreal progress)
+    inline static void valuesTo(const Values &values, double &value)
     {
-        return QSizeF(interpolate(s1.width(), s2.width(), progress), 
-            interpolate(s1.height(), s2.height(), progress));
+        assert(values.size() > 0);
+        value = values[0];
     }
-    template<> inline static QRectF interpolate(const QRectF &r1, const QRectF &r2, qreal progress)
+    inline static size_t valuesFrom(double value, Values &values)
     {
-        return QRectF(interpolate(r1.topLeft(), r2.topLeft(), progress), 
-            interpolate(r1.size(), r2.size(), progress));
+        if(values.size() < 1)values.resize(1);
+        values[0] = value;
+        return values.size();
     }
-#endif
-
-    inline static void interpolate(QRectF &rect, const std::vector<std::pair<double, double>> &value, qreal progress)
+    inline static void valuesTo(const Values &values, QPointF &point)
     {
-        rect.setX     (interpolate(value[0].first, value[0].second, progress));
-        rect.setY     (interpolate(value[1].first, value[1].second, progress));
-        rect.setWidth (interpolate(value[2].first, value[2].second, progress));
-        rect.setHeight(interpolate(value[3].first, value[3].second, progress));
+        assert(values.size() > 1);
+        point.setX(values[0]); point.setY(values[1]);
     }
-
-    inline static QRectF interpolate(const std::vector<std::pair<double, double>> &v0, qreal progress)
+    inline static size_t valuesFrom(const QPointF &point, Values &values)
     {
-        QRectF res;
-        interpolate(res, v0, progress);
-        return res;
+        if(values.size() < 2)values.resize(2);
+        values[0] = point.x(); values[1] = point.y();
+        return values.size();
     }
-
-    inline static void interpolate(const std::vector<std::pair<double, double>> &in, 
-        std::vector<double> &out, qreal progress)
+    inline static void valuesTo(const Values &values, QRectF &rect)
     {
-        out.resize(in.size());
-        for(size_t i = 0; i < in.size(); ++i)
-            out[i] = interpolate(in[i].first, in[i].second, progress);
+        assert(values.size() > 3);
+        rect.setX(values[0]); rect.setY(values[1]); rect.setWidth (values[2]); rect.setHeight(values[3]);
     }
-
-#if 0
-    template<> inline static QColor interpolate(const QColor &c1, const QColor &c2, qreal progress)
+    inline static size_t valuesFrom(const QRectF &rect, Values &values)
     {
-        QColor ret;
-        ret.setRed  (interpolate(c1.redF  (), c2.redF  (), progress));
-        ret.setGreen(interpolate(c1.greenF(), c2.greenF(), progress));
-        ret.setBlue (interpolate(c1.blueF (), c2.blueF (), progress));
-        ret.setAlpha(interpolate(c1.alphaF(), c2.alphaF(), progress));
-        return ret;
+        if(values.size() < 4)values.resize(4);
+        values[0] = rect.x(); values[1] = rect.y(); values[2] = rect.width (); values[3] = rect.height();
+        return values.size();
     }
-#endif
+    inline static void valuesTo(const Values &values, QColor &color)
+    {
+        assert(values.size() > 3);
+        color.setRedF(values[0]); color.setGreenF(values[1]); color.setBlueF(values[2]); color.setAlphaF(values[3]);
+    }
+    inline static size_t valuesFrom(const QColor &color, Values &values)
+    {
+        if(values.size() < 4)values.resize(4);
+        values[0] = color.redF(); values[1] = color.greenF(); values[2] = color.blueF(); values[3] = color.alphaF();
+        return values.size();
+    }
 public:
-    KRPTSceneAnim(uint32_t id, const Event &event)                  noexcept;
-   ~KRPTSceneAnim() noexcept;
+    KRPTSceneAnim(uint32_t id, const Event &event, 
+        int duration = 1000, 
+        QEasingCurve easingCurve = QEasingCurve::OutExpo)       noexcept;
+   ~KRPTSceneAnim()                                             noexcept;
 public:
-    int  duration         ()                                  const override;
-    void setDuration      (int duration)                            noexcept;  
+    int          duration      ()                         const override;
+    QEasingCurve easingCurve   ()                         const noexcept;
+    void         setDuration   (int duration)                   noexcept;
+    void         setEasingCurve(QEasingCurve easingCurve)       noexcept;
 protected:
-    void updateCurrentTime(int time)                                override;
-    void updateDirection  (QAbstractAnimation::Direction direction) override;
-    void updateState      (QAbstractAnimation::State newState, 
-                           QAbstractAnimation::State oldState)      override;
+    void updateCurrentTime(int time)                            override;
 private:
-    const Event   & _event   ;
-    uint32_t        _id      ;
-    int             _duration;
-    QEasingCurve    _easing  ;
+    const Event   & _event      ;
+    uint32_t        _id         ;
+    int             _duration   ;
+    QEasingCurve    _easingCurve;
 };

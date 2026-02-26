@@ -43,6 +43,7 @@ KRPTSceneWidget::KRPTSceneWidget(QWidget *parent) noexcept
         child->addMust
         (
 //            KRPTSceneItem::Must::NoClipChilds,
+            KRPTSceneItem::Must::Anim,
             KRPTSceneItem::Must::MousePressEvent,
             KRPTSceneItem::Must::MouseMoveEvent,
             KRPTSceneItem::Must::WhellEvent

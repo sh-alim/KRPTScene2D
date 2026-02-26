@@ -36,70 +36,40 @@ public:
     };
     struct Anim
     {
-        using Values = std::vector<std::pair<double, double>>;
+        using Values = std::vector<double>;
         using Map = std::map<uint32_t, std::unique_ptr<Anim>>;
-
-        Anim () noexcept : anim(nullptr) {}
+        Anim (uint32_t id, KRPTSceneAnim::Event &event, 
+              int duration, QEasingCurve easingCurve) noexcept 
+            : anim(new KRPTSceneAnim(id, event, duration, easingCurve)) {}
         ~Anim() noexcept {if(anim)anim->deleteLater();}
-
-        int duration() const {return anim ? anim->duration() : 0;}
-
-        void set(const QRectF &r0, const QRectF &r1)
+        inline int duration() const {return anim ? anim->duration() : 0;}
+        template<typename T>
+        inline void update(const T &r0, const T &r1) noexcept
         {
-            values.resize(4);
-            values[0].first  = r0.x();
-            values[0].second = r1.x();
-            values[1].first  = r0.y();
-            values[1].second = r1.y();
-            values[2].first  = r0.width ();
-            values[2].second = r1.width ();
-            values[3].first  = r0.height();
-            values[3].second = r1.height();
+            size_t size = KRPTSceneAnim::valuesFrom(r0, start);
+            KRPTSceneAnim::valuesFrom(r1, end);
+            if(current.size() < size)current.resize(size);
         }
-
-    #if 0
-        void get(QRectF &r0, QRectF &r1)
-        {
-            if(values.size() < 4)return;
-            r0.setX(values[0].first );
-            r1.setX(values[0].second);
-            r0.setY(values[1].first );
-            r1.setY(values[1].second);
-            r0.setWidth (values[2].first );
-            r1.setWidth (values[2].second);
-            r0.setHeight(values[3].first );
-            r1.setHeight(values[3].second);
-        }
-
-        void stop()
-        {
-            if(!anim)return;
-            anim->stop();
-        }
-
-        void start(uint32_t duration)
-        {
-//        auto a = _data->addAnim(0);
-//        a->set(_geometry, geometry);
-//        a->start(1000);
-
-
-            if(!anim)return;
-            anim->stop();
-            anim->setDuration(duration);
-            anim->start();
-        }
-    #endif
-        KRPTSceneAnim *anim  ;
-        Values         values;
+        KRPTSceneAnim *anim   ;
+        Values         start  ;
+        Values         end    ;
+        Values         current;
     };
-
-    void startAnim(uint32_t id, uint32_t duration, const QRectF &start, const QRectF &end)
+    template<typename T>
+    void startAnim(uint32_t id, const T &start, const T &end, uint32_t duration, QEasingCurve easingCurve)
     {
-        Anim *anim = addAnim(id);
+        if(qFuzzyCompare(start, end))
+        {
+            std::vector<double> value;
+            size_t size = KRPTSceneAnim::valuesFrom(end, value);
+            owner->animEvent(id, value);
+            deleteAnim(id);
+            return;
+        }
+        Anim *anim = addAnim(id, duration, easingCurve);
         KRPTSceneAnim *sceneAnim = anim->anim;
         sceneAnim->stop();
-        anim->set(start, end);
+        anim->update(start, end);
         sceneAnim->setDuration(duration);
         sceneAnim->start();
     }
@@ -110,18 +80,18 @@ public:
 private:
     Anim* anim(uint32_t id) noexcept
     {
-        auto findAnim = anims.find(0);
+        auto findAnim = anims.find(id);
         return findAnim != anims.end() ? findAnim->second.get() : nullptr;
     }
-    Anim* addAnim(uint32_t id) noexcept
+    Anim* addAnim(uint32_t id, int duration, QEasingCurve easingCurve) noexcept
     {
         auto findAnim = anims.find(id);
         if(findAnim == anims.end())
         {
-            findAnim = anims.emplace(0, std::make_unique<KRPTSceneItemData::Anim>()).first;
             if(!animFunction)animFunction = std::bind(&KRPTSceneItemData::animEvent, this, 
                 std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
-            findAnim->second->anim = new KRPTSceneAnim(id, animFunction);
+            findAnim = anims.emplace(id, std::make_unique<KRPTSceneItemData::Anim>
+                                    (id, animFunction, duration, easingCurve)).first;
         }
         return findAnim->second.get();
     }
@@ -136,14 +106,12 @@ private:
     {
         auto anim = this->anim(id);
         if(!anim)return;
-        std::vector<double> v;
-        KRPTSceneAnim::interpolate(anim->values, v, progress);
-        owner->animEvent(id, v);
+        KRPTSceneAnim::interpolate(anim->start, anim->end, progress, anim->current);
         if(anim->duration() == time)
         {
+            owner->animEvent(id, anim->end);
             deleteAnim(id);
-//            qDebug() << id;
-        }
+        }else owner->animEvent(id, anim->current);
     }
 private:
     KRPTSceneItem       *owner       ;
@@ -368,12 +336,24 @@ void KRPTSceneItem::setVisible(bool visible) noexcept
 
 void KRPTSceneItem::animEvent(uint32_t id, const std::vector<double> &value) noexcept
 {
-    QRectF geometry;
-    geometry.setX     (value[0]);
-    geometry.setY     (value[1]);
-    geometry.setWidth (value[2]);
-    geometry.setHeight(value[3]);
-    setGeometryImpl(geometry);
+    if(id == 0)
+    {
+        QRectF geometry;
+        KRPTSceneAnim::valuesTo(value, geometry);
+        setGeometryImpl(geometry);
+    }else
+    if(id == 1)
+    {
+        double angle;
+        KRPTSceneAnim::valuesTo(value, angle);
+        setAngleImpl(angle);
+    }else
+    if(id == 2)
+    {
+        double scale;
+        KRPTSceneAnim::valuesTo(value, scale);
+        setScaleImpl(scale);
+    }
     update();
 }
 
@@ -381,20 +361,13 @@ void KRPTSceneItem::animEvent(uint32_t id, const std::vector<double> &value) noe
 
 bool KRPTSceneItem::setGeometry(const QRectF &geometry, bool anim) noexcept
 {
-#if 1
-//    bool isMove   = !qFuzzyCompare(_geometry.topLeft(), geometry.topLeft());
-//    bool isResize = !qFuzzyCompare(_geometry.size   (), geometry.size   ());
-
-    if(!anim)
+    if(mustAnim(anim))
     {
-        _data->startAnim(0, 1000, _geometry, geometry);
+        _data->startAnim(0, _geometry, geometry, 1000, QEasingCurve::OutCirc);
         return true;
-    }else
-    {
-        _data->stopAnim(0);
-        return setGeometryImpl(geometry);
     }
-#endif
+    if(must(KRPTSceneItem::Must::Anim))_data->stopAnim(0);
+    return setGeometryImpl(geometry);
 }
 
 bool KRPTSceneItem::setGeometry(const QPointF &pos, const QSizeF &size, bool anim) noexcept
@@ -447,14 +420,26 @@ void KRPTSceneItem::setHeight(double h, bool anim) noexcept
     setSize(QSizeF(_geometry.width(), h), anim);
 }
 
-void KRPTSceneItem::setAngle(double angle, bool anim) noexcept
+bool KRPTSceneItem::setAngle(double angle, bool anim) noexcept
 {
-    setAngleImpl(angle);
+    if(mustAnim(anim))
+    {
+        _data->startAnim(1, _angle, angle, 1000, QEasingCurve::OutCirc);
+        return true;
+    }
+    if(must(KRPTSceneItem::Must::Anim))_data->stopAnim(1);
+    return setAngleImpl(angle);
 }
 
-void KRPTSceneItem::setScale(double scale, bool anim) noexcept
+bool KRPTSceneItem::setScale(double scale, bool anim) noexcept
 {
-    setScaleImpl(scale);
+    if(mustAnim(anim))
+    {
+        _data->startAnim(2, _scale, scale, 1000, QEasingCurve::OutCirc);
+        return true;
+    }
+    if(must(KRPTSceneItem::Must::Anim))_data->stopAnim(2);
+    return setScaleImpl(scale);
 }
 
 void KRPTSceneItem::translate(const QPointF &pos, bool anim) noexcept
@@ -959,7 +944,9 @@ bool KRPTSceneItem::dirtyVisibleChilds() noexcept
     return dirty;
 }
 
-
-
+bool KRPTSceneItem::mustAnim(bool anim) const noexcept
+{
+    return anim && _visible && must(KRPTSceneItem::Must::Anim);
+}
 
 

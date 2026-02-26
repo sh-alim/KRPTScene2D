@@ -62,6 +62,7 @@ public:
         TransformEvent          = 0x0040,
         WhellEvent              = 0x0080,
         ChildTransformEvent     = 0x0100,
+        Anim                    = 0x0200,
         All                     = 0xFFFF
     };
     enum class TransSrc : uint8_t{Self, Parent, Scene};
@@ -139,8 +140,8 @@ public:
     void               setY                (double y, bool anim = false)            noexcept;
     void               setWidth            (double w, bool anim = false)            noexcept;
     void               setHeight           (double h, bool anim = false)            noexcept;
-    void               setAngle            (double angle, bool anim = false)        noexcept;
-    void               setScale            (double scale, bool anim = false)        noexcept;
+    bool               setAngle            (double angle, bool anim = false)        noexcept;
+    bool               setScale            (double scale, bool anim = false)        noexcept;
     void               translate           (const QPointF &pos, bool anim = false)  noexcept;
     void               translate           (double dx, double dy, 
                                             bool anim = false)                      noexcept;
@@ -208,6 +209,7 @@ protected:
     bool               updateCache         (bool visible = false)                   noexcept;
     bool               dirtyTransform      ()                                       noexcept;
     bool               dirtyVisibleChilds  ()                                       noexcept;
+    bool               mustAnim            (bool anim)                        const noexcept;
 protected:
     KRPTSceneItemData *_data;
     KRPTFlag<Dirty>    _dirty            ;
