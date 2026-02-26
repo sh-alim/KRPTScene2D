@@ -11,7 +11,7 @@
 KRPTSceneAnim::KRPTSceneAnim(uint32_t id, const Event &event, int duration, QEasingCurve easingCurve) noexcept
     : QAbstractAnimation(), _id(id), _event(event), _duration(_duration), _easingCurve(easingCurve)
 //    _easing(QEasingCurve::Linear)
-   
+//    _easingCurve(QEasingCurve::OutExpo)
 {
 }
 

@@ -245,7 +245,7 @@ void KRPTScene::mousePressEvent(SceneMouseEvent *e) noexcept
 
 //        item->setPos(item->pos(), true);
 //        item->rotate(45, true);
-        item->scaleMul(1.1, true);
+//        item->scaleMul(1.1, true);
 
     #endif
     #if 0
@@ -317,10 +317,14 @@ void KRPTScene::whellEvent(SceneMouseEvent *e) noexcept
 
 //        item->rotate(e->delta() > 0 ? 1 : -1);
 //        item->setSize(item->width() + (e->delta() > 0 ? 10 : -10), item->height());
-//        double angle = item->angle() + e->delta() > 0 ? 1 : -1;
-//        item->rotateAround(angle, mousePos, KRPTSceneItem::TransSrc::Scene);
+//        double angle = item->angle() + (e->delta().y() > 0 ? 1 : -1);
+//        item->rotateAround(10, mousePos, KRPTSceneItem::TransSrc::Scene, true);
 //        double scale = item->scale() * e->delta() > 0 ? 1.1 : 0.9;
 //        item->scaleFromPoint(scale, mousePos, KRPTSceneItem::TransSrc::Scene);
+
+        double opaq = item->opaq() * (e->delta().y() > 0 ? 1.1 : 0.1);
+        item->setOpaq(opaq, true);
+
     }
 #endif
     update();
@@ -373,6 +377,9 @@ void KRPTScene::paintImpl(QPainter &painter, KRPTSceneItem *item) noexcept
     {
 //        painter.setClipRect(item->_rect.adjusted(0, 0, 0.5, 0.5), Qt::ClipOperation::IntersectClip);
     }
+
+    painter.setOpacity(painter.opacity() * item->opaq());
+
     if(item->needPaint())
         item->paintBackground(painter);
     if(item->needChildPaint())

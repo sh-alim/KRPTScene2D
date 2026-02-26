@@ -129,8 +129,8 @@ private:
 
 KRPTSceneItem::KRPTSceneItem(KRPTScene *scene, KRPTSceneItem *parent) noexcept
     : _scene(scene), _parent(parent), _data(new KRPTSceneItemData(this)), _dirty(Dirty::All), 
-      _updateLocked(false), _visible(true), _angle(0), _scale(1), _borderColor(255, 255, 255), 
-      _backgroundColor(50, 50, 50)
+      _updateLocked(false), _visible(true), _angle(0), _scale(1), _opaq(1), 
+      _borderColor(255, 255, 255), _backgroundColor(50, 50, 50)
 {
 }
 
@@ -244,6 +244,11 @@ double KRPTSceneItem::scale() const noexcept
     return _scale;
 }
 
+double KRPTSceneItem::opaq() const noexcept 
+{
+    return _opaq;
+}
+
 const KRPTSceneItem::ItemsList& KRPTSceneItem::visibleChildItems() noexcept
 {
     if(_childItems.empty())return _childItems;
@@ -336,23 +341,12 @@ void KRPTSceneItem::setVisible(bool visible) noexcept
 
 void KRPTSceneItem::animEvent(uint32_t id, const std::vector<double> &value) noexcept
 {
-    if(id == 0)
+    switch(id)
     {
-        QRectF geometry;
-        KRPTSceneAnim::valuesTo(value, geometry);
-        setGeometryImpl(geometry);
-    }else
-    if(id == 1)
-    {
-        double angle;
-        KRPTSceneAnim::valuesTo(value, angle);
-        setAngleImpl(angle);
-    }else
-    if(id == 2)
-    {
-        double scale;
-        KRPTSceneAnim::valuesTo(value, scale);
-        setScaleImpl(scale);
+        case AnimDst::Geometry : setGeometryImpl(KRPTSceneAnim::valuesTo<QRectF>(value)); break;
+        case AnimDst::Angle    : setAngleImpl   (KRPTSceneAnim::valuesTo<double>(value)); break;
+        case AnimDst::Scale    : setScaleImpl   (KRPTSceneAnim::valuesTo<double>(value)); break;
+        case AnimDst::Opaq     : setOpaqImpl    (KRPTSceneAnim::valuesTo<double>(value)); break;
     }
     update();
 }
@@ -363,10 +357,10 @@ bool KRPTSceneItem::setGeometry(const QRectF &geometry, bool anim) noexcept
 {
     if(mustAnim(anim))
     {
-        _data->startAnim(0, _geometry, geometry, 1000, QEasingCurve::OutCirc);
+        _data->startAnim(AnimDst::Geometry, _geometry, geometry, 1000, QEasingCurve::OutExpo);
         return true;
     }
-    if(must(KRPTSceneItem::Must::Anim))_data->stopAnim(0);
+    if(must(KRPTSceneItem::Must::Anim))_data->stopAnim(AnimDst::Geometry);
     return setGeometryImpl(geometry);
 }
 
@@ -424,10 +418,10 @@ bool KRPTSceneItem::setAngle(double angle, bool anim) noexcept
 {
     if(mustAnim(anim))
     {
-        _data->startAnim(1, _angle, angle, 1000, QEasingCurve::OutCirc);
+        _data->startAnim(AnimDst::Angle, _angle, angle, 1000, QEasingCurve::OutExpo);
         return true;
     }
-    if(must(KRPTSceneItem::Must::Anim))_data->stopAnim(1);
+    if(must(KRPTSceneItem::Must::Anim))_data->stopAnim(AnimDst::Angle);
     return setAngleImpl(angle);
 }
 
@@ -435,11 +429,22 @@ bool KRPTSceneItem::setScale(double scale, bool anim) noexcept
 {
     if(mustAnim(anim))
     {
-        _data->startAnim(2, _scale, scale, 1000, QEasingCurve::OutCirc);
+        _data->startAnim(AnimDst::Scale, _scale, scale, 1000, QEasingCurve::OutExpo);
         return true;
     }
-    if(must(KRPTSceneItem::Must::Anim))_data->stopAnim(2);
+    if(must(KRPTSceneItem::Must::Anim))_data->stopAnim(AnimDst::Scale);
     return setScaleImpl(scale);
+}
+
+bool KRPTSceneItem::setOpaq(double opaq, bool anim) noexcept
+{
+    if(mustAnim(anim))
+    {
+        _data->startAnim(AnimDst::Opaq, _opaq, opaq, 1000, QEasingCurve::Linear);
+        return true;
+    }
+    if(must(KRPTSceneItem::Must::Anim))_data->stopAnim(AnimDst::Opaq);
+    return setOpaqImpl(opaq);
 }
 
 void KRPTSceneItem::translate(const QPointF &pos, bool anim) noexcept
@@ -462,8 +467,8 @@ void KRPTSceneItem::rotateAround(double angle, const QPointF &pt,
 {
     QTransform t;
     transform(_geometry, angle + _angle, _scale, t);
-    _geometry.translate(transformShift(t, src, pt));
-    rotate(angle), anim;
+    translate(transformShift(t, src, pt), anim);
+    rotate(angle, anim);
 }
 
 void KRPTSceneItem::scaleMul(double scale, bool anim) noexcept
@@ -477,7 +482,7 @@ void KRPTSceneItem::scaleFromPoint(double scale, const QPointF &pt,
 #if 1
     QTransform t;
     transform(_geometry, _angle, _scale * scale, t);
-    _geometry.translate(transformShift(t, src, pt));
+    translate(transformShift(t, src, pt), anim);
     scaleMul(scale, anim);
 #else
     QTransform t;
@@ -715,6 +720,13 @@ bool KRPTSceneItem::setScaleImpl(double scale) noexcept
     SceneTransformEvent::Ptr e = SceneTransformEvent::get(_geometry, _geometry, 
     _angle, _angle, _scale, oldScale, false, false, false, true);
     if(must(Must::TransformEvent))transformImpl(e.get());
+    return true;
+}
+
+bool KRPTSceneItem::setOpaqImpl(double opaq) noexcept
+{
+    if(qFuzzyCompare(_opaq, opaq))return false;
+    _opaq = opaq;
     return true;
 }
 

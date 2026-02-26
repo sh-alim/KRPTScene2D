@@ -39,7 +39,7 @@ KRPTSceneWidget::KRPTSceneWidget(QWidget *parent) noexcept
 //        );
 
         auto child = _item->addChild<KRPTSceneItem>();
-        child->setGeometry(QRectF(x, y, 25, 25));
+        child->setGeometry(QRectF(x, y, 125, 25));
         child->addMust
         (
 //            KRPTSceneItem::Must::NoClipChilds,

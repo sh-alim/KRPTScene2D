@@ -49,6 +49,14 @@ protected:
         NeedChildPaint          = 0x04,
         All                     = 0xFF
     };
+    enum AnimDst : uint8_t
+    {
+        Geometry = 0,
+        Angle    = 1,
+        Scale    = 2,
+        Opaq     = 3,
+        User     = 3
+    };
 public:
     enum class Must : uint16_t
     {
@@ -113,6 +121,7 @@ public:
     QPointF            center              ()                                 const noexcept;
     double             angle               ()                                 const noexcept;
     double             scale               ()                                 const noexcept;
+    double             opaq                ()                                 const noexcept;
     const QTransform & transform           ()                                       noexcept;
     const QTransform & transformInv        ()                                       noexcept;
     const QTransform & sceneTransform      ()                                       noexcept;
@@ -142,6 +151,7 @@ public:
     void               setHeight           (double h, bool anim = false)            noexcept;
     bool               setAngle            (double angle, bool anim = false)        noexcept;
     bool               setScale            (double scale, bool anim = false)        noexcept;
+    bool               setOpaq             (double opaq , bool anim = false)        noexcept;
     void               translate           (const QPointF &pos, bool anim = false)  noexcept;
     void               translate           (double dx, double dy, 
                                             bool anim = false)                      noexcept;
@@ -187,8 +197,9 @@ protected:
     virtual bool       delChildImpl        (KRPTSceneItem *item,
                                             KRPTSceneItem *parent    )              noexcept;
     virtual bool       setGeometryImpl     (const QRectF &geometry   )              noexcept;
-    virtual bool       setAngleImpl        (double angle)                           noexcept;
-    virtual bool       setScaleImpl        (double scale)                           noexcept;
+    virtual bool       setAngleImpl        (double angle             )              noexcept;
+    virtual bool       setScaleImpl        (double scale             )              noexcept;
+    virtual bool       setOpaqImpl         (double opaq              )              noexcept;
     virtual void       transformImpl       (SceneTransformEvent    *e)              noexcept;
     virtual void       mousePressImpl      (SceneMouseEvent        *e)              noexcept;
     virtual void       mouseReleaseImpl    (SceneMouseEvent        *e)              noexcept;
@@ -226,6 +237,7 @@ protected:
     QRectF             _rect             ;
     double             _angle            ;
     double             _scale            ;
+    double             _opaq             ;
     QTransform         _transform        ;
     QTransform         _transformInv     ;
     QTransform         _sceneTransform   ;

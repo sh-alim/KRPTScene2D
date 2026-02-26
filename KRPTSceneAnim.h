@@ -84,6 +84,15 @@ public:
         values[0] = color.redF(); values[1] = color.greenF(); values[2] = color.blueF(); values[3] = color.alphaF();
         return values.size();
     }
+
+    template<typename T>
+    inline static T valuesTo(const Values &values) noexcept
+    {
+        T res;
+        valuesTo(values, res);
+        return res;
+    }
+
 public:
     KRPTSceneAnim(uint32_t id, const Event &event, 
         int duration = 1000, 
