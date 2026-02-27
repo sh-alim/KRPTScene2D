@@ -17,9 +17,7 @@ class KRPTFlag
 {
 public:
     static_assert(std::is_enum_v<T>, "type must be enum or enum class");
-    using TFlag = std::conditional_t<sizeof(T) == 1, uint8_t, 
-                  std::conditional_t<sizeof(T) == 2, uint16_t, 
-                  std::conditional_t<sizeof(T) == 4, uint32_t, uint64_t>>>;
+    using TFlag = std::underlying_type_t<T>;
     KRPTFlag() : _flag(0){}
     KRPTFlag(T flag) : _flag(static_cast<TFlag>(flag)){}
     TFlag flag() const noexcept {return _flag;}
@@ -57,3 +55,9 @@ private:
     TFlag _flag = 0;
 };
 
+template<typename T, typename = std::enable_if_t<std::is_enum<T>::value && !std::is_convertible<T, int>::value>>
+constexpr T operator | (T lhs, T rhs) noexcept
+{
+    using TFlag = std::underlying_type_t<T>;
+    return static_cast<T>(static_cast<TFlag>(lhs) | static_cast<TFlag>(rhs));
+}

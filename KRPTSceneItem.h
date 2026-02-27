@@ -67,21 +67,17 @@ public:
         NoPaint                 = 0x0001,
         NoClipChilds            = 0x0002,
         NoScale                 = 0x0004,
-        MousePressEvent         = 0x0008,
-        MouseReleaseEvent       = 0x0010,
-        MouseMoveEvent          = 0x0020,
-        TransformEvent          = 0x0040,
-        WhellEvent              = 0x0080,
-        ChildTransformEvent     = 0x0100,
-        Anim                    = 0x0200,
-        AccuracyCheckContains   = 0x0400,
-        AccuracyClip            = 0x0800,
-
-        NoMouseEventTranslate   = 0x1000,
-
-//        MouseMoveEvent          = 0x2000,
-//        MouseMoveEvent          = 0x4000,
-
+        NoMouseEventTranslate   = 0x0008,
+        NoCheckChildVisibled    = 0x2000,
+        MousePressEvent         = 0x0010,
+        MouseReleaseEvent       = 0x0020,
+        MouseMoveEvent          = 0x0040,
+        TransformEvent          = 0x0080,
+        WhellEvent              = 0x0100,
+        ChildTransformEvent     = 0x0200,
+        Anim                    = 0x0400,
+        AccuracyCheckContains   = 0x0800,
+        AccuracyClip            = 0x1000,
         All                     = 0xFFFF
     };
     enum class TransSrc : uint8_t{Self, Parent, Scene};
@@ -263,6 +259,5 @@ protected:
     QRectF             _bBoxMapToParent  ;
     QColor             _borderColor      ;
     QColor             _backgroundColor  ;
-
 };
 

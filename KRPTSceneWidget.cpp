@@ -17,17 +17,19 @@ KRPTSceneWidget::KRPTSceneWidget(QWidget *parent) noexcept
 //    show();
 
 #if 1
-    _item = _scene->addItem<KRPTSceneItem>();
+    _item = _scene->addItem<KRPTSceneRectItem>();
     _item->setGeometry(QRectF(10, 10, 1000, 1000));
 
     _item->addMust
         (
 //            KRPTSceneItem::Must::NoClipChilds,
 //            KRPTSceneItem::Must::NoMouseEventTranslate,
+            KRPTSceneItem::Must::AccuracyClip,
  
             KRPTSceneItem::Must::MousePressEvent,
             KRPTSceneItem::Must::MouseMoveEvent,
             KRPTSceneItem::Must::WhellEvent
+//        ,KRPTSceneItem::Must::NoCheckChildVisibled
         );
 
     int x = 0;
@@ -40,16 +42,20 @@ KRPTSceneWidget::KRPTSceneWidget(QWidget *parent) noexcept
 //            SceneItem::Must::MousePressEvent
 //        );
 
-        auto child = _item->addChild<KRPTSceneItem>();
+        auto child = _item->addChild<KRPTSceneEllipseItem>();
         child->setGeometry(QRectF(x, y, 500, 500));
+        child->setBackgroundColor(QColor(0, 255, 0));
+
         child->addMust
         (
 //            KRPTSceneItem::Must::NoClipChilds,
 //            KRPTSceneItem::Must::AccuracyClip,
 //            KRPTSceneItem::Must::Anim,
-//            KRPTSceneItem::Must::MousePressEvent,
-//            KRPTSceneItem::Must::MouseMoveEvent,
-//            KRPTSceneItem::Must::WhellEvent
+//            KRPTSceneItem::Must::AccuracyClip,
+//            KRPTSceneItem::Must::AccuracyCheckContains,
+            KRPTSceneItem::Must::MousePressEvent,
+            KRPTSceneItem::Must::MouseMoveEvent,
+            KRPTSceneItem::Must::WhellEvent
         );
         x += 25;
         if((i % 1000) == 0)

@@ -129,6 +129,7 @@ private:
 
 KRPTSceneItem::KRPTSceneItem(KRPTScene *scene, KRPTSceneItem *parent) noexcept
     : _scene(scene), _parent(parent), _data(new KRPTSceneItemData(this)), _dirty(Dirty::All), 
+      _state(State::NeedPaint | State::VisibledInView | State::NeedChildPaint),
       _updateLocked(false), _visible(true), _angle(0), _scale(1), _opaq(1), 
       _borderColor(255, 255, 255), _backgroundColor(50, 50, 50)
 {
@@ -251,8 +252,8 @@ double KRPTSceneItem::opaq() const noexcept
 
 const KRPTSceneItem::ItemsList& KRPTSceneItem::visibleChildItems() noexcept
 {
-    if(_childItems.empty())return _childItems;
-#if 1
+    if(_childItems.empty() || must(KRPTSceneItem::Must::NoCheckChildVisibled))
+        return _childItems;
     if(!dirtyVisibleChilds())
         return _visibleChildItems;
     _visibleChildItems.clear();
@@ -265,15 +266,6 @@ const KRPTSceneItem::ItemsList& KRPTSceneItem::visibleChildItems() noexcept
             _visibleChildItems.emplace_back(item);
     }
     return _visibleChildItems;
-#else
-    _visibleChildItems.clear();
-    for(auto &item : _childItems)
-    {
-        item->updateCache(true);
-        _visibleChildItems.emplace_back(item);
-    }
-    return _visibleChildItems;
-#endif
 }
 
 const QTransform& KRPTSceneItem::transform() noexcept 
@@ -336,7 +328,7 @@ bool KRPTSceneItem::contains(const QPointF &point) noexcept
     bool ret = _rect.contains(point);
     if(ret && must(KRPTSceneItem::Must::AccuracyCheckContains))
         ret = outline().contains(point);
-    return _rect.contains(point);
+    return ret;
 }
 
 const QPainterPath & KRPTSceneItem::outline() noexcept
@@ -345,15 +337,6 @@ const QPainterPath & KRPTSceneItem::outline() noexcept
     _dirty -= Dirty::Outline;
     _outline.clear();
     outlineImpl();
-#if 0
-    _outline.clear();
-    switch(_outlineType)
-    {
-        case OutlineType::Rect        : _outline.addRect       (_rect); break;
-        case OutlineType::Ellipse     : _outline.addEllipse    (_rect); break;
-        case OutlineType::RoundedRect : _outline.addRoundedRect(_rect, 5, 5);break;
-    }
-#endif
     return _outline;
 }
 
@@ -493,20 +476,12 @@ void KRPTSceneItem::scaleMul(double scale, uint32_t time, QEasingCurve curve) no
 void KRPTSceneItem::scaleFromPoint(double scale, const QPointF &pt, 
     TransSrc src, uint32_t time, QEasingCurve curve) noexcept
 {
-#if 1
     lockUpdate(true);
     QTransform t;
     transform(_geometry, _angle, _scale * scale, t);
     translate(transformShift(t, src, pt), time, curve);
     scaleMul(scale, time, curve);
     lockUpdate(false);
-#else
-    QTransform t;
-    transform(_geometry, _angle, scale, t);
-    _geometry.translate(transformShift(t, src, pt));
-//    setScale(scale);
-    scaleMul(scale, time, curve);
-#endif
 }
 
 void KRPTSceneItem::setBorderColor(const QColor &color) noexcept 
@@ -975,7 +950,7 @@ bool KRPTSceneItem::dirtyTransform() noexcept
             cache.genScale = cache.parent->_data->genScale;
         }
         if(cache.item != this)
-        _data->sceneScale *= cache.item->_scale;
+            _data->sceneScale *= cache.item->_scale;
     }
     return dirty;
 }

@@ -16,7 +16,8 @@
 #include <QPen>
 
 #include "KRPTScene.h"
-#include "KRPTSceneItem.h"
+#include "KRPTSceneEllipseItem.h"
+#include "KRPTSceneRectItem.h"
 
 //####################################################################################################
 //#

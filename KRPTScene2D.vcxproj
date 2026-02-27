@@ -119,7 +119,9 @@
     <QtRcc Include="MainProcess.qrc" />
     <ClCompile Include="KRPTScene.cpp" />
     <ClCompile Include="KRPTSceneAnim.cpp" />
+    <ClCompile Include="KRPTSceneEllipseItem.cpp" />
     <ClCompile Include="KRPTSceneItem.cpp" />
+    <ClCompile Include="KRPTSceneRectItem.cpp" />
     <ClCompile Include="KRPTSceneWidget.cpp" />
     <ClCompile Include="MainProcess.cpp" />
     <ClCompile Include="main.cpp" />
@@ -136,8 +138,10 @@
     <ClInclude Include="KRPTFlag.h" />
     <ClInclude Include="KRPTScene.h" />
     <ClInclude Include="KRPTSceneAnim.h" />
+    <ClInclude Include="KRPTSceneEllipseItem.h" />
     <ClInclude Include="KRPTSceneEvent.h" />
     <ClInclude Include="KRPTSceneItem.h" />
+    <ClInclude Include="KRPTSceneRectItem.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">
