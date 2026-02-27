@@ -478,7 +478,8 @@ void KRPTSceneItem::scaleFromPoint(double scale, const QPointF &pt,
     QTransform t;
     transform(_geometry, _angle, scale, t);
     _geometry.translate(transformShift(t, src, pt));
-    setScale(scale);
+//    setScale(scale);
+    scaleMul(scale, time, curve);
 #endif
 }
 

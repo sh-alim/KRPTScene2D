@@ -236,7 +236,10 @@ void KRPTScene::mousePressEvent(SceneMouseEvent *e) noexcept
         item->mousePressImpl(SceneMouseEvent::get(item->mapFromScene(mousePos), e->btns(), 
             mousePos, e->keyModifers(), e->delta()).get());
         _mousePressedItem = item;
-        _mousePressedItemPos = item->pos() -  item->mapToParent(p);
+        _mousePressedItemPos = item->pos() - item->mapToParent(p);
+
+        _mousePressedItem->_borderColor = QColor(255, 0, 0);
+
 
 //        auto itm = item->addChild<KRPTSceneItem>();
 //        itm->setGeometry(QRectF(p.x(), p.y(), 20, 20));
@@ -270,8 +273,8 @@ void KRPTScene::mouseReleaseEvent(SceneMouseEvent *e) noexcept
                 SceneMouseEvent::get(_mousePressedItem->mapFromScene(mousePos), e->btns(), 
                     mousePos, e->keyModifers(), e->delta()).get());
         }
-        _mousePressedItem->_borderColor = QColor(255, 255, 255);
-        _mousePressedItem = nullptr;
+//        _mousePressedItem->_borderColor = QColor(255, 255, 255);
+//        _mousePressedItem = nullptr;
     }
     update();
 }
@@ -290,7 +293,8 @@ void KRPTScene::mouseMoveEvent(SceneMouseEvent *e) noexcept
     #if 1
         QPointF p0 = _mousePressedItem->mapFromScene(mousePos);
         QPointF p1 = _mousePressedItem->mapToParent(p0);
-        _mousePressedItem->setPos(p1 + _mousePressedItemPos, 1000, QEasingCurve::Linear);
+//        _mousePressedItem->setPos(p1 + _mousePressedItemPos, 1000, QEasingCurve::Linear);
+        _mousePressedItem->setPos(p1 + _mousePressedItemPos);
     #endif
     }
     update();
@@ -315,13 +319,21 @@ void KRPTScene::whellEvent(SceneMouseEvent *e) noexcept
     });
     if(item)
     {
-        item->whellImpl(
-            SceneMouseEvent::get(item->mapFromScene(mousePos), e->btns(), mousePos, e->keyModifers(), e->delta()).get());
+        item->whellImpl(SceneMouseEvent::get(item->mapFromScene(mousePos), e->btns(), 
+            mousePos, e->keyModifers(), e->delta()).get());
+        if(e->keyModifers()[SceneMouseEvent::KeyModifer::Ctrl])
+        {
+            item->rotateAround((e->delta().y() > 0 ? 5 : -5), mousePos, KRPTSceneItem::TransSrc::Scene, 500);
+        }
+        if(e->keyModifers()[SceneMouseEvent::KeyModifer::Alt])
+        {
+            item->scaleFromPoint((e->delta().x() > 0 ? 1.1 : 0.9), mousePos, KRPTSceneItem::TransSrc::Scene, 500);
+        }
+
 
 //        item->rotate(e->delta() > 0 ? 1 : -1);
 //        item->setSize(item->width() + (e->delta() > 0 ? 10 : -10), item->height());
 //        double angle = item->angle() + (e->delta().y() > 0 ? 1 : -1);
-//        item->rotateAround(10, mousePos, KRPTSceneItem::TransSrc::Scene, true);
 //        double scale = item->scale() * e->delta() > 0 ? 1.1 : 0.9;
 //        item->scaleFromPoint(scale, mousePos, KRPTSceneItem::TransSrc::Scene);
 //        double opaq = item->opaq() * (e->delta().y() > 0 ? 1.1 : 0.1);
