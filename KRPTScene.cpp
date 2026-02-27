@@ -273,8 +273,8 @@ void KRPTScene::mouseReleaseEvent(SceneMouseEvent *e) noexcept
                 SceneMouseEvent::get(_mousePressedItem->mapFromScene(mousePos), e->btns(), 
                     mousePos, e->keyModifers(), e->delta()).get());
         }
-//        _mousePressedItem->_borderColor = QColor(255, 255, 255);
-//        _mousePressedItem = nullptr;
+        _mousePressedItem->_borderColor = QColor(255, 255, 255);
+        _mousePressedItem = nullptr;
     }
     update();
 }
@@ -361,6 +361,7 @@ KRPTSceneItem* KRPTScene::itemFromPosImpl(const QPointF &pos, CompFn comp, KRPTS
 KRPTScene::Items KRPTScene::itemsFromPosImpl(const QPointF &pos, CompFn comp, KRPTSceneItem *item, 
     bool one, uint32_t level) noexcept
 {
+    if(item->must(KRPTSceneItem::Must::NoMouseEventTranslate))return KRPTScene::Items();
     const Items &childs = item->visibleChildItems();
     Items res;
     auto it = childs.crbegin();
@@ -370,7 +371,7 @@ KRPTScene::Items KRPTScene::itemsFromPosImpl(const QPointF &pos, CompFn comp, KR
         QPointF p = child->mapFromParent(pos);
         if(child->must(KRPTSceneItem::Must::NoClipChilds))
             res.splice(res.begin(), std::move(itemsFromPosImpl(p, comp, child, one, level + 1)));
-        if(child->rect().contains(p))
+        if(child->contains(p))
         {
             if(!child->must(KRPTSceneItem::Must::NoClipChilds))
                 res.splice(res.begin(), std::move(itemsFromPosImpl(p, comp, child, one, level + 1)));
@@ -388,11 +389,11 @@ void KRPTScene::paintImpl(QPainter &painter, KRPTSceneItem *item) noexcept
     painter.setTransform(item->transform(), true);
     if(!item->must(KRPTSceneItem::Must::NoClipChilds))
     {
-//        painter.setClipRect(item->_rect.adjusted(0, 0, 0.5, 0.5), Qt::ClipOperation::IntersectClip);
+        if(!item->must(KRPTSceneItem::Must::AccuracyClip))
+            painter.setClipRect(item->_rect.adjusted(0, 0, 0.5, 0.5), Qt::ClipOperation::IntersectClip);
+        else painter.setClipPath(item->outline(), Qt::ClipOperation::IntersectClip);
     }
-
     painter.setOpacity(painter.opacity() * item->opaq());
-
     if(item->needPaint())
         item->paintBackground(painter);
     if(item->needChildPaint())

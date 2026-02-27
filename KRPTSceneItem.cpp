@@ -331,6 +331,32 @@ QRectF KRPTSceneItem::bBoxMapToParent() noexcept
     return _bBoxMapToParent;
 }
 
+bool KRPTSceneItem::contains(const QPointF &point) noexcept
+{
+    bool ret = _rect.contains(point);
+    if(ret && must(KRPTSceneItem::Must::AccuracyCheckContains))
+        ret = outline().contains(point);
+    return _rect.contains(point);
+}
+
+const QPainterPath & KRPTSceneItem::outline() noexcept
+{
+    if(!_dirty[Dirty::Outline])return _outline;
+    _dirty -= Dirty::Outline;
+    _outline.clear();
+    outlineImpl();
+#if 0
+    _outline.clear();
+    switch(_outlineType)
+    {
+        case OutlineType::Rect        : _outline.addRect       (_rect); break;
+        case OutlineType::Ellipse     : _outline.addEllipse    (_rect); break;
+        case OutlineType::RoundedRect : _outline.addRoundedRect(_rect, 5, 5);break;
+    }
+#endif
+    return _outline;
+}
+
 void KRPTSceneItem::setVisible(bool visible) noexcept
 {
     _visible = visible;
@@ -650,9 +676,9 @@ bool KRPTSceneItem::delChildImpl(KRPTSceneItem *item, KRPTSceneItem *parent) noe
 
 bool KRPTSceneItem::setGeometryImpl(const QRectF &geometry) noexcept
 {
-    bool isMove   = !qFuzzyCompare(_geometry.topLeft(), geometry.topLeft());
-    bool isResize = !qFuzzyCompare(_geometry.size   (), geometry.size   ());
-    if(!isMove && ! isResize)return false;
+    bool isMoved   = !qFuzzyCompare(_geometry.topLeft(), geometry.topLeft());
+    bool isResized = !qFuzzyCompare(_geometry.size   (), geometry.size   ());
+    if(!isMoved && ! isResized)return false;
     QRectF oldGeometry = _geometry;
     _geometry = geometry;
     _rect.setSize(_geometry.size());
@@ -663,11 +689,15 @@ bool KRPTSceneItem::setGeometryImpl(const QRectF &geometry) noexcept
     if(_parent)
         _parent->_dirty += Dirty::VisibleChildItems;
     ++_data->genTransform;
-    if(isResize)_dirty += Dirty::BBox;
+    if(isResized)
+    {
+        _dirty += Dirty::BBox   ;
+        _dirty += Dirty::Outline;
+    }
     if(must(Must::TransformEvent) || (_parent && _parent->must(Must::ChildTransformEvent)))
     {
         SceneTransformEvent::Ptr e = SceneTransformEvent::get(geometry, oldGeometry, 
-            _angle, _angle, _scale, _scale, isMove, isResize, false, false);
+            _angle, _angle, _scale, _scale, isMoved, isResized, false, false);
         if(must(Must::TransformEvent))transformImpl(e.get());
         if(_parent && _parent->must(Must::ChildTransformEvent))
             _parent->childTransformEvent(this, e.get());
@@ -727,6 +757,11 @@ void KRPTSceneItem::transformImpl(SceneTransformEvent *e) noexcept
     update();
 }
 
+void KRPTSceneItem::outlineImpl() noexcept
+{
+    _outline.addRect(_rect);
+}
+
 void KRPTSceneItem::mousePressImpl(SceneMouseEvent *e) noexcept
 {
     mousePressEvent(e);
@@ -766,9 +801,12 @@ void KRPTSceneItem::paintBackground(QPainter &painter) noexcept
 
 void KRPTSceneItem::paintForeground(QPainter &painter) noexcept
 {
-    QPen pen(_borderColor);
+    QPen pen(_borderColor, 2);
     painter.setPen(pen);
     painter.drawRect(_rect);
+
+//    painter.drawPolygon(polygon());
+//    painter.drawPath(outline());
 }
 
 void KRPTSceneItem::updateGeometry() noexcept

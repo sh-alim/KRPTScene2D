@@ -18,11 +18,13 @@ KRPTSceneWidget::KRPTSceneWidget(QWidget *parent) noexcept
 
 #if 1
     _item = _scene->addItem<KRPTSceneItem>();
-    _item->setGeometry(QRectF(10, 10, 100000, 100000));
+    _item->setGeometry(QRectF(10, 10, 1000, 1000));
 
     _item->addMust
         (
 //            KRPTSceneItem::Must::NoClipChilds,
+//            KRPTSceneItem::Must::NoMouseEventTranslate,
+ 
             KRPTSceneItem::Must::MousePressEvent,
             KRPTSceneItem::Must::MouseMoveEvent,
             KRPTSceneItem::Must::WhellEvent
@@ -39,14 +41,15 @@ KRPTSceneWidget::KRPTSceneWidget(QWidget *parent) noexcept
 //        );
 
         auto child = _item->addChild<KRPTSceneItem>();
-        child->setGeometry(QRectF(x, y, 125, 25));
+        child->setGeometry(QRectF(x, y, 500, 500));
         child->addMust
         (
 //            KRPTSceneItem::Must::NoClipChilds,
-            KRPTSceneItem::Must::Anim,
-            KRPTSceneItem::Must::MousePressEvent,
-            KRPTSceneItem::Must::MouseMoveEvent,
-            KRPTSceneItem::Must::WhellEvent
+//            KRPTSceneItem::Must::AccuracyClip,
+//            KRPTSceneItem::Must::Anim,
+//            KRPTSceneItem::Must::MousePressEvent,
+//            KRPTSceneItem::Must::MouseMoveEvent,
+//            KRPTSceneItem::Must::WhellEvent
         );
         x += 25;
         if((i % 1000) == 0)
