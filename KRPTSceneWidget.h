@@ -41,9 +41,8 @@ protected:
     void paintEvent       (QPaintEvent  *e) override;
 
 private:
-    SceneMouseEvent::Ptr createMouseSceneEvent(QMouseEvent *e) noexcept;
-    SceneMouseEvent::Ptr createWheelSceneEvent(QWheelEvent *e) noexcept;
-
+    SceneMouseEvent::Ptr createMouseSceneEvent(QSinglePointEvent *e) noexcept;
+    SceneMouseEvent::Ptr createWheelSceneEvent(QWheelEvent       *e) noexcept;
 private:
     KRPTScene  *_scene  ;
 

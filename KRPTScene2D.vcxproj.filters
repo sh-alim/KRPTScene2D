@@ -40,9 +40,6 @@
     <ClCompile Include="KRPTSceneItem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="KRPTSceneAnimItem.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="KRPTSceneAnim.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -65,10 +62,10 @@
     <ClInclude Include="KRPTSceneItem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="KRPTSceneAnimItem.h">
+    <ClInclude Include="KRPTSceneAnim.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="KRPTSceneAnim.h">
+    <ClInclude Include="KRPTSceneEvent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -233,7 +233,8 @@ void KRPTScene::mousePressEvent(SceneMouseEvent *e) noexcept
 
     #else
         QPointF p = item->mapFromScene(mousePos);
-        item->mousePressImpl(SceneMouseEvent::get(item->mapFromScene(mousePos), e->btns(), mousePos).get());
+        item->mousePressImpl(SceneMouseEvent::get(item->mapFromScene(mousePos), e->btns(), 
+            mousePos, e->keyModifers(), e->delta()).get());
         _mousePressedItem = item;
         _mousePressedItemPos = item->pos() -  item->mapToParent(p);
 
@@ -266,7 +267,8 @@ void KRPTScene::mouseReleaseEvent(SceneMouseEvent *e) noexcept
         if(_mousePressedItem->must(KRPTSceneItem::Must::MouseReleaseEvent))
         {
             _mousePressedItem->mouseReleaseImpl(
-                SceneMouseEvent::get(_mousePressedItem->mapFromScene(mousePos), e->btns(), mousePos).get());
+                SceneMouseEvent::get(_mousePressedItem->mapFromScene(mousePos), e->btns(), 
+                    mousePos, e->keyModifers(), e->delta()).get());
         }
         _mousePressedItem->_borderColor = QColor(255, 255, 255);
         _mousePressedItem = nullptr;
@@ -282,7 +284,8 @@ void KRPTScene::mouseMoveEvent(SceneMouseEvent *e) noexcept
         if(_mousePressedItem->must(KRPTSceneItem::Must::MouseMoveEvent))
         {
             _mousePressedItem->mouseMoveImpl(
-                SceneMouseEvent::get(_mousePressedItem->mapFromScene(mousePos), e->btns(), mousePos).get());
+                SceneMouseEvent::get(_mousePressedItem->mapFromScene(mousePos), e->btns(), 
+                    mousePos, e->keyModifers(), e->delta()).get());
         }
     #if 1
         QPointF p0 = _mousePressedItem->mapFromScene(mousePos);
@@ -313,7 +316,7 @@ void KRPTScene::whellEvent(SceneMouseEvent *e) noexcept
     if(item)
     {
         item->whellImpl(
-            SceneMouseEvent::get(item->mapFromScene(mousePos), e->btns(), mousePos, e->delta()).get());
+            SceneMouseEvent::get(item->mapFromScene(mousePos), e->btns(), mousePos, e->keyModifers(), e->delta()).get());
 
 //        item->rotate(e->delta() > 0 ? 1 : -1);
 //        item->setSize(item->width() + (e->delta() > 0 ? 10 : -10), item->height());
@@ -321,10 +324,8 @@ void KRPTScene::whellEvent(SceneMouseEvent *e) noexcept
 //        item->rotateAround(10, mousePos, KRPTSceneItem::TransSrc::Scene, true);
 //        double scale = item->scale() * e->delta() > 0 ? 1.1 : 0.9;
 //        item->scaleFromPoint(scale, mousePos, KRPTSceneItem::TransSrc::Scene);
-
-        double opaq = item->opaq() * (e->delta().y() > 0 ? 1.1 : 0.1);
-        item->setOpaq(opaq, 1000);
-
+//        double opaq = item->opaq() * (e->delta().y() > 0 ? 1.1 : 0.1);
+//        item->setOpaq(opaq, 1000);
     }
 #endif
     update();

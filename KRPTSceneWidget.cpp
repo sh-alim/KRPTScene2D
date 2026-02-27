@@ -207,20 +207,23 @@ void KRPTSceneWidget::paintEvent(QPaintEvent *e)
 //*
 //****************************************************************************************************
 
-SceneMouseEvent::Ptr KRPTSceneWidget::createMouseSceneEvent(QMouseEvent *e) noexcept
+SceneMouseEvent::Ptr KRPTSceneWidget::createMouseSceneEvent(QSinglePointEvent *e) noexcept
 {
     SceneMouseEvent::Btns btns;
     if(e->buttons() & Qt::LeftButton  )btns += SceneMouseEvent::Btn::Left  ;
     if(e->buttons() & Qt::RightButton )btns += SceneMouseEvent::Btn::Right ;
     if(e->buttons() & Qt::MiddleButton)btns += SceneMouseEvent::Btn::Middle;
-    return SceneMouseEvent::get(e->position(), btns, QPointF());
+    SceneMouseEvent::KeyModifers keyModifers;
+    if(e->modifiers() & Qt::KeyboardModifier::ControlModifier)keyModifers += SceneMouseEvent::KeyModifer::Ctrl ;
+    if(e->modifiers() & Qt::KeyboardModifier::ShiftModifier  )keyModifers += SceneMouseEvent::KeyModifer::Shift;
+    if(e->modifiers() & Qt::KeyboardModifier::AltModifier    )keyModifers += SceneMouseEvent::KeyModifer::Alt  ;
+
+    return SceneMouseEvent::get(e->position(), btns, QPointF(), keyModifers);
 }
 
 SceneMouseEvent::Ptr KRPTSceneWidget::createWheelSceneEvent(QWheelEvent *e) noexcept
 {
-    SceneMouseEvent::Btns btns;
-    if(e->buttons() & Qt::LeftButton  )btns += SceneMouseEvent::Btn::Left  ;
-    if(e->buttons() & Qt::RightButton )btns += SceneMouseEvent::Btn::Right ;
-    if(e->buttons() & Qt::MiddleButton)btns += SceneMouseEvent::Btn::Middle;
-    return SceneMouseEvent::get(e->position(), btns, QPointF(), e->angleDelta());
+    auto ret = createMouseSceneEvent(e);
+    ret->setDelta(e->angleDelta());
+    return ret;
 }

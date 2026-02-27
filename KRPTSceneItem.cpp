@@ -451,10 +451,12 @@ void KRPTSceneItem::rotate(double angle, uint32_t time, QEasingCurve curve) noex
 void KRPTSceneItem::rotateAround(double angle, const QPointF &pt, 
     TransSrc src, uint32_t time, QEasingCurve curve) noexcept
 {
+    lockUpdate(true);
     QTransform t;
     transform(_geometry, angle + _angle, _scale, t);
     translate(transformShift(t, src, pt), time, curve);
     rotate(angle, time, curve);
+    lockUpdate(false);
 }
 
 void KRPTSceneItem::scaleMul(double scale, uint32_t time, QEasingCurve curve) noexcept
@@ -466,10 +468,12 @@ void KRPTSceneItem::scaleFromPoint(double scale, const QPointF &pt,
     TransSrc src, uint32_t time, QEasingCurve curve) noexcept
 {
 #if 1
+    lockUpdate(true);
     QTransform t;
     transform(_geometry, _angle, _scale * scale, t);
     translate(transformShift(t, src, pt), time, curve);
     scaleMul(scale, time, curve);
+    lockUpdate(false);
 #else
     QTransform t;
     transform(_geometry, _angle, scale, t);
@@ -492,7 +496,7 @@ void KRPTSceneItem::lockUpdate(bool lock) noexcept
 {
     if(_updateLocked == lock)return;
     _updateLocked = lock;
-    if(!_updateLocked)update();
+//    if(!_updateLocked)update();
 }
 
 QPointF KRPTSceneItem::mapToParent(const QPointF &point) noexcept 

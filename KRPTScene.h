@@ -22,77 +22,6 @@ class KRPTSceneItem;
 //#
 //####################################################################################################
 
-class SceneMouseEvent
-{
-public:
-    using Ptr = std::unique_ptr<SceneMouseEvent>;
-    enum class Btn : uint8_t {No = 0x00, Left = 0x01, Right = 0x02, Middle = 0x04};
-    using Btns = KRPTFlag<Btn>;
-public:
-    SceneMouseEvent(const QPointF &pos, Btns btns, const QPointF &scenePos, const QPointF &delta)
-        : _pos(pos), _scenePos(scenePos), _btns(btns), _delta(delta) {}
-
-    static SceneMouseEvent::Ptr get(const QPointF &pos, Btns btns, const QPointF &scenePos,
-        const QPointF &delta = QPointF())
-    {
-        return std::make_unique<SceneMouseEvent>(pos, btns, scenePos, delta);
-    }
-    Btns    btns    () const noexcept {return _btns    ;}
-    QPointF pos     () const noexcept {return _pos     ;}
-    QPointF scenePos() const noexcept {return _scenePos;}
-    QPointF delta   () const noexcept {return _delta   ;}
-private:
-    Btns    _btns    ;
-    QPointF _pos     ;
-    QPointF _scenePos;
-    QPointF _delta   ;
-};
-
-class SceneTransformEvent
-{
-public:
-    using Ptr = std::unique_ptr<SceneTransformEvent>;
-public:
-    SceneTransformEvent(const QRectF &geometry, const QRectF &oldGeometry, 
-        double angle, double oldAngle, double scale, double oldScale,
-        bool moved, bool resized, bool rotated, bool scaled)
-        : _geometry(geometry), _oldGeometry(oldGeometry), _angle(angle), _oldAngle(oldAngle), 
-          _scale(scale), _oldScale(oldScale), _moved(moved), _resized(resized), 
-          _rotated(rotated), _scaled(scaled){}
-    static SceneTransformEvent::Ptr get(const QRectF &geometry, const QRectF &oldGeometry, 
-        double angle, double _oldAngle, double _scale, double _oldScale,
-        bool moved, bool resized, bool rotated, bool scaled)
-    {
-        return std::make_unique<SceneTransformEvent>(geometry, oldGeometry, angle, _oldAngle, 
-            _scale, _oldScale, moved, resized, rotated, scaled);
-    }
-    QRectF geometry   () const noexcept {return _geometry   ;}
-    QRectF oldGeometry() const noexcept {return _oldGeometry;}
-    double angle      () const noexcept {return _angle      ;}
-    double oldAngle   () const noexcept {return _oldAngle   ;}
-    double scale      () const noexcept {return _scale      ;}
-    double oldScale   () const noexcept {return _oldScale   ;}
-    bool   moved      () const noexcept {return _moved      ;}
-    bool   resized    () const noexcept {return _resized    ;}
-    bool   rotated    () const noexcept {return _rotated    ;}
-    bool   scaled     () const noexcept {return _scaled     ;}
-private:
-    QRectF _geometry   ;
-    QRectF _oldGeometry;
-    double _angle      ;
-    double _oldAngle   ;
-    double _scale      ;
-    double _oldScale   ;
-    bool   _moved      ;
-    bool   _resized    ;
-    bool   _rotated    ;
-    bool   _scaled     ;
-};
-
-//####################################################################################################
-//#
-//####################################################################################################
-
 class KRPTScene
 {
     friend class KRPTSceneItem;
@@ -100,16 +29,16 @@ class KRPTScene
     using CompFn = const std::function<bool(KRPTSceneItem*)>&;
     using Items  = std::list<KRPTSceneItem*>;
 public:
-    KRPTScene(QWidget *canvas) noexcept;
-    virtual ~KRPTScene()       noexcept;
+    KRPTScene(QWidget *canvas)                                                     noexcept;
+    virtual ~KRPTScene()                                                           noexcept;
 public:
     template<typename T, typename ... Args>
-    auto addItem(Args&& ... arg)
+    auto addItem(Args&& ... arg)                                                   noexcept 
     {
         return _item->addChild<T>(std::forward<Args>(arg) ...);
     }
-    template<typename T, typename ... Args>
-    auto createRootItem(Args&& ... arg)
+    template<typename T, typename ... Args> 
+    auto createRootItem(Args&& ... arg)                                            noexcept
     {
         if(_item)delete _item;
         _item = new T(this, nullptr, std::forward<Args>(arg) ...);
