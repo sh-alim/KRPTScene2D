@@ -42,13 +42,16 @@ KRPTSceneWidget::KRPTSceneWidget(QWidget *parent) noexcept
 //            SceneItem::Must::MousePressEvent
 //        );
 
-        auto child = _item->addChild<KRPTSceneEllipseItem>();
-        child->setGeometry(QRectF(x, y, 500, 500));
+//        auto child = _item->addChild<KRPTSceneEllipseItem>();
+        auto child = _item->addChild<KRPTSceneRectItem>();
+        child->setGeometry(QRectF(x, y, 50, 50));
         child->setBackgroundColor(QColor(0, 255, 0));
 
         child->addMust
         (
 //            KRPTSceneItem::Must::NoClipChilds,
+            KRPTSceneItem::Must::NoSceneRotate,
+            KRPTSceneItem::Must::NoSceneScale,
 //            KRPTSceneItem::Must::AccuracyClip,
 //            KRPTSceneItem::Must::Anim,
 //            KRPTSceneItem::Must::AccuracyClip,

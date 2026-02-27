@@ -15,13 +15,13 @@ class KRPTSceneItemData
 friend class KRPTSceneItem;
 public:
     KRPTSceneItemData(KRPTSceneItem *owner)
-        : owner(owner), genTransform(0), genScale(0), sceneScale(1) {}
+        : owner(owner), genTransform(0), genScale(0), genAngle(0), sceneScale(1), sceneAngle(0) {}
 public:
     struct Cache
     {
         Cache(KRPTSceneItem *item, KRPTSceneItem *parent) 
             : item(item), parent(parent), genTransform(0), genParentTransform(0), 
-              genVisibleChildItems(0), genScale(0), visible(false), nextDirty(false)
+              genVisibleChildItems(0), genScale(0), genAngle(0), visible(false), nextDirty(false)
         {}
         KRPTSceneItem *item                ;
         KRPTSceneItem *parent              ;
@@ -30,6 +30,7 @@ public:
         uint32_t       genParentTransform  ;
         uint32_t       genVisibleChildItems;
         uint32_t       genScale            ;
+        uint32_t       genAngle            ;  
         QRectF         bBox                ;
         bool           visible             ;
         bool           nextDirty           ;  
@@ -118,7 +119,9 @@ private:
     std::list<Cache>     cache       ;
     uint32_t             genTransform;
     uint32_t             genScale    ;
+    uint32_t             genAngle    ;
     double               sceneScale  ;
+    double               sceneAngle  ;
     Anim::Map            anims       ;
     KRPTSceneAnim::Event animFunction;
 };
@@ -692,6 +695,7 @@ bool KRPTSceneItem::setAngleImpl(double angle) noexcept
     if(_parent)
         _parent->_dirty += Dirty::VisibleChildItems;
     ++_data->genTransform;
+    ++_data->genAngle;
     _angle = angle;
     SceneTransformEvent::Ptr e = SceneTransformEvent::get(_geometry, _geometry, 
         _angle, oldAngle, _scale, _scale, false, false, true, false);
@@ -795,7 +799,8 @@ void KRPTSceneItem::updateGeometry() noexcept
 
 void KRPTSceneItem::transform(const QRectF &rect, double angle, double scale, QTransform &transform) noexcept 
 {
-    double tscale = !must(KRPTSceneItem::Must::NoScale) ? scale : scale *= 1.0 / _data->sceneScale;
+    double tscale = !must(KRPTSceneItem::Must::NoSceneScale ) ? scale : scale *= 1.0 / _data->sceneScale;
+    double tangle = !must(KRPTSceneItem::Must::NoSceneRotate) ? angle : angle -= _data->sceneAngle;
     transform.reset();
     transform.translate(rect.x(), rect.y());
     if(!qFuzzyIsNull(angle) || !qFuzzyCompare(tscale, 1))
@@ -804,7 +809,7 @@ void KRPTSceneItem::transform(const QRectF &rect, double angle, double scale, QT
         double hd2 = rect.height() / 2.0;
         transform.translate(wd2, hd2);
         if(!qFuzzyCompare(tscale, 1))transform.scale (tscale, tscale);
-        if(!qFuzzyIsNull (angle    ))transform.rotate(angle         );
+        if(!qFuzzyIsNull (tangle   ))transform.rotate(tangle        );
         transform.translate(-wd2, -hd2);
     }
 }
@@ -940,17 +945,32 @@ bool KRPTSceneItem::dirtyTransform() noexcept
 {
     bool dirty = _dirty[Dirty::Transform];
     _dirty -= Dirty::Transform;
-    if(!must(KRPTSceneItem::Must::NoScale))return dirty;
+    if(!must(KRPTSceneItem::Must::NoSceneScale) && 
+       !must(KRPTSceneItem::Must::NoSceneRotate))return dirty;
     _data->sceneScale = 1;
+    _data->sceneAngle = 0;
     for(auto &cache : _data->cache)
     {
-        if(cache.parent && cache.genScale != cache.parent->_data->genScale)
+        if(must(KRPTSceneItem::Must::NoSceneScale))
         {
-            dirty = true;
-            cache.genScale = cache.parent->_data->genScale;
+            if(cache.parent && cache.genScale != cache.parent->_data->genScale)
+            {
+                dirty = true;
+                cache.genScale = cache.parent->_data->genScale;
+            }
+            if(cache.item != this)
+                _data->sceneScale *= cache.item->_scale;
         }
-        if(cache.item != this)
-            _data->sceneScale *= cache.item->_scale;
+        if(must(KRPTSceneItem::Must::NoSceneRotate))
+        {
+            if(cache.parent && cache.genAngle != cache.parent->_data->genAngle)
+            {
+                dirty = true;
+                cache.genAngle = cache.parent->_data->genAngle;
+            }
+            if(cache.item != this)
+                _data->sceneAngle += cache.item->_angle;
+        }
     }
     return dirty;
 }

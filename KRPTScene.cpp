@@ -324,10 +324,12 @@ void KRPTScene::whellEvent(SceneMouseEvent *e) noexcept
         if(e->keyModifers()[SceneMouseEvent::KeyModifer::Ctrl])
         {
             item->rotateAround((e->delta().y() > 0 ? 5 : -5), mousePos, KRPTSceneItem::TransSrc::Scene, 500);
+//            item->rotate((e->delta().y() > 0 ? 5 : -5), 500);
         }
         if(e->keyModifers()[SceneMouseEvent::KeyModifer::Alt])
         {
             item->scaleFromPoint((e->delta().x() > 0 ? 1.1 : 0.9), mousePos, KRPTSceneItem::TransSrc::Scene, 500);
+//            item->scaleMul((e->delta().x() > 0 ? 1.1 : 0.9), 500);
         }
 
 
