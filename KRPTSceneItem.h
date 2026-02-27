@@ -10,6 +10,7 @@
 #include <QTransform>
 #include <QPainter>
 #include <QColor>
+#include <QEasingCurve>
 #include "KRPTFlag.h"
 
 //####################################################################################################
@@ -79,148 +80,148 @@ public:
     using ItemsList = std::list<KRPTSceneItem::Ptr>;
     using IndexMap  = std::map<KRPTSceneItem*, ItemsList::iterator>;
 public:
-    KRPTSceneItem(KRPTScene *scene, KRPTSceneItem *parent)                          noexcept;
-    virtual ~KRPTSceneItem()                                                        noexcept;
+    KRPTSceneItem(KRPTScene *scene, KRPTSceneItem *parent)                                                       noexcept;
+    virtual ~KRPTSceneItem()                                                                                     noexcept;
 public:
-    template<typename T, typename ... Args>
-    auto addChild(Args&& ... arg)                                                   noexcept
+    template<typename T, typename ... Args> inline auto addChild(Args&& ... arg)                                 noexcept
     {
-        auto item = new T(_scene, this, 
-            std::forward<Args>(arg) ...);
+        auto item = new T(_scene, this, std::forward<Args>(arg) ...);
         addChildImpl(item, this);
         return item;
     }
-    bool delChild(KRPTSceneItem *item)                                              noexcept;
-    template<typename ... Args> 
-    inline bool must(Args&& ... args)                                         const noexcept
+    bool delChild(KRPTSceneItem *item)                                                                           noexcept;
+    template<typename ... Args> inline bool must(Args&& ... args)                                          const noexcept
     {
         return _must.upped(std::forward<Args>(args)...);
     }
-    template<typename ... Args> 
-    inline void addMust(Args&& ... args)                                            noexcept
+    template<typename ... Args> inline void addMust(Args&& ... args)                                             noexcept
     {
         _must.up(std::forward<Args>(args)...);
     }
 public:
-    KRPTFlag<Must>     must                ()                                 const noexcept;
-    KRPTScene        * scene               ()                                 const noexcept;
-    KRPTSceneItem    * parent              ()                                 const noexcept;
-    const ItemsList  & childItems          ()                                 const noexcept;
-    const ItemsList  & visibleChildItems   ()                                       noexcept;
-    bool               visible             ()                                 const noexcept;
-    const QRectF     & geometry            ()                                 const noexcept;
-    const QRectF     & rect                ()                                 const noexcept;
-    QPointF            pos                 ()                                 const noexcept;
-    QSizeF             size                ()                                 const noexcept;
-    double             x                   ()                                 const noexcept;
-    double             y                   ()                                 const noexcept;
-    double             width               ()                                 const noexcept;
-    double             height              ()                                 const noexcept;
-    double             right               ()                                 const noexcept;
-    double             bottom              ()                                 const noexcept;
-    QPointF            center              ()                                 const noexcept;
-    double             angle               ()                                 const noexcept;
-    double             scale               ()                                 const noexcept;
-    double             opaq                ()                                 const noexcept;
-    const QTransform & transform           ()                                       noexcept;
-    const QTransform & transformInv        ()                                       noexcept;
-    const QTransform & sceneTransform      ()                                       noexcept;
-    const QTransform & sceneTransformInv   ()                                       noexcept;
-    QRectF             bBox                ()                                       noexcept;
-    QRectF             bBoxMapToParent     ()                                       noexcept;
-    QColor             borderColor         ()                                 const noexcept {return _borderColor       ;}
-    QColor             backgroundColor     ()                                 const noexcept {return _backgroundColor   ;}
+    KRPTFlag<Must>     must                ()                                                              const noexcept;
+    KRPTScene        * scene               ()                                                              const noexcept;
+    KRPTSceneItem    * parent              ()                                                              const noexcept;
+    const ItemsList  & childItems          ()                                                              const noexcept;
+    const ItemsList  & visibleChildItems   ()                                                                    noexcept;
+    bool               visible             ()                                                              const noexcept;
+    const QRectF     & geometry            ()                                                              const noexcept;
+    const QRectF     & rect                ()                                                              const noexcept;
+    QPointF            pos                 ()                                                              const noexcept;
+    QSizeF             size                ()                                                              const noexcept;
+    double             x                   ()                                                              const noexcept;
+    double             y                   ()                                                              const noexcept;
+    double             width               ()                                                              const noexcept;
+    double             height              ()                                                              const noexcept;
+    double             right               ()                                                              const noexcept;
+    double             bottom              ()                                                              const noexcept;
+    QPointF            center              ()                                                              const noexcept;
+    double             angle               ()                                                              const noexcept;
+    double             scale               ()                                                              const noexcept;
+    double             opaq                ()                                                              const noexcept;
+    const QTransform & transform           ()                                                                    noexcept;
+    const QTransform & transformInv        ()                                                                    noexcept;
+    const QTransform & sceneTransform      ()                                                                    noexcept;
+    const QTransform & sceneTransformInv   ()                                                                    noexcept;
+    QRectF             bBox                ()                                                                    noexcept;
+    QRectF             bBoxMapToParent     ()                                                                    noexcept;
+    QColor             borderColor         ()                                                              const noexcept {return _borderColor       ;}
+    QColor             backgroundColor     ()                                                              const noexcept {return _backgroundColor   ;}
 
-    void               setVisible          (bool visible)                           noexcept;
+    void               setVisible          (bool visible)                                                        noexcept;
     bool               setGeometry         (const QRectF &geometry, 
-                                            bool anim = false)                      noexcept;
+                                            uint32_t time = 0, QEasingCurve curve = QEasingCurve::OutExpo)       noexcept;
     bool               setGeometry         (const QPointF &pos, const QSizeF &size, 
-                                            bool anim = false)                      noexcept;
-    bool               setGeometry         (double x, double y, 
-                                            double w, double h, 
-                                            bool anim = false)                      noexcept;
+                                            uint32_t time = 0, QEasingCurve curve = QEasingCurve::OutExpo)       noexcept;
+    bool               setGeometry         (double x, double y, double w, double h, 
+                                            uint32_t time = 0, QEasingCurve curve = QEasingCurve::OutExpo)       noexcept;
     void               setPos              (const QPointF &pos, 
-                                            bool anim = false)                      noexcept;
+                                            uint32_t time = 0, QEasingCurve curve = QEasingCurve::OutExpo)       noexcept;
     void               setPos              (double x, double y, 
-                                            bool anim = false)                      noexcept;
-    void               setSize             (const QSizeF &size, bool anim = false)  noexcept;
-    void               setSize             (double w, double h, bool anim = false)  noexcept;
-    void               setX                (double x, bool anim = false)            noexcept;
-    void               setY                (double y, bool anim = false)            noexcept;
-    void               setWidth            (double w, bool anim = false)            noexcept;
-    void               setHeight           (double h, bool anim = false)            noexcept;
-    bool               setAngle            (double angle, bool anim = false)        noexcept;
-    bool               setScale            (double scale, bool anim = false)        noexcept;
-    bool               setOpaq             (double opaq , bool anim = false)        noexcept;
-    void               translate           (const QPointF &pos, bool anim = false)  noexcept;
+                                            uint32_t time = 0, QEasingCurve curve = QEasingCurve::OutExpo)       noexcept;
+    void               setSize             (const QSizeF &size, 
+                                            uint32_t time = 0, QEasingCurve curve = QEasingCurve::OutExpo)       noexcept;
+    void               setSize             (double w, double h, 
+                                            uint32_t time = 0, QEasingCurve curve = QEasingCurve::OutExpo)       noexcept;
+    void               setX                (double x, 
+                                            uint32_t time = 0, QEasingCurve curve = QEasingCurve::OutExpo)       noexcept;
+    void               setY                (double y, 
+                                            uint32_t time = 0, QEasingCurve curve = QEasingCurve::OutExpo)       noexcept;
+    void               setWidth            (double w, 
+                                            uint32_t time = 0, QEasingCurve curve = QEasingCurve::OutExpo)       noexcept;
+    void               setHeight           (double h, 
+                                            uint32_t time = 0, QEasingCurve curve = QEasingCurve::OutExpo)       noexcept;
+    bool               setAngle            (double angle, 
+                                            uint32_t time = 0, QEasingCurve curve = QEasingCurve::OutExpo)       noexcept;
+    bool               setScale            (double scale, 
+                                            uint32_t time = 0, QEasingCurve curve = QEasingCurve::OutExpo)       noexcept;
+    bool               setOpaq             (double opaq, 
+                                            uint32_t time = 0, QEasingCurve curve = QEasingCurve::OutExpo)       noexcept;
+    void               translate           (const QPointF &pos, 
+                                            uint32_t time = 0, QEasingCurve curve = QEasingCurve::OutExpo)       noexcept;
     void               translate           (double dx, double dy, 
-                                            bool anim = false)                      noexcept;
-    void               rotate              (double angle, bool anim = false)        noexcept;
-    void               rotateAround        (double angle, const QPointF &pt, 
-                                            TransSrc src, bool anim = false)        noexcept;
-    void               scaleMul            (double scale, bool anim = false)        noexcept;
-    void               scaleFromPoint      (double scale, const QPointF &pt, 
-                                            TransSrc src, bool anim = false)        noexcept;
-    void               setBorderColor      (const QColor &color)                    noexcept;
-    void               setBackgroundColor  (const QColor &color)                    noexcept;
-    void               lockUpdate          (bool lock)                              noexcept;
-    QPointF            mapToParent         (const QPointF   &p)                     noexcept;
-    QPolygonF          mapToParent         (const QRectF    &r)                     noexcept;
-    QPolygonF          mapToParent         (const QPolygonF &p)                     noexcept;
-    QPointF            mapFromParent       (const QPointF   &p)                     noexcept;
-    QPolygonF          mapFromParent       (const QRectF    &r)                     noexcept;
-    QPolygonF          mapFromParent       (const QPolygonF &p)                     noexcept;
-    QPointF            mapToScene          (const QPointF   &p)                     noexcept;
-    QPolygonF          mapToScene          (const QRectF    &r)                     noexcept;
-    QPolygonF          mapToScene          (const QPolygonF &p)                     noexcept;
-    QPointF            mapFromScene        (const QPointF   &p)                     noexcept;
-    QPolygonF          mapFromScene        (const QRectF    &r)                     noexcept;
-    QPolygonF          mapFromScene        (const QPolygonF &p)                     noexcept;
-    bool               needPaint           ()                                 const noexcept;
-    bool               needChildPaint      ()                                 const noexcept;
+                                            uint32_t time = 0, QEasingCurve curve = QEasingCurve::OutExpo)       noexcept;
+    void               rotate              (double angle, 
+                                            uint32_t time = 0, QEasingCurve curve = QEasingCurve::OutExpo)       noexcept;
+    void               rotateAround        (double angle, const QPointF &pt, TransSrc src, 
+                                            uint32_t time = 0, QEasingCurve curve = QEasingCurve::OutExpo)       noexcept;
+    void               scaleMul            (double scale, 
+                                            uint32_t time = 0, QEasingCurve curve = QEasingCurve::OutExpo)       noexcept;
+    void               scaleFromPoint      (double scale, const QPointF &pt, TransSrc src, 
+                                            uint32_t time = 0, QEasingCurve curve = QEasingCurve::OutExpo)       noexcept;
+    void               setBorderColor      (const QColor &color)                                                 noexcept;
+    void               setBackgroundColor  (const QColor &color)                                                 noexcept;
+    void               lockUpdate          (bool lock)                                                           noexcept;
+    QPointF            mapToParent         (const QPointF &point)                                                noexcept;
+    QPolygonF          mapToParent         (const QRectF &rect)                                                  noexcept;
+    QPolygonF          mapToParent         (const QPolygonF &polygon)                                            noexcept;
+    QPointF            mapFromParent       (const QPointF &point)                                                noexcept;
+    QPolygonF          mapFromParent       (const QRectF &rect)                                                  noexcept;
+    QPolygonF          mapFromParent       (const QPolygonF &polygon)                                            noexcept;
+    QPointF            mapToScene          (const QPointF &point)                                                noexcept;
+    QPolygonF          mapToScene          (const QRectF &rect)                                                  noexcept;
+    QPolygonF          mapToScene          (const QPolygonF &polygon)                                            noexcept;
+    QPointF            mapFromScene        (const QPointF &point)                                                noexcept;
+    QPolygonF          mapFromScene        (const QRectF &rect)                                                  noexcept;
+    QPolygonF          mapFromScene        (const QPolygonF &polygon)                                            noexcept;
+    bool               needPaint           ()                                                              const noexcept;
+    bool               needChildPaint      ()                                                              const noexcept;
 protected:
-    virtual void       addChildEvent       (KRPTSceneItem       *item)              noexcept;
-    virtual void       delChildEvent       (KRPTSceneItem       *item)              noexcept;
-    virtual void       transformEvent      (SceneTransformEvent *e   )              noexcept;
-    virtual void       mousePressEvent     (SceneMouseEvent     *e   )              noexcept;
-    virtual void       mouseReleaseEvent   (SceneMouseEvent     *e   )              noexcept;
-    virtual void       mouseMoveEvent      (SceneMouseEvent     *e   )              noexcept;
-    virtual void       whellEvent          (SceneMouseEvent     *e   )              noexcept;
-    virtual void       childTransformEvent (KRPTSceneItem       *item,
-                                            SceneTransformEvent *e   )              noexcept;
-    virtual void       animEvent           (uint32_t id, 
-                                            const std::vector<double> &value)       noexcept;
+    virtual void       addChildEvent       (KRPTSceneItem *item)                                                 noexcept;
+    virtual void       delChildEvent       (KRPTSceneItem *item)                                                 noexcept;
+    virtual void       transformEvent      (SceneTransformEvent *e)                                              noexcept;
+    virtual void       mousePressEvent     (SceneMouseEvent *e)                                                  noexcept;
+    virtual void       mouseReleaseEvent   (SceneMouseEvent *e)                                                  noexcept;
+    virtual void       mouseMoveEvent      (SceneMouseEvent *e)                                                  noexcept;
+    virtual void       whellEvent          (SceneMouseEvent *e)                                                  noexcept;
+    virtual void       childTransformEvent (KRPTSceneItem *item, SceneTransformEvent *e)                         noexcept;
 protected:
-    virtual void       update              ()                                       noexcept;
-    virtual void       addChildImpl        (KRPTSceneItem::Ptr item,
-                                            KRPTSceneItem *parent    )              noexcept;
-    virtual bool       delChildImpl        (KRPTSceneItem *item,
-                                            KRPTSceneItem *parent    )              noexcept;
-    virtual bool       setGeometryImpl     (const QRectF &geometry   )              noexcept;
-    virtual bool       setAngleImpl        (double angle             )              noexcept;
-    virtual bool       setScaleImpl        (double scale             )              noexcept;
-    virtual bool       setOpaqImpl         (double opaq              )              noexcept;
-    virtual void       transformImpl       (SceneTransformEvent    *e)              noexcept;
-    virtual void       mousePressImpl      (SceneMouseEvent        *e)              noexcept;
-    virtual void       mouseReleaseImpl    (SceneMouseEvent        *e)              noexcept;
-    virtual void       mouseMoveImpl       (SceneMouseEvent        *e)              noexcept;
-    virtual void       whellImpl           (SceneMouseEvent        *e)              noexcept;
-    virtual void       paintBackground     (QPainter &painter        )              noexcept;
-    virtual void       paintForeground     (QPainter &painter        )              noexcept;
-    virtual void       updateGeometry      ()                                       noexcept;
+    virtual void       update              ()                                                                    noexcept;
+    virtual void       addChildImpl        (KRPTSceneItem::Ptr item, KRPTSceneItem *parent)                      noexcept;
+    virtual bool       delChildImpl        (KRPTSceneItem *item, KRPTSceneItem *parent)                          noexcept;
+    virtual bool       setGeometryImpl     (const QRectF &geometry)                                              noexcept;
+    virtual bool       setAngleImpl        (double angle)                                                        noexcept;
+    virtual bool       setScaleImpl        (double scale)                                                        noexcept;
+    virtual bool       setOpaqImpl         (double opaq)                                                         noexcept;
+    virtual void       transformImpl       (SceneTransformEvent *e)                                              noexcept;
+    virtual void       mousePressImpl      (SceneMouseEvent *e)                                                  noexcept;
+    virtual void       mouseReleaseImpl    (SceneMouseEvent *e)                                                  noexcept;
+    virtual void       mouseMoveImpl       (SceneMouseEvent *e)                                                  noexcept;
+    virtual void       whellImpl           (SceneMouseEvent *e)                                                  noexcept;
+    virtual void       animImpl            (uint32_t id, const std::vector<double> &value)                       noexcept;
+    virtual void       paintBackground     (QPainter &painter)                                                   noexcept;
+    virtual void       paintForeground     (QPainter &painter)                                                   noexcept;
+    virtual void       updateGeometry      ()                                                                    noexcept;
 protected:
     void               transform           (const QRectF &rect, double angle, 
-                                            double scale, QTransform &transform)    noexcept;
-    QPointF            transformShift      (QTransform &transform, 
-                                            TransSrc src, const QPointF &pt)        noexcept;
-    void               bBox                (const QTransform &transform, 
-                                            const QRectF &rect, QRectF &bBox)       noexcept;
-    QRectF             bBox                (const QTransform &transform, 
-                                            const QRectF &rect)                     noexcept;
-    bool               updateCache         (bool visible = false)                   noexcept;
-    bool               dirtyTransform      ()                                       noexcept;
-    bool               dirtyVisibleChilds  ()                                       noexcept;
-    bool               mustAnim            (bool anim)                        const noexcept;
+                                            double scale, QTransform &transform)                                 noexcept;
+    QPointF            transformShift      (QTransform &transform, TransSrc src, const QPointF &pt)              noexcept;
+    void               bBox                (const QTransform &transform, const QRectF &rect, QRectF &bBox)       noexcept;
+    QRectF             bBox                (const QTransform &transform, const QRectF &rect)                     noexcept;
+    bool               updateCache         (bool visible = false)                                                noexcept;
+    bool               dirtyTransform      ()                                                                    noexcept;
+    bool               dirtyVisibleChilds  ()                                                                    noexcept;
+    bool               mustAnim            (uint32_t time)                                                 const noexcept;
 protected:
     KRPTSceneItemData *_data;
     KRPTFlag<Dirty>    _dirty            ;

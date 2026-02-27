@@ -287,7 +287,7 @@ void KRPTScene::mouseMoveEvent(SceneMouseEvent *e) noexcept
     #if 1
         QPointF p0 = _mousePressedItem->mapFromScene(mousePos);
         QPointF p1 = _mousePressedItem->mapToParent(p0);
-        _mousePressedItem->setPos(p1 + _mousePressedItemPos, true);
+        _mousePressedItem->setPos(p1 + _mousePressedItemPos, 1000, QEasingCurve::Linear);
     #endif
     }
     update();
@@ -323,7 +323,7 @@ void KRPTScene::whellEvent(SceneMouseEvent *e) noexcept
 //        item->scaleFromPoint(scale, mousePos, KRPTSceneItem::TransSrc::Scene);
 
         double opaq = item->opaq() * (e->delta().y() > 0 ? 1.1 : 0.1);
-        item->setOpaq(opaq, true);
+        item->setOpaq(opaq, 1000);
 
     }
 #endif

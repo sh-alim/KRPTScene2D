@@ -62,7 +62,7 @@ public:
         {
             std::vector<double> value;
             size_t size = KRPTSceneAnim::valuesFrom(end, value);
-            owner->animEvent(id, value);
+            owner->animImpl(id, value);
             deleteAnim(id);
             return;
         }
@@ -109,9 +109,9 @@ private:
         KRPTSceneAnim::interpolate(anim->start, anim->end, progress, anim->current);
         if(anim->duration() == time)
         {
-            owner->animEvent(id, anim->end);
+            owner->animImpl(id, anim->end);
             deleteAnim(id);
-        }else owner->animEvent(id, anim->current);
+        }else owner->animImpl(id, anim->current);
     }
 private:
     KRPTSceneItem       *owner       ;
@@ -336,154 +336,140 @@ void KRPTSceneItem::setVisible(bool visible) noexcept
     _visible = visible;
 }
 
-//###########################################
-//###########################################
-
-void KRPTSceneItem::animEvent(uint32_t id, const std::vector<double> &value) noexcept
+bool KRPTSceneItem::setGeometry(const QRectF &geometry, 
+    uint32_t time, QEasingCurve curve) noexcept
 {
-    switch(id)
+    if(mustAnim(time))
     {
-        case AnimDst::Geometry : setGeometryImpl(KRPTSceneAnim::valuesTo<QRectF>(value)); break;
-        case AnimDst::Angle    : setAngleImpl   (KRPTSceneAnim::valuesTo<double>(value)); break;
-        case AnimDst::Scale    : setScaleImpl   (KRPTSceneAnim::valuesTo<double>(value)); break;
-        case AnimDst::Opaq     : setOpaqImpl    (KRPTSceneAnim::valuesTo<double>(value)); break;
-    }
-    update();
-}
-
-//###########################################
-
-bool KRPTSceneItem::setGeometry(const QRectF &geometry, bool anim) noexcept
-{
-    if(mustAnim(anim))
-    {
-        _data->startAnim(AnimDst::Geometry, _geometry, geometry, 1000, QEasingCurve::OutExpo);
+        _data->startAnim(AnimDst::Geometry, _geometry, geometry, time, curve);
         return true;
     }
     if(must(KRPTSceneItem::Must::Anim))_data->stopAnim(AnimDst::Geometry);
     return setGeometryImpl(geometry);
 }
 
-bool KRPTSceneItem::setGeometry(const QPointF &pos, const QSizeF &size, bool anim) noexcept
+bool KRPTSceneItem::setGeometry(const QPointF &pos, const QSizeF &size, 
+    uint32_t time, QEasingCurve curve) noexcept
 {
-    return setGeometry(QRectF(pos, size), anim);
+    return setGeometry(QRectF(pos, size), time, curve);
 }
 
-bool KRPTSceneItem::setGeometry(double x, double y, double w, double h, bool anim) noexcept
+bool KRPTSceneItem::setGeometry(double x, double y, double w, double h, 
+    uint32_t time, QEasingCurve curve) noexcept
 {
-    return setGeometry(QPointF(x, y), QSizeF(w, h), anim);
+    return setGeometry(QPointF(x, y), QSizeF(w, h), time, curve);
 }
 
-void KRPTSceneItem::setPos(const QPointF &pos, bool anim) noexcept
+void KRPTSceneItem::setPos(const QPointF &pos, uint32_t time, QEasingCurve curve) noexcept
 {
-    setGeometry(QRectF(pos, _geometry.size()), anim);
+    setGeometry(QRectF(pos, _geometry.size()), time, curve);
 }
 
-void KRPTSceneItem::setPos(double x, double y, bool anim) noexcept
+void KRPTSceneItem::setPos(double x, double y, uint32_t time, QEasingCurve curve) noexcept
 {
-    setPos(QPointF(x, y), anim);
+    setPos(QPointF(x, y), time, curve);
 }
 
-void KRPTSceneItem::setSize(const QSizeF &size, bool anim) noexcept
+void KRPTSceneItem::setSize(const QSizeF &size, uint32_t time, QEasingCurve curve) noexcept
 {
-    setGeometry(QRectF(_geometry.topLeft(), size), anim);
+    setGeometry(QRectF(_geometry.topLeft(), size), time, curve);
 }
 
-void KRPTSceneItem::setSize(double w, double h, bool anim) noexcept
+void KRPTSceneItem::setSize(double w, double h, uint32_t time, QEasingCurve curve) noexcept
 {
-    setSize(QSize(w, h), anim);
+    setSize(QSize(w, h), time, curve);
 }
 
-void KRPTSceneItem::setX(double x, bool anim) noexcept
+void KRPTSceneItem::setX(double x, uint32_t time, QEasingCurve curve) noexcept
 {
-    setPos(QPointF(x, _geometry.y()), anim);
+    setPos(QPointF(x, _geometry.y()), time, curve);
 }
 
-void KRPTSceneItem::setY(double y, bool anim) noexcept
+void KRPTSceneItem::setY(double y, uint32_t time, QEasingCurve curve) noexcept
 {
-    setPos(QPointF(_geometry.x(), y), anim);
+    setPos(QPointF(_geometry.x(), y), time, curve);
 }
 
-void KRPTSceneItem::setWidth(double w, bool anim) noexcept
+void KRPTSceneItem::setWidth(double w, uint32_t time, QEasingCurve curve) noexcept
 {
-    setSize(QSizeF(w, _geometry.height()), anim);
+    setSize(QSizeF(w, _geometry.height()), time, curve);
 }
 
-void KRPTSceneItem::setHeight(double h, bool anim) noexcept
+void KRPTSceneItem::setHeight(double h, uint32_t time, QEasingCurve curve) noexcept
 {
-    setSize(QSizeF(_geometry.width(), h), anim);
+    setSize(QSizeF(_geometry.width(), h), time, curve);
 }
 
-bool KRPTSceneItem::setAngle(double angle, bool anim) noexcept
+bool KRPTSceneItem::setAngle(double angle, uint32_t time, QEasingCurve curve) noexcept
 {
-    if(mustAnim(anim))
+    if(mustAnim(time))
     {
-        _data->startAnim(AnimDst::Angle, _angle, angle, 1000, QEasingCurve::OutExpo);
+        _data->startAnim(AnimDst::Angle, _angle, angle, time, curve);
         return true;
     }
     if(must(KRPTSceneItem::Must::Anim))_data->stopAnim(AnimDst::Angle);
     return setAngleImpl(angle);
 }
 
-bool KRPTSceneItem::setScale(double scale, bool anim) noexcept
+bool KRPTSceneItem::setScale(double scale, uint32_t time, QEasingCurve curve) noexcept
 {
-    if(mustAnim(anim))
+    if(mustAnim(time))
     {
-        _data->startAnim(AnimDst::Scale, _scale, scale, 1000, QEasingCurve::OutExpo);
+        _data->startAnim(AnimDst::Scale, _scale, scale, time, curve);
         return true;
     }
     if(must(KRPTSceneItem::Must::Anim))_data->stopAnim(AnimDst::Scale);
     return setScaleImpl(scale);
 }
 
-bool KRPTSceneItem::setOpaq(double opaq, bool anim) noexcept
+bool KRPTSceneItem::setOpaq(double opaq, uint32_t time, QEasingCurve curve) noexcept
 {
-    if(mustAnim(anim))
+    if(mustAnim(time))
     {
-        _data->startAnim(AnimDst::Opaq, _opaq, opaq, 1000, QEasingCurve::Linear);
+        _data->startAnim(AnimDst::Opaq, _opaq, opaq, time, curve);
         return true;
     }
     if(must(KRPTSceneItem::Must::Anim))_data->stopAnim(AnimDst::Opaq);
     return setOpaqImpl(opaq);
 }
 
-void KRPTSceneItem::translate(const QPointF &pos, bool anim) noexcept
+void KRPTSceneItem::translate(const QPointF &pos, uint32_t time, QEasingCurve curve) noexcept
 {
-    setPos(_geometry.topLeft() + pos, anim);
+    setPos(_geometry.topLeft() + pos, time, curve);
 }
 
-void KRPTSceneItem::translate(double x, double y, bool anim) noexcept
+void KRPTSceneItem::translate(double x, double y, uint32_t time, QEasingCurve curve) noexcept
 {
-    translate(QPointF(x, y), anim);
+    translate(QPointF(x, y), time, curve);
 }
 
-void KRPTSceneItem::rotate(double angle, bool anim) noexcept
+void KRPTSceneItem::rotate(double angle, uint32_t time, QEasingCurve curve) noexcept
 {
-    setAngle(_angle + angle, anim);
+    setAngle(_angle + angle, time, curve);
 }
 
 void KRPTSceneItem::rotateAround(double angle, const QPointF &pt, 
-    TransSrc src, bool anim) noexcept
+    TransSrc src, uint32_t time, QEasingCurve curve) noexcept
 {
     QTransform t;
     transform(_geometry, angle + _angle, _scale, t);
-    translate(transformShift(t, src, pt), anim);
-    rotate(angle, anim);
+    translate(transformShift(t, src, pt), time, curve);
+    rotate(angle, time, curve);
 }
 
-void KRPTSceneItem::scaleMul(double scale, bool anim) noexcept
+void KRPTSceneItem::scaleMul(double scale, uint32_t time, QEasingCurve curve) noexcept
 {
-    setScale(_scale * scale, anim);
+    setScale(_scale * scale, time, curve);
 }
 
 void KRPTSceneItem::scaleFromPoint(double scale, const QPointF &pt, 
-    TransSrc src, bool anim) noexcept
+    TransSrc src, uint32_t time, QEasingCurve curve) noexcept
 {
 #if 1
     QTransform t;
     transform(_geometry, _angle, _scale * scale, t);
-    translate(transformShift(t, src, pt), anim);
-    scaleMul(scale, anim);
+    translate(transformShift(t, src, pt), time, curve);
+    scaleMul(scale, time, curve);
 #else
     QTransform t;
     transform(_geometry, _angle, scale, t);
@@ -509,64 +495,64 @@ void KRPTSceneItem::lockUpdate(bool lock) noexcept
     if(!_updateLocked)update();
 }
 
-QPointF KRPTSceneItem::mapToParent(const QPointF &p) noexcept 
+QPointF KRPTSceneItem::mapToParent(const QPointF &point) noexcept 
 {
-    return transform().map(p);
+    return transform().map(point);
 }
 
-QPolygonF KRPTSceneItem::mapToParent(const QRectF &r) noexcept 
+QPolygonF KRPTSceneItem::mapToParent(const QRectF &rect) noexcept 
 {
-    return transform().map(r);
+    return transform().map(rect);
 }
 
-QPolygonF KRPTSceneItem::mapToParent(const QPolygonF &p) noexcept 
+QPolygonF KRPTSceneItem::mapToParent(const QPolygonF &polygon) noexcept 
 {
-    return transform().map(p);
+    return transform().map(polygon);
 }
 
-QPointF KRPTSceneItem::mapFromParent(const QPointF &p) noexcept 
+QPointF KRPTSceneItem::mapFromParent(const QPointF &point) noexcept 
 {
-    return transformInv().map(p);
+    return transformInv().map(point);
 }
 
-QPolygonF KRPTSceneItem::mapFromParent(const QRectF &r) noexcept 
+QPolygonF KRPTSceneItem::mapFromParent(const QRectF &rect) noexcept 
 {
-    return transformInv().map(r);
+    return transformInv().map(rect);
 }
 
-QPolygonF KRPTSceneItem::mapFromParent(const QPolygonF &p) noexcept 
+QPolygonF KRPTSceneItem::mapFromParent(const QPolygonF &polygon) noexcept 
 {
-    return transformInv().map(p);
+    return transformInv().map(polygon);
 }
 
-QPointF KRPTSceneItem::mapToScene(const QPointF &p) noexcept 
+QPointF KRPTSceneItem::mapToScene(const QPointF &point) noexcept 
 {
-    return sceneTransform().map(p);
+    return sceneTransform().map(point);
 }
 
-QPolygonF KRPTSceneItem::mapToScene(const QRectF &r) noexcept 
+QPolygonF KRPTSceneItem::mapToScene(const QRectF &rect) noexcept 
 {
-    return sceneTransform().map(r);
+    return sceneTransform().map(rect);
 }
 
-QPolygonF KRPTSceneItem::mapToScene(const QPolygonF &p) noexcept 
+QPolygonF KRPTSceneItem::mapToScene(const QPolygonF &polygon) noexcept 
 {
-    return sceneTransform().map(p);
+    return sceneTransform().map(polygon);
 }
 
-QPointF KRPTSceneItem::mapFromScene(const QPointF &p) noexcept 
+QPointF KRPTSceneItem::mapFromScene(const QPointF &point) noexcept 
 {
-    return sceneTransformInv().map(p);
+    return sceneTransformInv().map(point);
 }
 
-QPolygonF KRPTSceneItem::mapFromScene(const QRectF &r) noexcept 
+QPolygonF KRPTSceneItem::mapFromScene(const QRectF &rect) noexcept 
 {
-    return sceneTransformInv().map(r);
+    return sceneTransformInv().map(rect);
 }
 
-QPolygonF KRPTSceneItem::mapFromScene(const QPolygonF &p) noexcept 
+QPolygonF KRPTSceneItem::mapFromScene(const QPolygonF &polygon) noexcept 
 {
-    return sceneTransformInv().map(p);
+    return sceneTransformInv().map(polygon);
 }
 
 bool KRPTSceneItem::needPaint() const noexcept
@@ -754,6 +740,18 @@ void KRPTSceneItem::mouseMoveImpl(SceneMouseEvent *e) noexcept
 void KRPTSceneItem::whellImpl(SceneMouseEvent *e) noexcept
 {
     whellEvent(e);
+}
+
+void KRPTSceneItem::animImpl(uint32_t id, const std::vector<double> &value) noexcept
+{
+    switch(id)
+    {
+        case AnimDst::Geometry : setGeometryImpl(KRPTSceneAnim::valuesTo<QRectF>(value)); break;
+        case AnimDst::Angle    : setAngleImpl   (KRPTSceneAnim::valuesTo<double>(value)); break;
+        case AnimDst::Scale    : setScaleImpl   (KRPTSceneAnim::valuesTo<double>(value)); break;
+        case AnimDst::Opaq     : setOpaqImpl    (KRPTSceneAnim::valuesTo<double>(value)); break;
+    }
+    update();
 }
 
 void KRPTSceneItem::paintBackground(QPainter &painter) noexcept
@@ -956,9 +954,9 @@ bool KRPTSceneItem::dirtyVisibleChilds() noexcept
     return dirty;
 }
 
-bool KRPTSceneItem::mustAnim(bool anim) const noexcept
+bool KRPTSceneItem::mustAnim(uint32_t time) const noexcept
 {
-    return anim && _visible && must(KRPTSceneItem::Must::Anim);
+    return time > 0 && _visible && must(KRPTSceneItem::Must::Anim);
 }
 
 
