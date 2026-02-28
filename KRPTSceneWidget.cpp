@@ -53,7 +53,7 @@ KRPTSceneWidget::KRPTSceneWidget(QWidget *parent) noexcept
             KRPTSceneItem::Must::NoSceneRotate,
             KRPTSceneItem::Must::NoSceneScale,
 //            KRPTSceneItem::Must::AccuracyClip,
-//            KRPTSceneItem::Must::Anim,
+            KRPTSceneItem::Must::Anim,
 //            KRPTSceneItem::Must::AccuracyClip,
 //            KRPTSceneItem::Must::AccuracyCheckContains,
             KRPTSceneItem::Must::MousePressEvent,

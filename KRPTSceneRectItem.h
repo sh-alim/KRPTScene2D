@@ -18,7 +18,10 @@ class KRPTSceneRectItem : public KRPTSceneItem
 {
 public:
     KRPTSceneRectItem(KRPTScene *scene, KRPTSceneItem *parent) noexcept;
-    virtual ~KRPTSceneRectItem()                               noexcept;
+    ~KRPTSceneRectItem()                                       noexcept;
+
+public:
+    void setColor() noexcept;
 protected:
     void outlineImpl     ()                  noexcept override;
     void paintBackground (QPainter &painter) noexcept override;

@@ -65,7 +65,7 @@ public:
     inline static void valuesTo(const Values &values, QRectF &rect)
     {
         assert(values.size() > 3);
-        rect.setX(values[0]); rect.setY(values[1]); rect.setWidth (values[2]); rect.setHeight(values[3]);
+        rect.setX(values[0]); rect.setY(values[1]); rect.setWidth(values[2]); rect.setHeight(values[3]);
     }
     inline static size_t valuesFrom(const QRectF &rect, Values &values)
     {

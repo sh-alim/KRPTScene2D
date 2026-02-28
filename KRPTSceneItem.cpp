@@ -40,10 +40,10 @@ public:
         using Values = std::vector<double>;
         using Map = std::map<uint32_t, std::unique_ptr<Anim>>;
         Anim (uint32_t id, KRPTSceneAnim::Event &event, 
-              int duration, QEasingCurve easingCurve) noexcept 
-            : anim(new KRPTSceneAnim(id, event, duration, easingCurve)) {}
+              int time, QEasingCurve easingCurve) noexcept 
+            : anim(new KRPTSceneAnim(id, event, time, easingCurve)) {}
         ~Anim() noexcept {if(anim)anim->deleteLater();}
-        inline int duration() const {return anim ? anim->duration() : 0;}
+        inline int time() const {return anim ? anim->duration() : 0;}
         template<typename T>
         inline void update(const T &r0, const T &r1) noexcept
         {
@@ -57,7 +57,7 @@ public:
         Values         current;
     };
     template<typename T>
-    void startAnim(uint32_t id, const T &start, const T &end, uint32_t duration, QEasingCurve easingCurve)
+    void startAnim(uint32_t id, const T &start, const T &end, uint32_t time, QEasingCurve curve)
     {
         if(qFuzzyCompare(start, end))
         {
@@ -67,11 +67,11 @@ public:
             deleteAnim(id);
             return;
         }
-        Anim *anim = addAnim(id, duration, easingCurve);
+        Anim *anim = addAnim(id, time, curve);
         KRPTSceneAnim *sceneAnim = anim->anim;
         sceneAnim->stop();
         anim->update(start, end);
-        sceneAnim->setDuration(duration);
+        sceneAnim->setDuration(time);
         sceneAnim->start();
     }
     void stopAnim(uint32_t id)
@@ -84,7 +84,7 @@ private:
         auto findAnim = anims.find(id);
         return findAnim != anims.end() ? findAnim->second.get() : nullptr;
     }
-    Anim* addAnim(uint32_t id, int duration, QEasingCurve easingCurve) noexcept
+    Anim* addAnim(uint32_t id, int time, QEasingCurve easingCurve) noexcept
     {
         auto findAnim = anims.find(id);
         if(findAnim == anims.end())
@@ -92,7 +92,7 @@ private:
             if(!animFunction)animFunction = std::bind(&KRPTSceneItemData::animEvent, this, 
                 std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
             findAnim = anims.emplace(id, std::make_unique<KRPTSceneItemData::Anim>
-                                    (id, animFunction, duration, easingCurve)).first;
+                                    (id, animFunction, time, easingCurve)).first;
         }
         return findAnim->second.get();
     }
@@ -108,7 +108,7 @@ private:
         auto anim = this->anim(id);
         if(!anim)return;
         KRPTSceneAnim::interpolate(anim->start, anim->end, progress, anim->current);
-        if(anim->duration() == time)
+        if(anim->time() == time)
         {
             owner->animImpl(id, anim->end);
             deleteAnim(id);

@@ -293,8 +293,8 @@ void KRPTScene::mouseMoveEvent(SceneMouseEvent *e) noexcept
     #if 1
         QPointF p0 = _mousePressedItem->mapFromScene(mousePos);
         QPointF p1 = _mousePressedItem->mapToParent(p0);
-//        _mousePressedItem->setPos(p1 + _mousePressedItemPos, 1000, QEasingCurve::Linear);
-        _mousePressedItem->setPos(p1 + _mousePressedItemPos);
+        _mousePressedItem->setPos(p1 + _mousePressedItemPos, 1000, QEasingCurve::Linear);
+//        _mousePressedItem->setPos(p1 + _mousePressedItemPos);
     #endif
     }
     update();
