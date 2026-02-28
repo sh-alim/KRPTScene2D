@@ -10,6 +10,23 @@
 //#
 //####################################################################################################
 
+static bool qFuzzyCompare(const std::vector<double> &v1, const std::vector<double> &v2) noexcept
+{
+    if(v1.size() != v2.size())return false;
+    for(size_t i = 0; i < v1.size(); ++i)
+        if(!qFuzzyCompare(v1.at(i), v2.at(i)))return false;
+    return true;
+}
+
+static bool qFuzzyCompare(const QColor &s1, const QColor &s2) noexcept
+{
+    return s1 == s2;
+}
+
+//####################################################################################################
+//#
+//####################################################################################################
+
 class KRPTSceneItemData
 {
 friend class KRPTSceneItem;
@@ -61,9 +78,15 @@ public:
     {
         if(qFuzzyCompare(start, end))
         {
-            std::vector<double> value;
-            size_t size = KRPTSceneAnim::valuesFrom(end, value);
-            owner->animImpl(id, value);
+            if constexpr (std::is_same_v<std::remove_reference_t<T>, std::vector<double>>)
+            {
+                owner->animImpl(id, end);
+            }else
+            {
+                std::vector<double> value;
+                KRPTSceneAnim::valuesFrom(end, value);
+                owner->animImpl(id, value);
+            }
             deleteAnim(id);
             return;
         }
@@ -997,4 +1020,43 @@ bool KRPTSceneItem::mustAnim(uint32_t time) const noexcept
     return time > 0 && _visible && must(KRPTSceneItem::Must::Anim);
 }
 
+//****************************************************************************************************
+//*
+//****************************************************************************************************
+
+void KRPTSceneItem::startAnimImpl(uint32_t id, const std::vector<double> &start, 
+    const std::vector<double> &end, uint32_t time, QEasingCurve curve) noexcept
+{
+    _data->startAnim(id, start, end, time, curve);
+}
+
+void KRPTSceneItem::startAnimImpl(uint32_t id, double start, 
+    double end, uint32_t time, QEasingCurve curve) noexcept
+{
+    _data->startAnim(id, start, end, time, curve);
+}
+
+void KRPTSceneItem::startAnimImpl(uint32_t id, const QPointF &start, 
+    const QPointF &end, uint32_t time, QEasingCurve curve) noexcept
+{
+    _data->startAnim(id, start, end, time, curve);
+}
+
+void KRPTSceneItem::startAnimImpl(uint32_t id, const QRectF &start, 
+    const QRectF &end, uint32_t time, QEasingCurve curve) noexcept
+{
+    _data->startAnim(id, start, end, time, curve);
+}
+
+void KRPTSceneItem::startAnimImpl(uint32_t id, const QSizeF &start, 
+    const QSizeF &end, uint32_t time, QEasingCurve curve) noexcept
+{
+    _data->startAnim(id, start, end, time, curve);
+}
+
+void KRPTSceneItem::startAnimImpl(uint32_t id, const QColor &start, 
+    const QColor &end, uint32_t time, QEasingCurve curve) noexcept
+{
+    _data->startAnim(id, start, end, time, curve);
+}
 

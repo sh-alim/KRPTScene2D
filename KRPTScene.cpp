@@ -247,9 +247,9 @@ void KRPTScene::mousePressEvent(SceneMouseEvent *e) noexcept
 //            item->parent()->delChild(item);
 //        _mousePressedItem = nullptr;
 
-//        item->setPos(item->pos(), true);
-//        item->rotate(45, true);
-//        item->scaleMul(1.1, true);
+//        item->setPos(item->pos(), 1000);
+        item->rotate(0, 1000);
+//        item->scaleMul(1.1, 1000);
 
     #endif
     #if 0

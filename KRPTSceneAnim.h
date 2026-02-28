@@ -51,6 +51,17 @@ public:
         values[0] = value;
         return values.size();
     }
+    inline static void valuesTo(const Values &in, Values &out)
+    {
+        assert(out.size() < in.size());
+        memcpy(out.data(), in.data(), in.size() * sizeof(double));
+    }
+    inline static size_t valuesFrom(const Values &in, Values &out)
+    {
+        if(out.size() < in.size())out.resize(in.size());
+        memcpy(out.data(), in.data(), in.size() * sizeof(double));
+        return in.size();
+    }
     inline static void valuesTo(const Values &values, QPointF &point)
     {
         assert(values.size() > 1);
@@ -60,6 +71,17 @@ public:
     {
         if(values.size() < 2)values.resize(2);
         values[0] = point.x(); values[1] = point.y();
+        return values.size();
+    }
+    inline static void valuesTo(const Values &values, QSizeF &size)
+    {
+        assert(values.size() > 1);
+        size.setWidth(values[0]); size.setHeight(values[1]);
+    }
+    inline static size_t valuesFrom(const QSizeF &size, Values &values)
+    {
+        if(values.size() < 2)values.resize(2);
+        values[0] = size.width(); values[1] = size.height();
         return values.size();
     }
     inline static void valuesTo(const Values &values, QRectF &rect)
@@ -84,7 +106,6 @@ public:
         values[0] = color.redF(); values[1] = color.greenF(); values[2] = color.blueF(); values[3] = color.alphaF();
         return values.size();
     }
-
     template<typename T>
     inline static T valuesTo(const Values &values) noexcept
     {
@@ -92,7 +113,6 @@ public:
         valuesTo(values, res);
         return res;
     }
-
 public:
     KRPTSceneAnim(uint32_t id, const Event &event, 
         int duration = 1000, 

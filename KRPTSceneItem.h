@@ -235,6 +235,20 @@ protected:
     bool                 dirtyVisibleChilds  ()                                                                    noexcept;
     bool                 mustAnim            (uint32_t time)                                                 const noexcept;
 protected:
+    void                 startAnimImpl       (uint32_t id, 
+                                              const std::vector<double> &start, const std::vector<double> &end, 
+                                              uint32_t time, QEasingCurve curve)                                   noexcept;
+    void                 startAnimImpl       (uint32_t id, double start, double end, 
+                                              uint32_t time, QEasingCurve curve)                                   noexcept;
+    void                 startAnimImpl       (uint32_t id, const QPointF &start, const QPointF &end, 
+                                              uint32_t time, QEasingCurve curve)                                   noexcept;
+    void                 startAnimImpl       (uint32_t id, const QRectF &start, const QRectF &end, 
+                                              uint32_t time, QEasingCurve curve)                                   noexcept;
+    void                 startAnimImpl       (uint32_t id, const QSizeF &start, const QSizeF &end, 
+                                              uint32_t time, QEasingCurve curve)                                   noexcept;
+    void                 startAnimImpl       (uint32_t id, const QColor &start, const QColor &end, 
+                                              uint32_t time, QEasingCurve curve)                                   noexcept;
+protected:
     KRPTSceneItemData *_data;
     KRPTFlag<Dirty>    _dirty            ;
     KRPTFlag<Must>     _must             ;
