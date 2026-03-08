@@ -45,8 +45,9 @@ private:
 private:
     KRPTScene  *_scene  ;
 
+    KRPTSceneItem *_root;
     KRPTSceneItem *_item;
-
+    int _tag = 0;
 //    std::unique_ptr<ScenePainter>  _painter;
 };
 

@@ -12,6 +12,8 @@
 #include "KRPTSceneItem.h"
 #include <QWidget>
 
+#include <QElapsedTimer>
+
 //####################################################################################################
 //#
 //####################################################################################################
@@ -53,6 +55,7 @@ public:
     double             y                  ()                                 const noexcept;
     double             width              ()                                 const noexcept;
     double             height             ()                                 const noexcept;
+    double             scale              ()                                 const noexcept;
     QPointF            center             ()                                 const noexcept;
     const QTransform & transform          ()                                 const noexcept;
     const QTransform & sceneTransform     ()                                 const noexcept;
@@ -68,6 +71,7 @@ public:
     void               setY               (double y)                               noexcept;
     void               setWidth           (double width)                           noexcept;
     void               setHeight          (double height)                          noexcept;
+    void               setScale           (double scale)                           noexcept;
 
     void               setBorderColor    (const QColor &color)                     noexcept;
     void               setBackgroundColor(const QColor &color)                     noexcept;

@@ -12,139 +12,120 @@ KRPTSceneWidget::KRPTSceneWidget(QWidget *parent) noexcept
     : QWidget(parent), _scene(nullptr)
 {
     _scene = new KRPTScene(this);
-
 //    setAttribute(Qt::WA_DontShowOnScreen);
-//    show();
 
 #if 1
-    _item = _scene->addItem<KRPTSceneRectItem>();
-    _item->setGeometry(QRectF(10, 10, 1000, 1000));
-
-    _item->addMust
-        (
+    _root = _scene->addItem<KRPTSceneRectItem>();
+    _root->setGeometry(QRectF(10, 10, 1000, 1000));
+    _root->addMust
+    (
 //            KRPTSceneItem::Must::NoClipChilds,
 //            KRPTSceneItem::Must::NoMouseEventTranslate,
-            KRPTSceneItem::Must::AccuracyClip,
+//            KRPTSceneItem::Must::AccuracyClip,
  
+            KRPTSceneItem::Must::MouseMoveble,
             KRPTSceneItem::Must::MousePressEvent,
             KRPTSceneItem::Must::MouseMoveEvent,
             KRPTSceneItem::Must::WhellEvent
 //        ,KRPTSceneItem::Must::NoCheckChildVisibled
-        );
+    );
+    _root->setTag(_tag++);
 
-    int x = 0;
-    int y = 0;
-//    for(int i = 0; i < 100000; ++i)
-    for(int i = 0; i < 1; ++i)
+
+    _item = _root->addChild<KRPTSceneRectItem>();
+    _item->setGeometry(QRectF(50, 50, 800, 800));
+    _item->addMust
+    (
+//            KRPTSceneItem::Must::NoClipChilds,
+//            KRPTSceneItem::Must::NoMouseEventTranslate,
+//            KRPTSceneItem::Must::AccuracyClip,
+ 
+            KRPTSceneItem::Must::MouseMoveble,
+            KRPTSceneItem::Must::MousePressEvent,
+            KRPTSceneItem::Must::MouseMoveEvent,
+            KRPTSceneItem::Must::WhellEvent
+//        ,KRPTSceneItem::Must::NoCheckChildVisibled
+    );
+    _item->setTag(_tag++);
+
+    auto child = _item->addChild<KRPTSceneRectItem>();
+    child->setGeometry(QRectF(5, 5, 150, 150));
+    child->setBackgroundColor(QColor(0, 255, 0));
+
+    child->setTag(_tag++);
+
+    child->addMust
+    (
+//            KRPTSceneItem::Must::NoClipChilds,
+//            KRPTSceneItem::Must::NoSceneRotate,
+//            KRPTSceneItem::Must::NoSceneScale,
+//            KRPTSceneItem::Must::AccuracyClip,
+            KRPTSceneItem::Must::Anim,
+//            KRPTSceneItem::Must::AccuracyClip,
+//            KRPTSceneItem::Must::AccuracyCheckContains,
+            KRPTSceneItem::Must::MouseMoveble,
+            KRPTSceneItem::Must::MousePressEvent,
+            KRPTSceneItem::Must::MouseMoveEvent,
+            KRPTSceneItem::Must::WhellEvent
+    );
+
+
+#else
+
+    _item = _scene->addItem<KRPTSceneRectItem>();
+    _item->setGeometry(QRectF(10, 10, 1000, 1000));
+    _item->addMust
+    (
+//            KRPTSceneItem::Must::NoClipChilds,
+//            KRPTSceneItem::Must::NoMouseEventTranslate,
+//            KRPTSceneItem::Must::AccuracyClip,
+            KRPTSceneItem::Must::MouseMoveble,
+            KRPTSceneItem::Must::MousePressEvent,
+            KRPTSceneItem::Must::MouseMoveEvent,
+            KRPTSceneItem::Must::WhellEvent
+//        ,KRPTSceneItem::Must::NoCheckChildVisibled
+    );
+
+    int x = 5;
+    int y = 5;
+    for(int i = 0; i < 100000; ++i)
+//    for(int i = 0; i < 100; ++i)
     {
-//        item->addMust(
-//            SceneItem::Must::ClipChilds,
-//            SceneItem::Must::MousePressEvent
-//        );
-
-//        auto child = _item->addChild<KRPTSceneEllipseItem>();
         auto child = _item->addChild<KRPTSceneRectItem>();
         child->setGeometry(QRectF(x, y, 50, 50));
         child->setBackgroundColor(QColor(0, 255, 0));
 
+//        child->setScale(0.8);
+//        child->setAngle(12);
+
+        child->setTag(i + 1);
+
         child->addMust
         (
 //            KRPTSceneItem::Must::NoClipChilds,
-            KRPTSceneItem::Must::NoSceneRotate,
+//            KRPTSceneItem::Must::NoSceneRotate,
             KRPTSceneItem::Must::NoSceneScale,
 //            KRPTSceneItem::Must::AccuracyClip,
             KRPTSceneItem::Must::Anim,
 //            KRPTSceneItem::Must::AccuracyClip,
 //            KRPTSceneItem::Must::AccuracyCheckContains,
+            KRPTSceneItem::Must::MouseMoveble,
             KRPTSceneItem::Must::MousePressEvent,
             KRPTSceneItem::Must::MouseMoveEvent,
             KRPTSceneItem::Must::WhellEvent
         );
-        x += 25;
-        if((i % 1000) == 0)
+
+        x += child->width() + 5;
+        if( ((i + 1) % 1000) == 0)
         {
-            x = 0;
-            y += 25;
+            x = 5;
+            y += child->height();
         }
 
-//        child->setAngle(i * 10);
-//        child->setScale(i * 0.5);
-    #if 0
-        int x1 = 0;
-        int y1 = 20;
-        for(int i = 0; i < 100000; ++i)
-//        for(int i = 0; i < 10; ++i)
-        {
-            if((i % 10) == 0)
-            {
-                x1 = 0;
-                y1 += 50;
-            }
-
-            auto child1 = child->addChild<KRPTSceneItem>();
-            child1->addMust(
-//            KRPTSceneItem::Must::ClipChilds,
-//                KRPTSceneItem::Must::NoScale,
-                KRPTSceneItem::Must::MousePressEvent,
-                KRPTSceneItem::Must::MouseMoveEvent,
-                KRPTSceneItem::Must::WhellEvent
-            );
-//            child1->setAngle(i * 10);
-            child1->setGeometry(QRectF(x1, y1, 50, 50));
-
-            if(i == 9)
-                child1->_ch = true;
-
-            x1 += 50;
-//            qDebug() << (i % 10);
 
 
-        }
-    #endif
     }
-#else
 
-    #if 0
-    _item = _scene->addItem<KRPTSceneItem>();
-    _item->setGeometry(QRectF(10, 10, 600, 600));
-    _item->addMust
-        (
-//            KRPTSceneItem::Must::NoClipChilds,
-            KRPTSceneItem::Must::WhellEvent,
-            KRPTSceneItem::Must::MousePressEvent,
-            KRPTSceneItem::Must::MouseMoveEvent
-        );
-
-    auto item = _item->addChild<KRPTSceneItem>();
-    item->setGeometry(QRectF(10, 10, 400, 400));
-    item->addMust
-    (
-//        KRPTSceneItem::Must::NoClipChilds,
-        KRPTSceneItem::Must::WhellEvent,
-        KRPTSceneItem::Must::MousePressEvent,
-        KRPTSceneItem::Must::MouseMoveEvent
-    );
-
-    item = item->addChild<KRPTSceneItem>();
-    item->setGeometry(QRectF(10, 10, 200, 200));
-    item->addMust
-    (
-//        KRPTSceneItem::Must::NoClipChilds,
-        KRPTSceneItem::Must::WhellEvent,
-        KRPTSceneItem::Must::MousePressEvent,
-        KRPTSceneItem::Must::MouseMoveEvent
-    );
-
-    item = item->addChild<KRPTSceneItem>();
-    item->setGeometry(QRectF(10, 10, 100, 100));
-    item->addMust
-    (
-//        KRPTSceneItem::Must::NoClipChilds,
-        KRPTSceneItem::Must::WhellEvent,
-        KRPTSceneItem::Must::MousePressEvent,
-        KRPTSceneItem::Must::MouseMoveEvent
-    );
-    #endif
 
 #endif
 
@@ -185,6 +166,32 @@ void KRPTSceneWidget::mousePressEvent(QMouseEvent *e)
     if(!_scene)return;
     auto event = createMouseSceneEvent(e);
     _scene->mousePressEvent(event.get());
+
+    if(event->btns()[SceneMouseEvent::Btn::Right])
+    {
+
+    auto child = _item->addChild<KRPTSceneRectItem>();
+    child->setGeometry(QRectF(50, 50, 150, 150));
+    child->setBackgroundColor(QColor(0, 255, 0));
+
+    child->setTag(_tag++);
+
+    child->addMust
+    (
+//            KRPTSceneItem::Must::NoClipChilds,
+//            KRPTSceneItem::Must::NoSceneRotate,
+//            KRPTSceneItem::Must::NoSceneScale,
+//            KRPTSceneItem::Must::AccuracyClip,
+            KRPTSceneItem::Must::Anim,
+//            KRPTSceneItem::Must::AccuracyClip,
+//            KRPTSceneItem::Must::AccuracyCheckContains,
+            KRPTSceneItem::Must::MouseMoveble,
+            KRPTSceneItem::Must::MousePressEvent,
+            KRPTSceneItem::Must::MouseMoveEvent,
+            KRPTSceneItem::Must::WhellEvent
+    );
+    }
+
 }
 
 void KRPTSceneWidget::mouseReleaseEvent(QMouseEvent *e)

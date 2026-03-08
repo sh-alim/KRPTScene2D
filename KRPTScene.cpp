@@ -20,6 +20,14 @@ protected:
 KRPTSceneRoot::KRPTSceneRoot(KRPTScene *scene, KRPTSceneItem *parent) noexcept
     : KRPTSceneItem(scene, parent)
 {
+    addMust(
+//        KRPTSceneItem::Must::NoPaint
+//        KRPTSceneItem::Must::TransformEvent,
+//        KRPTSceneItem::Must::NoClipChilds
+//        KRPTSceneItem::Must::NoCheckChildVisibled,
+//        KRPTSceneItem::Must::Anim
+    );
+
 }
 
 void KRPTSceneRoot::paintBackground(QPainter &painter) noexcept
@@ -90,6 +98,11 @@ double KRPTScene::width() const noexcept
 double KRPTScene::height() const noexcept 
 {
     return _item->height();
+}
+
+double KRPTScene::scale() const noexcept
+{
+    return _item->scale();
 }
 
 QPointF KRPTScene::center() const noexcept 
@@ -170,6 +183,11 @@ void KRPTScene::setHeight(double height) noexcept
     setSize(QSizeF(_item->width(), height));
 }
 
+void KRPTScene::setScale(double scale) noexcept
+{
+    _item->setScale(scale);
+}
+
 void KRPTScene::setBorderColor(const QColor &color) noexcept
 {
     _item->setBorderColor(color);
@@ -220,7 +238,6 @@ void KRPTScene::mousePressEvent(SceneMouseEvent *e) noexcept
     {
         return item->must(KRPTSceneItem::Must::MousePressEvent);
     });
-//    if(!item)item = _item;
     if(item)
     {
     #if 0
@@ -237,25 +254,6 @@ void KRPTScene::mousePressEvent(SceneMouseEvent *e) noexcept
             mousePos, e->keyModifers(), e->delta()).get());
         _mousePressedItem = item;
         _mousePressedItemPos = item->pos() - item->mapToParent(p);
-
-        _mousePressedItem->_borderColor = QColor(255, 0, 0);
-
-
-//        auto itm = item->addChild<KRPTSceneItem>();
-//        itm->setGeometry(QRectF(p.x(), p.y(), 20, 20));
-//        if(item->parent())
-//            item->parent()->delChild(item);
-//        _mousePressedItem = nullptr;
-
-//        item->setPos(item->pos(), 1000);
-        item->rotate(0, 1000);
-//        item->scaleMul(1.1, 1000);
-
-    #endif
-    #if 0
-        QPointF p0 = _mousePressedItem->mapFromScene(mousePos);
-        QPointF p1 = _mousePressedItem->mapToParent(p0);
-        qDebug() << mousePos << p0;
     #endif
     }
     _lastMousePos = mousePos;
@@ -273,7 +271,6 @@ void KRPTScene::mouseReleaseEvent(SceneMouseEvent *e) noexcept
                 SceneMouseEvent::get(_mousePressedItem->mapFromScene(mousePos), e->btns(), 
                     mousePos, e->keyModifers(), e->delta()).get());
         }
-        _mousePressedItem->_borderColor = QColor(255, 255, 255);
         _mousePressedItem = nullptr;
     }
     update();
@@ -290,12 +287,14 @@ void KRPTScene::mouseMoveEvent(SceneMouseEvent *e) noexcept
                 SceneMouseEvent::get(_mousePressedItem->mapFromScene(mousePos), e->btns(), 
                     mousePos, e->keyModifers(), e->delta()).get());
         }
-    #if 1
-        QPointF p0 = _mousePressedItem->mapFromScene(mousePos);
-        QPointF p1 = _mousePressedItem->mapToParent(p0);
-        _mousePressedItem->setPos(p1 + _mousePressedItemPos, 1000, QEasingCurve::Linear);
-//        _mousePressedItem->setPos(p1 + _mousePressedItemPos);
-    #endif
+        if(e->btns()[SceneMouseEvent::Btn::Left])
+        {
+            if(_mousePressedItem->must(KRPTSceneItem::Must::MouseMoveble))
+            {
+                _mousePressedItem->setPos(_mousePressedItem->mapToParent(
+                    _mousePressedItem->mapFromScene(mousePos)) + _mousePressedItemPos);
+            }
+        }
     }
     update();
 }
@@ -321,25 +320,18 @@ void KRPTScene::whellEvent(SceneMouseEvent *e) noexcept
     {
         item->whellImpl(SceneMouseEvent::get(item->mapFromScene(mousePos), e->btns(), 
             mousePos, e->keyModifers(), e->delta()).get());
+    #if 1
         if(e->keyModifers()[SceneMouseEvent::KeyModifer::Ctrl])
         {
-            item->rotateAround((e->delta().y() > 0 ? 5 : -5), mousePos, KRPTSceneItem::TransSrc::Scene, 500);
-//            item->rotate((e->delta().y() > 0 ? 5 : -5), 500);
+//            item->rotateAround((e->delta().y() > 0 ? 5 : -5), mousePos, KRPTSceneItem::TransSrc::Scene, 500);
+            item->rotate((e->delta().y() > 0 ? 5 : -5), 500);
         }
         if(e->keyModifers()[SceneMouseEvent::KeyModifer::Alt])
         {
-            item->scaleFromPoint((e->delta().x() > 0 ? 1.1 : 0.9), mousePos, KRPTSceneItem::TransSrc::Scene, 500);
-//            item->scaleMul((e->delta().x() > 0 ? 1.1 : 0.9), 500);
+//            item->scaleFromPoint((e->delta().x() > 0 ? 1.1 : 0.9), mousePos, KRPTSceneItem::TransSrc::Scene, 500);
+            item->scaleMul((e->delta().x() > 0 ? 1.1 : 0.9), 500);
         }
-
-
-//        item->rotate(e->delta() > 0 ? 1 : -1);
-//        item->setSize(item->width() + (e->delta() > 0 ? 10 : -10), item->height());
-//        double angle = item->angle() + (e->delta().y() > 0 ? 1 : -1);
-//        double scale = item->scale() * e->delta() > 0 ? 1.1 : 0.9;
-//        item->scaleFromPoint(scale, mousePos, KRPTSceneItem::TransSrc::Scene);
-//        double opaq = item->opaq() * (e->delta().y() > 0 ? 1.1 : 0.1);
-//        item->setOpaq(opaq, 1000);
+    #endif
     }
 #endif
     update();
@@ -347,7 +339,9 @@ void KRPTScene::whellEvent(SceneMouseEvent *e) noexcept
 
 void KRPTScene::paintEvent(QPainter &painter) noexcept
 {
+    QElapsedTimer t; t.start();
     paintImpl(painter, _item);
+    qDebug() << t.elapsed();
 }
 
 //****************************************************************************************************
@@ -391,9 +385,11 @@ void KRPTScene::paintImpl(QPainter &painter, KRPTSceneItem *item) noexcept
     painter.setTransform(item->transform(), true);
     if(!item->must(KRPTSceneItem::Must::NoClipChilds))
     {
+    #if 0
         if(!item->must(KRPTSceneItem::Must::AccuracyClip))
             painter.setClipRect(item->_rect.adjusted(0, 0, 0.5, 0.5), Qt::ClipOperation::IntersectClip);
         else painter.setClipPath(item->outline(), Qt::ClipOperation::IntersectClip);
+    #endif
     }
     painter.setOpacity(painter.opacity() * item->opaq());
     if(item->needPaint())

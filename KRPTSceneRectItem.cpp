@@ -38,8 +38,23 @@ void KRPTSceneRectItem::paintBackground(QPainter &painter) noexcept
 
 void KRPTSceneRectItem::paintForeground(QPainter &painter) noexcept
 {
-    QPen pen(_borderColor, 2);
+    QPen pen(_borderColor, 1);
+    pen.setCosmetic(true);
     painter.setPen(pen);
     painter.drawRect(_rect);
+
+#if 1
+    painter.save();
+    if(_parent)
+    {
+        painter.setTransform(_parent->sceneTransform());
+        painter.drawRect(bBoxMapToParent());
+//        painter.drawRect(bBox());
+    }
+    painter.restore();
+#endif
+
+//    QPolygonF p = mapToParent(bBox()); 
+//    painter.drawPolygon(bBox());
 //    painter.drawPath(outline());
 }

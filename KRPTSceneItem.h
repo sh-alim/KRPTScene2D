@@ -58,7 +58,7 @@ protected:
         Angle    = 1,
         Scale    = 2,
         Opaq     = 3,
-        User     = 3
+        User     = 4
     };
 public:
     enum class Must : uint16_t
@@ -67,18 +67,19 @@ public:
         NoPaint                 = 0x0001,
         NoClipChilds            = 0x0002,
         NoSceneScale            = 0x0004,
-        NoSceneRotate           = 0x2000,
-        NoMouseEventTranslate   = 0x0008,
-        NoCheckChildVisibled    = 0x2000,
-        MousePressEvent         = 0x0010,
-        MouseReleaseEvent       = 0x0020,
-        MouseMoveEvent          = 0x0040,
-        TransformEvent          = 0x0080,
-        WhellEvent              = 0x0100,
-        ChildTransformEvent     = 0x0200,
-        Anim                    = 0x0400,
-        AccuracyCheckContains   = 0x0800,
-        AccuracyClip            = 0x1000,
+        NoSceneRotate           = 0x0008,
+        NoMouseEventTranslate   = 0x0010,
+        NoCheckChildVisibled    = 0x0020,
+        MousePressEvent         = 0x0040,
+        MouseReleaseEvent       = 0x0080,
+        MouseMoveEvent          = 0x0100,
+        TransformEvent          = 0x0200,
+        WhellEvent              = 0x0400,
+        ChildTransformEvent     = 0x0800,
+        Anim                    = 0x1000,
+        AccuracyCheckContains   = 0x2000,
+        AccuracyClip            = 0x4000,
+        MouseMoveble            = 0x8000,
         All                     = 0xFFFF
     };
     enum class TransSrc : uint8_t{Self, Parent, Scene};
@@ -92,6 +93,7 @@ public:
 public:
     template<typename T, typename ... Args> inline auto addChild(Args&& ... arg)                                   noexcept
     {
+        static_assert(std::is_base_of_v<KRPTSceneItem, T>, "is not scene item");
         auto item = new T(_scene, this, std::forward<Args>(arg) ...);
         addChildImpl(item, this);
         return item;
@@ -134,7 +136,7 @@ public:
     QRectF               bBox                ()                                                                    noexcept;
     QRectF               bBoxMapToParent     ()                                                                    noexcept;
     bool                 contains            (const QPointF &point)                                                noexcept;
-
+    uint32_t             tag                 ()                                                              const noexcept;
 
     QColor               borderColor         ()                                                              const noexcept {return _borderColor       ;}
     QColor               backgroundColor     ()                                                              const noexcept {return _backgroundColor   ;}
@@ -180,6 +182,7 @@ public:
                                               uint32_t time = 0, QEasingCurve curve = QEasingCurve::OutExpo)       noexcept;
     void                 scaleFromPoint      (double scale, const QPointF &pt, TransSrc src, 
                                               uint32_t time = 0, QEasingCurve curve = QEasingCurve::OutExpo)       noexcept;
+    void                 setTag              (uint32_t tag)                                                        noexcept;
     void                 setBorderColor      (const QColor &color)                                                 noexcept;
     void                 setBackgroundColor  (const QColor &color)                                                 noexcept;
     void                 lockUpdate          (bool lock)                                                           noexcept;
@@ -195,6 +198,12 @@ public:
     QPointF              mapFromScene        (const QPointF &point)                                                noexcept;
     QPolygonF            mapFromScene        (const QRectF &rect)                                                  noexcept;
     QPolygonF            mapFromScene        (const QPolygonF &polygon)                                            noexcept;
+    QPointF              mapToItem           (KRPTSceneItem *item, const QPointF &point)                           noexcept;
+    QPolygonF            mapToItem           (KRPTSceneItem *item, const QRectF &rect)                             noexcept;
+    QPolygonF            mapToItem           (KRPTSceneItem *item, const QPolygonF &polygon)                       noexcept;
+    QPointF              mapFromItem         (KRPTSceneItem *item, const QPointF &point)                           noexcept;
+    QPolygonF            mapFromItem         (KRPTSceneItem *item, const QRectF &rect)                             noexcept;
+    QPolygonF            mapFromItem         (KRPTSceneItem *item, const QPolygonF &polygon)                       noexcept;
     bool                 needPaint           ()                                                              const noexcept;
     bool                 needChildPaint      ()                                                              const noexcept;
 protected:
@@ -220,7 +229,8 @@ protected:
     virtual void         mouseReleaseImpl    (SceneMouseEvent *e)                                                  noexcept;
     virtual void         mouseMoveImpl       (SceneMouseEvent *e)                                                  noexcept;
     virtual void         whellImpl           (SceneMouseEvent *e)                                                  noexcept;
-    virtual void         animImpl            (uint32_t id, const std::vector<double> &value)                       noexcept;
+    virtual void         animImpl            (uint32_t id, const std::vector<double> &value, 
+                                              uint32_t time, bool completed)                                       noexcept;
     virtual void         paintBackground     (QPainter &painter)                                                   noexcept;
     virtual void         paintForeground     (QPainter &painter)                                                   noexcept;
     virtual void         updateGeometry      ()                                                                    noexcept;
@@ -258,7 +268,7 @@ protected:
     ItemsList          _childItems       ;
     ItemsList          _visibleChildItems;
     IndexMap           _index            ;
-    bool               _updateLocked     ;
+    uint32_t           _updateLocked     ; 
     bool               _visible          ;
     QRectF             _geometry         ;
     QRectF             _rect             ;
@@ -274,5 +284,6 @@ protected:
     QRectF             _bBoxMapToParent  ;
     QColor             _borderColor      ;
     QColor             _backgroundColor  ;
+    uint32_t           _tag              ; 
 };
 
