@@ -14,7 +14,7 @@ KRPTSceneWidget::KRPTSceneWidget(QWidget *parent) noexcept
     _scene = new KRPTScene(this);
 //    setAttribute(Qt::WA_DontShowOnScreen);
 
-#if 1
+#if 0
     _root = _scene->addItem<KRPTSceneRectItem>();
     _root->setGeometry(QRectF(10, 10, 1000, 1000));
     _root->addMust
@@ -89,15 +89,15 @@ KRPTSceneWidget::KRPTSceneWidget(QWidget *parent) noexcept
 
     int x = 5;
     int y = 5;
-    for(int i = 0; i < 100000; ++i)
-//    for(int i = 0; i < 100; ++i)
+    for(int i = 0; i < 50000; ++i)
+//    for(int i = 0; i < 20; ++i)
     {
         auto child = _item->addChild<KRPTSceneRectItem>();
         child->setGeometry(QRectF(x, y, 50, 50));
         child->setBackgroundColor(QColor(0, 255, 0));
 
-        child->setScale(0.8);
-        child->setAngle(12);
+//        child->setScale(0.8);
+//        child->setAngle(12);
 
         child->setTag(i + 1);
 

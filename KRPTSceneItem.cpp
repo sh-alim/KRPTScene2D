@@ -6,6 +6,10 @@
 #include "KRPTScene.h"
 #include "KRPTSceneAnim.h"
 
+#ifdef _OPENMP
+#include <omp.h>
+#endif
+
 //####################################################################################################
 //#
 //####################################################################################################
@@ -136,7 +140,6 @@ private:
         KRPTSceneAnim::interpolate(anim->start, anim->end, progress, anim->current);
         if(anim->time() == time && loopCount != -1 && currentLoop == loopCount - 1)
         {
-//            qDebug() << time << loopCount << currentLoop;
             owner->animImpl(id, anim->end, time, true, currentLoop);
             deleteAnim(id);
         }else owner->animImpl(id, anim->current, time, false, currentLoop);
@@ -294,9 +297,9 @@ const KRPTSceneItem::ItemsList& KRPTSceneItem::visibleChildItems() noexcept
 {
     if(_childItems.empty() || must(KRPTSceneItem::Must::NoCheckChildVisibled))
         return _childItems;
-    if(!dirtyVisibleChilds())
-        return _visibleChildItems;
+    if(!dirtyVisibleChilds())return _visibleChildItems;
     _visibleChildItems.clear();
+#ifndef _OPENMP
     for(auto &item : _childItems)
     {
         item->updateCache(true);
@@ -305,6 +308,52 @@ const KRPTSceneItem::ItemsList& KRPTSceneItem::visibleChildItems() noexcept
         if(needPaint)
             _visibleChildItems.emplace_back(item);
     }
+#else
+    if(_childItems.size() < 500)
+    {
+        for(auto &item : _childItems)
+        {
+            item->updateCache(true);
+            bool needPaint = (!item->_parent || 
+                item->_state[State::VisibledInView, State::NeedChildPaint]) && _visible;
+            if(needPaint)
+                _visibleChildItems.emplace_back(item);
+        }
+        return _visibleChildItems;
+    }
+    uint32_t threadCount = std::min(4, omp_get_num_procs());
+    size_t chsz = _childItems.size() / threadCount;
+    struct Rec
+    {
+        ItemsList::iterator begin;
+        ItemsList::iterator end  ;
+        ItemsList           list ;
+    };
+    std::vector<Rec> rec(threadCount);
+    ItemsList::iterator it = _childItems.begin();
+    for(uint32_t i = 0; i < threadCount; ++i)
+    {
+        rec[i].begin = it;
+        rec[i].end = i < threadCount - 1 ? std::next(rec[i].begin, chsz) : _childItems.end();
+        it = rec[i].end;
+    }
+    #pragma omp parallel num_threads(threadCount)
+    {
+        int tid = omp_get_thread_num();
+        Rec &r = rec[tid];
+        for(auto it = r.begin; it != r.end; ++it)
+        {
+            auto item = *it;
+            item->updateCache(true);
+            bool needPaint = (!item->_parent || 
+                item->_state[State::VisibledInView, State::NeedChildPaint]) && _visible;
+            if(needPaint)
+                r.list.emplace_back(item);
+        }
+    }
+    for(auto &r : rec)
+        _visibleChildItems.splice(_visibleChildItems.end(), r.list);
+#endif
     return _visibleChildItems;
 }
 
@@ -357,34 +406,18 @@ const QTransform& KRPTSceneItem::sceneTransformInv() noexcept
 
 QRectF KRPTSceneItem::bBox() noexcept
 {
-#if 0
-    if(!_dirty[Dirty::BBox])return _bBox;
-    _dirty -= Dirty::BBox;
-    QTransform t;
-    transform(_rect, _angle, _scale, t);
-    bBox(t, _rect, _bBox);
-    return _bBox;
-#else
     if(!_dirty[Dirty::BBox])return _bBox;
     _dirty -= Dirty::BBox;
     updateCache();
     return _bBox;
-#endif
 }
 
 QRectF KRPTSceneItem::bBoxMapToParent() noexcept
 {
-#if 0
-    if(!_dirty[Dirty::BBoxMapToParent])return _bBoxMapToParent;
-    _dirty -= Dirty::BBoxMapToParent;
-    _bBoxMapToParent = bBox().translated(pos());
-    return _bBoxMapToParent;
-#else
     if(!_dirty[Dirty::BBoxMapToParent])return _bBoxMapToParent;
     _dirty -= Dirty::BBoxMapToParent;
     updateCache();
     return _bBoxMapToParent;
-#endif
 }
 
 bool KRPTSceneItem::contains(const QPointF &point) noexcept
@@ -699,12 +732,6 @@ void KRPTSceneItem::whellEvent(SceneMouseEvent *e) noexcept
 {
 }
 
-#if 0
-void KRPTSceneItem::parentTransformEvent(SceneTransformEvent *e) noexcept
-{
-}
-#endif
-
 void KRPTSceneItem::childTransformEvent(KRPTSceneItem *item, SceneTransformEvent *e) noexcept
 {
 }
@@ -893,21 +920,6 @@ void KRPTSceneItem::updateGeometry() noexcept
 
 void KRPTSceneItem::transform(const QRectF &rect, double angle, double scale, QTransform &transform) noexcept 
 {
-#if 0
-    double tscale = !must(KRPTSceneItem::Must::NoSceneScale ) ? scale : scale *= 1.0 / _data->sceneScale;
-    double tangle = !must(KRPTSceneItem::Must::NoSceneRotate) ? angle : angle -= _data->sceneAngle;
-    transform.reset();
-    transform.translate(rect.x(), rect.y());
-    if(!qFuzzyIsNull(angle) || !qFuzzyCompare(tscale, 1))
-    {
-        double wd2 = rect.width () / 2.0;
-        double hd2 = rect.height() / 2.0;
-        transform.translate(wd2, hd2);
-        if(!qFuzzyCompare(tscale, 1))transform.scale (tscale, tscale);
-        if(!qFuzzyIsNull (tangle   ))transform.rotate(tangle        );
-        transform.translate(-wd2, -hd2);
-    }
-#else
     double wd2 = rect.width () / 2.0;
     double hd2 = rect.height() / 2.0;
     if(_dirty[Dirty::TransformScale])
@@ -931,12 +943,10 @@ void KRPTSceneItem::transform(const QRectF &rect, double angle, double scale, QT
         _transTransform.reset();
         _transTransform.translate(rect.x(), rect.y());
     }
-//    transform = _scaleTransform * _rotateTransform * _transTransform;
     transform = _rotateTransform * _scaleTransform * _transTransform;
     _dirty -= Dirty::TransformScale;
     _dirty -= Dirty::TransformRotate;
     _dirty -= Dirty::TransformTrans;
-#endif
 }
 
 QPointF KRPTSceneItem::transformShift(QTransform &t, TransSrc src, const QPointF &pt) noexcept
@@ -1110,11 +1120,7 @@ bool KRPTSceneItem::dirtyTransform() noexcept
     if(dirty)
     {
         _dirty += Dirty::TransformInv;
-    #if 1
-//        _dirty += Dirty::BBox;
-//        _dirty += Dirty::BBoxMapToParent;
         _dirty += Dirty::Transform;
-    #endif
     }
     return dirty;
 }

@@ -341,7 +341,7 @@ void KRPTScene::paintEvent(QPainter &painter) noexcept
 {
     QElapsedTimer t; t.start();
     paintImpl(painter, _item);
-    qDebug() << t.elapsed();
+    qDebug().noquote() << "elapsed : " << t.elapsed();
 }
 
 //****************************************************************************************************
