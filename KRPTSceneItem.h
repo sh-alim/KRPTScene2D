@@ -34,15 +34,18 @@ friend class KRPTSceneItemData;
 protected:
     enum class Dirty : uint16_t
     {
-        No                      = 0x00,
-        Transform               = 0x01,
-        TransformInv            = 0x02,
-        SceneTransformInv       = 0x04,
-        BBox                    = 0x08,
-        BBoxMapToParent         = 0x10,
-        VisibleChildItems       = 0x20,
-        Outline                 = 0x40,
-        All                     = 0xFF,
+        No                      = 0x0000,
+        Transform               = 0x0001,
+        TransformTrans          = 0x0002,
+        TransformScale          = 0x0004,
+        TransformRotate         = 0x0008,
+        TransformInv            = 0x0010,
+        SceneTransformInv       = 0x0020,
+        BBox                    = 0x0040,
+        BBoxMapToParent         = 0x0080,
+        VisibleChildItems       = 0x0100,
+        Outline                 = 0x0200,
+        All                     = 0xFFFF,
     };
     enum class State : uint8_t
     {
@@ -61,26 +64,27 @@ protected:
         User     = 4
     };
 public:
-    enum class Must : uint16_t
+    enum class Must : uint32_t
     {
-        No                      = 0x0000,
-        NoPaint                 = 0x0001,
-        NoClipChilds            = 0x0002,
-        NoSceneScale            = 0x0004,
-        NoSceneRotate           = 0x0008,
-        NoMouseEventTranslate   = 0x0010,
-        NoCheckChildVisibled    = 0x0020,
-        MousePressEvent         = 0x0040,
-        MouseReleaseEvent       = 0x0080,
-        MouseMoveEvent          = 0x0100,
-        TransformEvent          = 0x0200,
-        WhellEvent              = 0x0400,
-        ChildTransformEvent     = 0x0800,
-        Anim                    = 0x1000,
-        AccuracyCheckContains   = 0x2000,
-        AccuracyClip            = 0x4000,
-        MouseMoveble            = 0x8000,
-        All                     = 0xFFFF
+        No                      = 0x000000,
+        NoPaint                 = 0x000001,
+        NoClipChilds            = 0x000002,
+        NoClipPainter           = 0x000004,
+        NoSceneScale            = 0x000008,
+        NoSceneRotate           = 0x000010,
+        NoMouseEventTranslate   = 0x000020,
+        NoCheckChildVisibled    = 0x000040,
+        MousePressEvent         = 0x000080,
+        MouseReleaseEvent       = 0x000100,
+        MouseMoveEvent          = 0x000200,
+        TransformEvent          = 0x000400,
+        WhellEvent              = 0x000800,
+        ChildTransformEvent     = 0x001000,
+        Anim                    = 0x002000,
+        AccuracyCheckContains   = 0x004000,
+        AccuracyClip            = 0x008000,
+        MouseMoveble            = 0x010000,
+        All                     = 0xFFFFFF
     };
     enum class TransSrc : uint8_t{Self, Parent, Scene};
 public:
@@ -230,7 +234,7 @@ protected:
     virtual void         mouseMoveImpl       (SceneMouseEvent *e)                                                  noexcept;
     virtual void         whellImpl           (SceneMouseEvent *e)                                                  noexcept;
     virtual void         animImpl            (uint32_t id, const std::vector<double> &value, 
-                                              uint32_t time, bool completed)                                       noexcept;
+                                              uint32_t time, bool completed, int loop)                             noexcept;
     virtual void         paintBackground     (QPainter &painter)                                                   noexcept;
     virtual void         paintForeground     (QPainter &painter)                                                   noexcept;
     virtual void         updateGeometry      ()                                                                    noexcept;
@@ -247,17 +251,17 @@ protected:
 protected:
     void                 startAnimImpl       (uint32_t id, 
                                               const std::vector<double> &start, const std::vector<double> &end, 
-                                              uint32_t time, QEasingCurve curve)                                   noexcept;
+                                              uint32_t time, QEasingCurve curve, int loopCount = 1)                noexcept;
     void                 startAnimImpl       (uint32_t id, double start, double end, 
-                                              uint32_t time, QEasingCurve curve)                                   noexcept;
+                                              uint32_t time, QEasingCurve curve, int loopCount = 1)                noexcept;
     void                 startAnimImpl       (uint32_t id, const QPointF &start, const QPointF &end, 
-                                              uint32_t time, QEasingCurve curve)                                   noexcept;
+                                              uint32_t time, QEasingCurve curve, int loopCount = 1)                noexcept;
     void                 startAnimImpl       (uint32_t id, const QRectF &start, const QRectF &end, 
-                                              uint32_t time, QEasingCurve curve)                                   noexcept;
+                                              uint32_t time, QEasingCurve curve, int loopCount = 1)                noexcept;
     void                 startAnimImpl       (uint32_t id, const QSizeF &start, const QSizeF &end, 
-                                              uint32_t time, QEasingCurve curve)                                   noexcept;
+                                              uint32_t time, QEasingCurve curve, int loopCount = 1)                noexcept;
     void                 startAnimImpl       (uint32_t id, const QColor &start, const QColor &end, 
-                                              uint32_t time, QEasingCurve curve)                                   noexcept;
+                                              uint32_t time, QEasingCurve curve, int loopCount = 1)                noexcept;
 protected:
     KRPTSceneItemData *_data;
     KRPTFlag<Dirty>    _dirty            ;
@@ -276,6 +280,9 @@ protected:
     double             _scale            ;
     double             _opaq             ;
     QTransform         _transform        ;
+    QTransform         _transTransform   ;
+    QTransform         _scaleTransform   ;
+    QTransform         _rotateTransform  ;
     QTransform         _transformInv     ;
     QTransform         _sceneTransform   ;
     QTransform         _sceneTransformInv;

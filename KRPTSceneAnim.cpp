@@ -8,11 +8,10 @@
 //#
 //####################################################################################################
 
-KRPTSceneAnim::KRPTSceneAnim(uint32_t id, const Event &event, int duration, QEasingCurve easingCurve) noexcept
-    : QAbstractAnimation(), _id(id), _event(event), _duration(_duration), _easingCurve(easingCurve)
-//    _easing(QEasingCurve::Linear)
-//    _easingCurve(QEasingCurve::OutExpo)
+KRPTSceneAnim::KRPTSceneAnim(uint32_t id, const Event &event, int duration, QEasingCurve easingCurve, int count) noexcept
+    : QAbstractAnimation(), _id(id), _duration(duration), _event(event), _easingCurve(easingCurve)
 {
+    setLoopCount(count);
 }
 
 KRPTSceneAnim::~KRPTSceneAnim() noexcept
@@ -46,7 +45,14 @@ void KRPTSceneAnim::setEasingCurve(QEasingCurve easingCurve) noexcept
 void KRPTSceneAnim::updateCurrentTime(int time)
 {
     if(!_event)return;
-    _event(_id, time, _easingCurve.valueForProgress(static_cast<double>(time) / static_cast<double>(_duration)));
+
+//    this->loopCount();
+//    this->currentLoop();
+
+
+    _event(_id, time, 
+           _easingCurve.valueForProgress(static_cast<double>(time) / static_cast<double>(_duration)),
+           loopCount(), currentLoop());
 }
 
 //****************************************************************************************************

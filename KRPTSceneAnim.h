@@ -22,7 +22,7 @@ class KRPTSceneAnim : public QAbstractAnimation
 {
 public:
     using Values = std::vector<double>;
-    using Event  = std::function<void(uint32_t, int, double)>;
+    using Event  = std::function<void(uint32_t, int, double, int, int)>;
 public:
     template<typename T> inline static T interpolate(const T &f, const T &t, qreal progress)
     {
@@ -116,7 +116,8 @@ public:
 public:
     KRPTSceneAnim(uint32_t id, const Event &event, 
         int duration = 1000, 
-        QEasingCurve easingCurve = QEasingCurve::OutExpo)       noexcept;
+        QEasingCurve easingCurve = QEasingCurve::OutExpo, 
+        int count = 1)                                          noexcept;
    ~KRPTSceneAnim()                                             noexcept;
 public:
     int          duration      ()                         const override;

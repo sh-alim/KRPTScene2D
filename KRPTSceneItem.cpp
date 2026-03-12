@@ -58,8 +58,8 @@ public:
         using Values = std::vector<double>;
         using Map = std::map<uint32_t, std::unique_ptr<Anim>>;
         Anim (uint32_t id, KRPTSceneAnim::Event &event, 
-              int time, QEasingCurve easingCurve) noexcept 
-            : anim(new KRPTSceneAnim(id, event, time, easingCurve)) {}
+              int time, QEasingCurve easingCurve, int loopCount) noexcept 
+            : anim(new KRPTSceneAnim(id, event, time, easingCurve, loopCount)) {}
         ~Anim() noexcept {if(anim)anim->deleteLater();}
         inline int time() const {return anim ? anim->duration() : 0;}
         template<typename T>
@@ -75,23 +75,24 @@ public:
         Values         current;
     };
     template<typename T>
-    void startAnim(uint32_t id, const T &start, const T &end, uint32_t time, QEasingCurve curve)
+    void startAnim(uint32_t id, const T &start, const T &end, uint32_t time, 
+        QEasingCurve curve, int loopCount = 1)
     {
         if(qFuzzyCompare(start, end))
         {
             if constexpr (std::is_same_v<std::remove_reference_t<T>, std::vector<double>>)
             {
-                owner->animImpl(id, end, 0, true);
+                owner->animImpl(id, end, 0, true, 0);
             }else
             {
                 std::vector<double> value;
                 KRPTSceneAnim::valuesFrom(end, value);
-                owner->animImpl(id, value, 0, true);
+                owner->animImpl(id, value, 0, true, 0);
             }
             deleteAnim(id);
             return;
         }
-        Anim *anim = addAnim(id, time, curve);
+        Anim *anim = addAnim(id, time, curve, loopCount);
         KRPTSceneAnim *sceneAnim = anim->anim;
         sceneAnim->stop();
         anim->update(start, end);
@@ -108,15 +109,16 @@ private:
         auto findAnim = anims.find(id);
         return findAnim != anims.end() ? findAnim->second.get() : nullptr;
     }
-    Anim* addAnim(uint32_t id, int time, QEasingCurve easingCurve) noexcept
+    Anim* addAnim(uint32_t id, int time, QEasingCurve easingCurve, int loopCount) noexcept
     {
         auto findAnim = anims.find(id);
         if(findAnim == anims.end())
         {
             if(!animFunction)animFunction = std::bind(&KRPTSceneItemData::animEvent, this, 
-                std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
+                std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, 
+                std::placeholders::_4, std::placeholders::_5);
             findAnim = anims.emplace(id, std::make_unique<KRPTSceneItemData::Anim>
-                                    (id, animFunction, time, easingCurve)).first;
+                                    (id, animFunction, time, easingCurve, loopCount)).first;
         }
         return findAnim->second.get();
     }
@@ -127,16 +129,17 @@ private:
         findAnim->second->anim->stop();
         anims.erase(findAnim);
     }
-    void animEvent(uint32_t id, int time, double progress) noexcept
+    void animEvent(uint32_t id, int time, double progress, int loopCount, int currentLoop) noexcept
     {
         auto anim = this->anim(id);
         if(!anim)return;
         KRPTSceneAnim::interpolate(anim->start, anim->end, progress, anim->current);
-        if(anim->time() == time)
+        if(anim->time() == time && loopCount != -1 && currentLoop == loopCount - 1)
         {
-            owner->animImpl(id, anim->end, time, true);
+//            qDebug() << time << loopCount << currentLoop;
+            owner->animImpl(id, anim->end, time, true, currentLoop);
             deleteAnim(id);
-        }else owner->animImpl(id, anim->current, time, false);
+        }else owner->animImpl(id, anim->current, time, false, currentLoop);
     }
 private:
     KRPTSceneItem       *owner       ;
@@ -749,6 +752,7 @@ bool KRPTSceneItem::setGeometryImpl(const QRectF &geometry) noexcept
     _geometry = geometry;
     _rect.setSize(_geometry.size());
     _dirty += Dirty::Transform        ;
+    _dirty += Dirty::TransformTrans   ;
     _dirty += Dirty::TransformInv     ;
     _dirty += Dirty::BBoxMapToParent  ;
     _dirty += Dirty::VisibleChildItems;
@@ -757,8 +761,10 @@ bool KRPTSceneItem::setGeometryImpl(const QRectF &geometry) noexcept
     ++_data->genTransform;
     if(isResized)
     {
-        _dirty += Dirty::BBox   ;
-        _dirty += Dirty::Outline;
+        _dirty += Dirty::TransformRotate;
+        _dirty += Dirty::TransformScale ;
+        _dirty += Dirty::BBox           ;
+        _dirty += Dirty::Outline        ;
     }
     if(must(Must::TransformEvent) || (_parent && _parent->must(Must::ChildTransformEvent)))
     {
@@ -776,6 +782,7 @@ bool KRPTSceneItem::setAngleImpl(double angle) noexcept
     if(qFuzzyCompare(_angle, angle))return false;
     double oldAngle = _angle;
     _dirty += Dirty::Transform        ;
+    _dirty += Dirty::TransformRotate;
     _dirty += Dirty::TransformInv     ;
     _dirty += Dirty::BBox             ;
     _dirty += Dirty::BBoxMapToParent  ;
@@ -796,6 +803,7 @@ bool KRPTSceneItem::setScaleImpl(double scale) noexcept
     if(qFuzzyCompare(_scale, scale))return false;
     double oldScale = _scale;
     _dirty += Dirty::Transform        ;
+    _dirty += Dirty::TransformScale   ;
     _dirty += Dirty::TransformInv     ;
     _dirty += Dirty::BBox             ;
     _dirty += Dirty::BBoxMapToParent  ;
@@ -850,7 +858,7 @@ void KRPTSceneItem::whellImpl(SceneMouseEvent *e) noexcept
 }
 
 void KRPTSceneItem::animImpl(uint32_t id, const std::vector<double> &value, 
-    uint32_t time, bool completed) noexcept
+    uint32_t time, bool completed, int loop) noexcept
 {
     switch(id)
     {
@@ -885,6 +893,7 @@ void KRPTSceneItem::updateGeometry() noexcept
 
 void KRPTSceneItem::transform(const QRectF &rect, double angle, double scale, QTransform &transform) noexcept 
 {
+#if 0
     double tscale = !must(KRPTSceneItem::Must::NoSceneScale ) ? scale : scale *= 1.0 / _data->sceneScale;
     double tangle = !must(KRPTSceneItem::Must::NoSceneRotate) ? angle : angle -= _data->sceneAngle;
     transform.reset();
@@ -898,6 +907,36 @@ void KRPTSceneItem::transform(const QRectF &rect, double angle, double scale, QT
         if(!qFuzzyIsNull (tangle   ))transform.rotate(tangle        );
         transform.translate(-wd2, -hd2);
     }
+#else
+    double wd2 = rect.width () / 2.0;
+    double hd2 = rect.height() / 2.0;
+    if(_dirty[Dirty::TransformScale])
+    {
+        double tscale = !must(KRPTSceneItem::Must::NoSceneScale ) ? scale : scale *= 1.0 / _data->sceneScale;
+        _scaleTransform.reset();
+        _scaleTransform.translate(wd2, hd2);
+        _scaleTransform.scale(tscale, tscale);
+        _scaleTransform.translate(-wd2, -hd2);
+    }
+    if(_dirty[Dirty::TransformRotate])
+    {
+        double tangle = !must(KRPTSceneItem::Must::NoSceneRotate) ? angle : angle -= _data->sceneAngle;
+        _rotateTransform.reset();
+        _rotateTransform.translate(wd2, hd2);
+        _rotateTransform.rotate(tangle);
+        _rotateTransform.translate(-wd2, -hd2);
+    }
+    if(_dirty[Dirty::TransformTrans])
+    {
+        _transTransform.reset();
+        _transTransform.translate(rect.x(), rect.y());
+    }
+//    transform = _scaleTransform * _rotateTransform * _transTransform;
+    transform = _rotateTransform * _scaleTransform * _transTransform;
+    _dirty -= Dirty::TransformScale;
+    _dirty -= Dirty::TransformRotate;
+    _dirty -= Dirty::TransformTrans;
+#endif
 }
 
 QPointF KRPTSceneItem::transformShift(QTransform &t, TransSrc src, const QPointF &pt) noexcept
@@ -1051,6 +1090,7 @@ bool KRPTSceneItem::dirtyTransform() noexcept
             {
                 dirty = true;
                 cache.genScale = cache.parent->_data->genScale;
+                _dirty += Dirty::TransformScale;
             }
             if(cache.item != this)
                 _data->sceneScale *= cache.item->_scale;
@@ -1061,6 +1101,7 @@ bool KRPTSceneItem::dirtyTransform() noexcept
             {
                 dirty = true;
                 cache.genAngle = cache.parent->_data->genAngle;
+                _dirty += Dirty::TransformRotate;
             }
             if(cache.item != this)
                 _data->sceneAngle += cache.item->_angle;
@@ -1072,7 +1113,7 @@ bool KRPTSceneItem::dirtyTransform() noexcept
     #if 1
 //        _dirty += Dirty::BBox;
 //        _dirty += Dirty::BBoxMapToParent;
-//        _dirty += Dirty::Transform;
+        _dirty += Dirty::Transform;
     #endif
     }
     return dirty;
@@ -1105,38 +1146,38 @@ bool KRPTSceneItem::mustAnim(uint32_t time) const noexcept
 //****************************************************************************************************
 
 void KRPTSceneItem::startAnimImpl(uint32_t id, const std::vector<double> &start, 
-    const std::vector<double> &end, uint32_t time, QEasingCurve curve) noexcept
+    const std::vector<double> &end, uint32_t time, QEasingCurve curve, int loopCount) noexcept
 {
-    _data->startAnim(id, start, end, time, curve);
+    _data->startAnim(id, start, end, time, curve, loopCount);
 }
 
 void KRPTSceneItem::startAnimImpl(uint32_t id, double start, 
-    double end, uint32_t time, QEasingCurve curve) noexcept
+    double end, uint32_t time, QEasingCurve curve, int loopCount) noexcept
 {
-    _data->startAnim(id, start, end, time, curve);
+    _data->startAnim(id, start, end, time, curve, loopCount);
 }
 
 void KRPTSceneItem::startAnimImpl(uint32_t id, const QPointF &start, 
-    const QPointF &end, uint32_t time, QEasingCurve curve) noexcept
+    const QPointF &end, uint32_t time, QEasingCurve curve, int loopCount) noexcept
 {
-    _data->startAnim(id, start, end, time, curve);
+    _data->startAnim(id, start, end, time, curve, loopCount);
 }
 
 void KRPTSceneItem::startAnimImpl(uint32_t id, const QRectF &start, 
-    const QRectF &end, uint32_t time, QEasingCurve curve) noexcept
+    const QRectF &end, uint32_t time, QEasingCurve curve, int loopCount) noexcept
 {
-    _data->startAnim(id, start, end, time, curve);
+    _data->startAnim(id, start, end, time, curve, loopCount);
 }
 
 void KRPTSceneItem::startAnimImpl(uint32_t id, const QSizeF &start, 
-    const QSizeF &end, uint32_t time, QEasingCurve curve) noexcept
+    const QSizeF &end, uint32_t time, QEasingCurve curve, int loopCount) noexcept
 {
-    _data->startAnim(id, start, end, time, curve);
+    _data->startAnim(id, start, end, time, curve, loopCount);
 }
 
 void KRPTSceneItem::startAnimImpl(uint32_t id, const QColor &start, 
-    const QColor &end, uint32_t time, QEasingCurve curve) noexcept
+    const QColor &end, uint32_t time, QEasingCurve curve, int loopCount) noexcept
 {
-    _data->startAnim(id, start, end, time, curve);
+    _data->startAnim(id, start, end, time, curve, loopCount);
 }
 

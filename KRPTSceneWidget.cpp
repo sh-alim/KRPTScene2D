@@ -19,6 +19,7 @@ KRPTSceneWidget::KRPTSceneWidget(QWidget *parent) noexcept
     _root->setGeometry(QRectF(10, 10, 1000, 1000));
     _root->addMust
     (
+            KRPTSceneItem::Must::Anim,
 //            KRPTSceneItem::Must::NoClipChilds,
 //            KRPTSceneItem::Must::NoMouseEventTranslate,
 //            KRPTSceneItem::Must::AccuracyClip,
@@ -57,8 +58,8 @@ KRPTSceneWidget::KRPTSceneWidget(QWidget *parent) noexcept
     child->addMust
     (
 //            KRPTSceneItem::Must::NoClipChilds,
-//            KRPTSceneItem::Must::NoSceneRotate,
-//            KRPTSceneItem::Must::NoSceneScale,
+            KRPTSceneItem::Must::NoSceneRotate,
+            KRPTSceneItem::Must::NoSceneScale,
 //            KRPTSceneItem::Must::AccuracyClip,
             KRPTSceneItem::Must::Anim,
 //            KRPTSceneItem::Must::AccuracyClip,
@@ -95,15 +96,15 @@ KRPTSceneWidget::KRPTSceneWidget(QWidget *parent) noexcept
         child->setGeometry(QRectF(x, y, 50, 50));
         child->setBackgroundColor(QColor(0, 255, 0));
 
-//        child->setScale(0.8);
-//        child->setAngle(12);
+        child->setScale(0.8);
+        child->setAngle(12);
 
         child->setTag(i + 1);
 
         child->addMust
         (
 //            KRPTSceneItem::Must::NoClipChilds,
-//            KRPTSceneItem::Must::NoSceneRotate,
+            KRPTSceneItem::Must::NoSceneRotate,
             KRPTSceneItem::Must::NoSceneScale,
 //            KRPTSceneItem::Must::AccuracyClip,
             KRPTSceneItem::Must::Anim,
