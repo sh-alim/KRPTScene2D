@@ -4,6 +4,9 @@
 
 #include "KRPTScene.h"
 
+#include "KRPTSceneWidget.h"
+#include "KRPTSceneView.h"
+
 //####################################################################################################
 //#
 //####################################################################################################
@@ -46,9 +49,10 @@ void KRPTSceneRoot::paintForeground(QPainter &painter) noexcept
 //#
 //####################################################################################################
 
-KRPTScene::KRPTScene(QWidget *canvas) noexcept
-    : _canvas(canvas) , _item(new KRPTSceneRoot(this, nullptr)), _mousePressedItem(nullptr)
+KRPTScene::KRPTScene(KRPTSceneView *view) noexcept
+    : _view(view) , _item(new KRPTSceneRoot(this, nullptr)), _mousePressedItem(nullptr)
 {
+    view->setScene(this);
 }
 
 KRPTScene::~KRPTScene() noexcept
@@ -220,7 +224,7 @@ KRPTScene::Items KRPTScene::itemsFromPos(const QPointF &pos, CompFn comp, bool o
 
 void KRPTScene::update() noexcept
 {
-    _canvas->update();
+    _view->update();
 }
 
 //****************************************************************************************************
@@ -385,7 +389,7 @@ void KRPTScene::paintImpl(QPainter &painter, KRPTSceneItem *item) noexcept
     painter.setTransform(item->transform(), true);
     if(!item->must(KRPTSceneItem::Must::NoClipChilds))
     {
-    #if 0
+    #if 1
         if(!item->must(KRPTSceneItem::Must::AccuracyClip))
             painter.setClipRect(item->_rect.adjusted(0, 0, 0.5, 0.5), Qt::ClipOperation::IntersectClip);
         else painter.setClipPath(item->outline(), Qt::ClipOperation::IntersectClip);

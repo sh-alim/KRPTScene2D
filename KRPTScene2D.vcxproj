@@ -38,12 +38,12 @@
   </ImportGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'" Label="QtSettings">
     <QtInstall>6.8.0</QtInstall>
-    <QtModules>core;gui;widgets;network;</QtModules>
+    <QtModules>core;gui;network;widgets;opengl;openglwidgets</QtModules>
     <QtBuildConfig>debug</QtBuildConfig>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'" Label="QtSettings">
     <QtInstall>6.8.0</QtInstall>
-    <QtModules>core;gui;widgets;network;</QtModules>
+    <QtModules>core;gui;network;widgets;opengl;openglwidgets</QtModules>
     <QtBuildConfig>release</QtBuildConfig>
   </PropertyGroup>
   <Target Name="QtMsBuildNotFound" BeforeTargets="CustomBuild;ClCompile" Condition="!Exists('$(QtMsBuild)\qt.targets') or !Exists('$(QtMsBuild)\qt.props')">
@@ -68,7 +68,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>C:\Program Files %28x86%29\Visual Leak Detector\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Program Files (x86)\Visual Leak Detector\include;D:\projects\libs\qt\6.8.0\win\include\QtCore\6.8.0;D:\projects\libs\qt\6.8.0\win\include\QtCore\6.8.0\QtCore;D:\projects\libs\qt\6.8.0\win\include\QtGui\6.8.0;D:\projects\libs\qt\6.8.0\win\include\QtGui\6.8.0\QtGui;D:\projects\libs\qt\6.8.0\win\include\QtOpenGL\6.8.0;D:\projects\libs\qt\6.8.0\win\include\QtOpenGL\6.8.0\QtOpenGL;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <LanguageStandard_C>stdc11</LanguageStandard_C>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -87,6 +87,7 @@
     <ClCompile>
       <LanguageStandard_C>stdc11</LanguageStandard_C>
       <OpenMPSupport>true</OpenMPSupport>
+      <AdditionalIncludeDirectories>D:\projects\libs\qt\6.8.0\win\include\QtGui\6.8.0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'" Label="Configuration">
@@ -124,6 +125,7 @@
     <ClCompile Include="KRPTSceneEllipseItem.cpp" />
     <ClCompile Include="KRPTSceneItem.cpp" />
     <ClCompile Include="KRPTSceneRectItem.cpp" />
+    <ClCompile Include="KRPTSceneView.cpp" />
     <ClCompile Include="KRPTSceneWidget.cpp" />
     <ClCompile Include="MainProcess.cpp" />
     <ClCompile Include="main.cpp" />
@@ -144,6 +146,7 @@
     <ClInclude Include="KRPTSceneEvent.h" />
     <ClInclude Include="KRPTSceneItem.h" />
     <ClInclude Include="KRPTSceneRectItem.h" />
+    <ClInclude Include="KRPTSceneView.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">

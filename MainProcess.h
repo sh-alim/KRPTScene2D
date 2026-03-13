@@ -11,6 +11,10 @@
 #include <QtWidgets/QMainWindow>
 #include "KRPTSceneWidget.h"
 
+#include "KRPTScene.h"
+#include "KRPTSceneView.h"
+
+
 //####################################################################################################
 //#
 //####################################################################################################
@@ -25,4 +29,6 @@ protected:
     void resizeEvent(QResizeEvent    *value) override;
 private:
     KRPTSceneWidget *_sceneWidget;
+    KRPTScene       *_scene     ;
+    KRPTSceneView   *_view      ;
 };

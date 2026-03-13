@@ -10,8 +10,8 @@
 
 #include <memory>
 #include "KRPTSceneItem.h"
-#include <QWidget>
 
+//#include <QWidget>
 #include <QElapsedTimer>
 
 //####################################################################################################
@@ -19,6 +19,8 @@
 //####################################################################################################
 
 class KRPTSceneItem;
+//class KRPTSceneWidget;
+class KRPTSceneView;
 
 //####################################################################################################
 //#
@@ -31,7 +33,7 @@ class KRPTScene
     using CompFn = const std::function<bool(KRPTSceneItem*)>&;
     using Items  = std::list<KRPTSceneItem*>;
 public:
-    KRPTScene(QWidget *canvas)                                                     noexcept;
+    KRPTScene(KRPTSceneView *view)                                                 noexcept;
     virtual ~KRPTScene()                                                           noexcept;
 public:
     template<typename T, typename ... Args>
@@ -96,7 +98,7 @@ protected:
                                            uint32_t level = 0)                     noexcept;
     void               paintImpl          (QPainter &painter, KRPTSceneItem *item) noexcept;
 private:
-    QWidget       * _canvas            ;
+    KRPTSceneView * _view              ;
     KRPTSceneItem * _item              ;
     KRPTSceneItem *_mousePressedItem   ;
     QPointF        _mousePressedItemPos;
