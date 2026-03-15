@@ -122,6 +122,7 @@ public:
 public:
     int          duration      ()                         const override;
     QEasingCurve easingCurve   ()                         const noexcept;
+    uint32_t     id            ()                         const noexcept;
     void         setDuration   (int duration)                   noexcept;
     void         setEasingCurve(QEasingCurve easingCurve)       noexcept;
 protected:

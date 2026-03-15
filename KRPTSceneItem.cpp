@@ -37,6 +37,15 @@ friend class KRPTSceneItem;
 public:
     KRPTSceneItemData(KRPTSceneItem *owner)
         : owner(owner), genTransform(0), genScale(0), genAngle(0), sceneScale(1), sceneAngle(0) {}
+   ~KRPTSceneItemData() noexcept
+   {
+       for(auto &anim : anims)
+       {
+           delete anim.second->anim;
+           anim.second->anim = nullptr;
+       }
+       anims.clear();
+   }
 public:
     struct Cache
     {
@@ -60,7 +69,7 @@ public:
     struct Anim
     {
         using Values = std::vector<double>;
-        using Map = std::map<uint32_t, std::unique_ptr<Anim>>;
+        using Map = std::unordered_map<uint32_t, std::unique_ptr<Anim>>;
         Anim (uint32_t id, KRPTSceneAnim::Event &event, 
               int time, QEasingCurve easingCurve, int loopCount) noexcept 
             : anim(new KRPTSceneAnim(id, event, time, easingCurve, loopCount)) {}
@@ -439,7 +448,9 @@ const QPainterPath & KRPTSceneItem::outline() noexcept
 
 void KRPTSceneItem::setVisible(bool visible) noexcept
 {
+    if(_visible == visible)return;
     _visible = visible;
+//    update();
 }
 
 bool KRPTSceneItem::setGeometry(const QRectF &geometry, 
@@ -1090,6 +1101,7 @@ bool KRPTSceneItem::dirtyTransform() noexcept
     _dirty -= Dirty::Transform;
     if(!must(KRPTSceneItem::Must::NoSceneScale) && 
        !must(KRPTSceneItem::Must::NoSceneRotate))return dirty;
+//    double sceneScale = _data->sceneScale;
     _data->sceneScale = 1;
     _data->sceneAngle = 0;
     for(auto &cache : _data->cache)

@@ -3,8 +3,6 @@
 //####################################################################################################
 
 #include "KRPTScene.h"
-
-#include "KRPTSceneWidget.h"
 #include "KRPTSceneView.h"
 
 //####################################################################################################
@@ -35,11 +33,12 @@ KRPTSceneRoot::KRPTSceneRoot(KRPTScene *scene, KRPTSceneItem *parent) noexcept
 
 void KRPTSceneRoot::paintBackground(QPainter &painter) noexcept
 {
-    painter.fillRect(_rect, _backgroundColor);
+//    painter.fillRect(_rect, _backgroundColor);
 }
 
 void KRPTSceneRoot::paintForeground(QPainter &painter) noexcept
 {
+    painter.setRenderHint(QPainter::Antialiasing, false);
     QPen pen(_borderColor);
     painter.setPen(pen);
     painter.drawRect(_rect);
@@ -333,7 +332,8 @@ void KRPTScene::whellEvent(SceneMouseEvent *e) noexcept
         if(e->keyModifers()[SceneMouseEvent::KeyModifer::Alt])
         {
 //            item->scaleFromPoint((e->delta().x() > 0 ? 1.1 : 0.9), mousePos, KRPTSceneItem::TransSrc::Scene, 500);
-            item->scaleMul((e->delta().x() > 0 ? 1.1 : 0.9), 500);
+//            item->scaleMul((e->delta().x() > 0 ? 1.1 : 0.9), 500);
+            item->scaleMul((e->delta().x() > 0 ? 1.1 : 0.9));
         }
     #endif
     }
@@ -345,7 +345,7 @@ void KRPTScene::paintEvent(QPainter &painter) noexcept
 {
     QElapsedTimer t; t.start();
     paintImpl(painter, _item);
-    qDebug().noquote() << "elapsed : " << t.elapsed();
+//    qDebug().noquote() << "elapsed : " << t.elapsed();
 }
 
 //****************************************************************************************************
@@ -361,13 +361,16 @@ KRPTSceneItem* KRPTScene::itemFromPosImpl(const QPointF &pos, CompFn comp, KRPTS
 KRPTScene::Items KRPTScene::itemsFromPosImpl(const QPointF &pos, CompFn comp, KRPTSceneItem *item, 
     bool one, uint32_t level) noexcept
 {
-    if(item->must(KRPTSceneItem::Must::NoMouseEventTranslate))return KRPTScene::Items();
+//    if(item->must(KRPTSceneItem::Must::NoMouseEventTranslate))return KRPTScene::Items();
+    if(!_item->visible() || item->must(KRPTSceneItem::Must::NoMouseEventTranslate))return KRPTScene::Items();
     const Items &childs = item->visibleChildItems();
     Items res;
+    if(childs.empty())return std::move(res);
     auto it = childs.crbegin();
     for(; it != childs.crend(); ++it)
     {
         KRPTSceneItem *child = *it;
+        if(!child->visible())continue;
         QPointF p = child->mapFromParent(pos);
         if(child->must(KRPTSceneItem::Must::NoClipChilds))
             res.splice(res.begin(), std::move(itemsFromPosImpl(p, comp, child, one, level + 1)));
@@ -384,10 +387,11 @@ KRPTScene::Items KRPTScene::itemsFromPosImpl(const QPointF &pos, CompFn comp, KR
 
 void KRPTScene::paintImpl(QPainter &painter, KRPTSceneItem *item) noexcept
 {
+#if 0
     painter.setRenderHint(QPainter::Antialiasing);
     painter.save();
     painter.setTransform(item->transform(), true);
-    if(!item->must(KRPTSceneItem::Must::NoClipChilds))
+    if(!item->must(KRPTSceneItem::Must::NoClipChilds, KRPTSceneItem::Must::NoClipPainter))
     {
     #if 1
         if(!item->must(KRPTSceneItem::Must::AccuracyClip))
@@ -409,5 +413,35 @@ void KRPTScene::paintImpl(QPainter &painter, KRPTSceneItem *item) noexcept
     if(item->needPaint())
         item->paintForeground(painter);
     painter.restore();
+#else
+    if(!item->visible())return;
+    const auto &childs = item->visibleChildItems();
+    painter.save();
+    painter.setTransform(item->transform(), true);
+
+    painter.setOpacity(painter.opacity() * item->opaq());
+    if(item->needPaint())
+        item->paintBackground(painter);
+
+    painter.save();
+    if(!childs.empty() && !item->must(KRPTSceneItem::Must::NoClipChilds, KRPTSceneItem::Must::NoClipPainter))
+    {
+        if(!item->must(KRPTSceneItem::Must::AccuracyClip))
+            painter.setClipRect(item->_rect.adjusted(0, 0, 0.5, 0.5), Qt::ClipOperation::IntersectClip);
+        else painter.setClipPath(item->outline(), Qt::ClipOperation::IntersectClip);
+    }
+    if(!childs.empty() && item->needChildPaint())
+    {
+        for(auto &child : childs)
+        {
+            paintImpl(painter, child);
+        }
+    }
+    painter.restore();
+
+    if(item->needPaint())
+        item->paintForeground(painter);
+    painter.restore();
+#endif
 }
 

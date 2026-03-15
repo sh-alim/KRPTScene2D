@@ -35,12 +35,12 @@ public:
 public:
     virtual void update() noexcept;
 
-    virtual void resizeEvent      (QResizeEvent *e) noexcept;
-    virtual void mousePressEvent  (QMouseEvent  *e) noexcept;
-    virtual void mouseReleaseEvent(QMouseEvent  *e) noexcept;
-    virtual void mouseMoveEvent   (QMouseEvent  *e) noexcept;
-    virtual void wheelEvent       (QWheelEvent  *e) noexcept;
-    virtual void paintEvent       (QPainter     &p) noexcept;
+    virtual void resizeEvent      (QResizeEvent *e);
+    virtual void mousePressEvent  (QMouseEvent  *e);
+    virtual void mouseReleaseEvent(QMouseEvent  *e);
+    virtual void mouseMoveEvent   (QMouseEvent  *e);
+    virtual void wheelEvent       (QWheelEvent  *e);
+    virtual void paintEvent       (QPainter     &p);
 
 private:
     virtual void resizeEventImpl      (QResizeEvent *e) noexcept;

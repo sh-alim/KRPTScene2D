@@ -36,6 +36,11 @@ private:
 KRPTSceneViewPriv::KRPTSceneViewPriv(QWidget *parent, KRPTSceneView *owner) noexcept
     : QGraphicsView(parent), _owner(owner)
 {
+    setAttribute(Qt::WA_NoSystemBackground);
+    setAttribute(Qt::WA_TranslucentBackground);
+    setAutoFillBackground(false);
+    setMouseTracking(false);
+    setCacheMode(QGraphicsView::CacheNone);
 }
 
 KRPTSceneViewPriv::~KRPTSceneViewPriv() noexcept
@@ -78,8 +83,6 @@ void KRPTSceneViewPriv::wheelEvent(QWheelEvent *e)
 
 void KRPTSceneViewPriv::paintEvent(QPaintEvent *e)
 {
-    qDebug() << "=====";
-
     QGraphicsView::paintEvent(e);
     _owner->paintEventImpl(e);
 }
@@ -89,10 +92,12 @@ void KRPTSceneViewPriv::paintEvent(QPaintEvent *e)
 //####################################################################################################
 
 KRPTSceneView::KRPTSceneView(QWidget *parent, KRPTScene *scene) noexcept
-    : QObject(parent), _scene(scene), _p(new KRPTSceneViewPriv(parent, this))
+    : QObject(parent), _scene(scene)
 {
+    _p = new KRPTSceneViewPriv(parent, this);
+    _p->show();
     QSurfaceFormat fmt;
-    fmt.setSamples(4);
+    fmt.setSamples(8);
     fmt.setSwapInterval(0);
     QSurfaceFormat::setDefaultFormat(fmt);
     _p->setViewport(new QOpenGLWidget);
@@ -125,27 +130,27 @@ void KRPTSceneView::update() noexcept
     _p->viewport()->update();
 }
 
-void KRPTSceneView::resizeEvent(QResizeEvent *e) noexcept
+void KRPTSceneView::resizeEvent(QResizeEvent *e)
 {
 }
 
-void KRPTSceneView::mousePressEvent(QMouseEvent *e) noexcept
+void KRPTSceneView::mousePressEvent(QMouseEvent *e)
 {
 }
 
-void KRPTSceneView::mouseReleaseEvent(QMouseEvent *e) noexcept
+void KRPTSceneView::mouseReleaseEvent(QMouseEvent *e)
 {
 }
 
-void KRPTSceneView::mouseMoveEvent(QMouseEvent *e) noexcept
+void KRPTSceneView::mouseMoveEvent(QMouseEvent *e)
 {
 }
 
-void KRPTSceneView::wheelEvent(QWheelEvent *e) noexcept
+void KRPTSceneView::wheelEvent(QWheelEvent *e)
 {
 }
 
-void KRPTSceneView::paintEvent(QPainter &p) noexcept
+void KRPTSceneView::paintEvent(QPainter &p)
 {
 }
 
@@ -155,8 +160,10 @@ void KRPTSceneView::paintEvent(QPainter &p) noexcept
 
  void KRPTSceneView::resizeEventImpl(QResizeEvent *e) noexcept
  {
-    if(_scene)_scene->setGeometry(QRectF(100, 100, _p->width() - 200, _p->height() - 200));
-     resizeEvent(e);
+//    if(_scene)_scene->setGeometry(QRectF(100, 100, _p->width() - 200, _p->height() - 200));
+    
+    if(_scene)_scene->setGeometry(QRectF(0, 0, _p->width() - 3, _p->height() - 3));
+    resizeEvent(e);
  }
 
 void KRPTSceneView::mousePressEventImpl(QMouseEvent *e) noexcept

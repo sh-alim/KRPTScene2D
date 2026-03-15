@@ -30,6 +30,26 @@ MainProcess::MainProcess(QWidget *parent)
             KRPTSceneItem::Must::WhellEvent
     );
 
+    auto child = _root->addChild<KRPTSceneRectItem>();
+    child->setGeometry(QRectF(50, 50, 150, 150));
+    child->setBackgroundColor(QColor(0, 255, 0));
+
+    child->addMust
+    (
+            KRPTSceneItem::Must::NoClipChilds,
+            KRPTSceneItem::Must::NoSceneRotate,
+            KRPTSceneItem::Must::NoSceneScale,
+//            KRPTSceneItem::Must::AccuracyClip,
+            KRPTSceneItem::Must::Anim,
+//            KRPTSceneItem::Must::AccuracyClip,
+//            KRPTSceneItem::Must::AccuracyCheckContains,
+            KRPTSceneItem::Must::MouseMoveble,
+            KRPTSceneItem::Must::MousePressEvent,
+            KRPTSceneItem::Must::MouseMoveEvent,
+            KRPTSceneItem::Must::WhellEvent
+    );
+
+
 }
 
 MainProcess::~MainProcess()

@@ -33,7 +33,7 @@ void KRPTSceneRectItem::outlineImpl() noexcept
 
 void KRPTSceneRectItem::paintBackground(QPainter &painter) noexcept
 {
-    painter.fillRect(_rect, _backgroundColor);
+//    painter.fillRect(_rect, _backgroundColor);
 }
 
 void KRPTSceneRectItem::paintForeground(QPainter &painter) noexcept

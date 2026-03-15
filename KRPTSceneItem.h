@@ -90,7 +90,7 @@ public:
 public:
     using Ptr       = KRPTSceneItem*;
     using ItemsList = std::list<KRPTSceneItem::Ptr>;
-    using IndexMap  = std::map<KRPTSceneItem*, ItemsList::iterator>;
+    using IndexMap  = std::unordered_map<KRPTSceneItem*, ItemsList::iterator>;
 public:
     KRPTSceneItem(KRPTScene *scene, KRPTSceneItem *parent)                                                         noexcept;
     virtual ~KRPTSceneItem()                                                                                       noexcept;
