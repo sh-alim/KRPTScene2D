@@ -1,13 +1,13 @@
-//####################################################################################################
+//########################################################################################################################
 //#
-//####################################################################################################
+//########################################################################################################################
 
 #include "KRPTScene.h"
 #include "KRPTSceneView.h"
 
-//####################################################################################################
+//########################################################################################################################
 //#
-//####################################################################################################
+//########################################################################################################################
 
 class KRPTSceneRoot : public KRPTSceneItem
 {
@@ -44,9 +44,9 @@ void KRPTSceneRoot::paintForeground(QPainter &painter, uint32_t stage) noexcept
     painter.drawRect(_rect);
 }
 
-//####################################################################################################
+//########################################################################################################################
 //#
-//####################################################################################################
+//########################################################################################################################
 
 KRPTScene::KRPTScene(KRPTSceneView *view) noexcept
     : _view(view) , _item(new KRPTSceneRoot(this, nullptr)), _mousePressedItem(nullptr)
@@ -59,9 +59,9 @@ KRPTScene::~KRPTScene() noexcept
     delete _item;
 }
 
-//****************************************************************************************************
+//************************************************************************************************************************
 //*
-//****************************************************************************************************
+//************************************************************************************************************************
 
 const QRectF& KRPTScene::geometry() const noexcept 
 {
@@ -121,6 +121,11 @@ const QTransform& KRPTScene::transform() const noexcept
 const QTransform& KRPTScene::sceneTransform() const noexcept 
 {
     return _item->sceneTransform();
+}
+
+KRPTSceneItem *KRPTScene::mousePressedItem() const noexcept
+{
+    return _mousePressedItem;
 }
 
 QColor KRPTScene::borderColor() const noexcept 
@@ -201,9 +206,9 @@ void KRPTScene::setBackgroundColor(const QColor &color) noexcept
     _item->setBackgroundColor(color);
 }
 
-//****************************************************************************************************
+//************************************************************************************************************************
 //*
-//****************************************************************************************************
+//************************************************************************************************************************
 
 KRPTSceneItem* KRPTScene::itemFromPos(const QPointF &pos, CompFn comp) noexcept
 {
@@ -217,18 +222,18 @@ KRPTScene::Items KRPTScene::itemsFromPos(const QPointF &pos, CompFn comp, bool o
     return std::move(itemsFromPosImpl(p, comp, _item, one));
 }
 
-//****************************************************************************************************
+//************************************************************************************************************************
 //*
-//****************************************************************************************************
+//************************************************************************************************************************
 
 void KRPTScene::update() noexcept
 {
     _view->update();
 }
 
-//****************************************************************************************************
+//************************************************************************************************************************
 //*
-//****************************************************************************************************
+//************************************************************************************************************************
 
 void KRPTScene::transformEvent(SceneTransformEvent *e) noexcept
 {
@@ -258,6 +263,9 @@ void KRPTScene::mousePressEvent(SceneMouseEvent *e) noexcept
         _mousePressedItem = item;
         _mousePressedItemPos = item->pos() - item->mapToParent(p);
     #endif
+    }else
+    {
+        _mousePressedItem = nullptr;
     }
     _lastMousePos = mousePos;
     update();
@@ -274,9 +282,9 @@ void KRPTScene::mouseReleaseEvent(SceneMouseEvent *e) noexcept
                 SceneMouseEvent::get(_mousePressedItem->mapFromScene(mousePos), e->btns(), 
                     mousePos, e->keyModifers(), e->delta()).get());
         }
-        _mousePressedItem = nullptr;
+//        _mousePressedItem = nullptr;
     }
-    update();
+//    update();
 }
 
 void KRPTScene::mouseMoveEvent(SceneMouseEvent *e) noexcept
@@ -299,7 +307,7 @@ void KRPTScene::mouseMoveEvent(SceneMouseEvent *e) noexcept
             }
         }
     }
-    update();
+//    update();
 }
 
 void KRPTScene::whellEvent(SceneMouseEvent *e) noexcept
@@ -323,17 +331,20 @@ void KRPTScene::whellEvent(SceneMouseEvent *e) noexcept
     {
         item->whellImpl(SceneMouseEvent::get(item->mapFromScene(mousePos), e->btns(), 
             mousePos, e->keyModifers(), e->delta()).get());
-    #if 0
+    #if 1
         if(e->keyModifers()[SceneMouseEvent::KeyModifer::Ctrl])
         {
 //            item->rotateAround((e->delta().y() > 0 ? 5 : -5), mousePos, KRPTSceneItem::TransSrc::Scene, 500);
-            item->rotate((e->delta().y() > 0 ? 5 : -5), 500);
-        }
+            item->rotate((e->delta().y() > 0 ? 5 : -5));
+        }else
         if(e->keyModifers()[SceneMouseEvent::KeyModifer::Alt])
         {
 //            item->scaleFromPoint((e->delta().x() > 0 ? 1.1 : 0.9), mousePos, KRPTSceneItem::TransSrc::Scene, 500);
 //            item->scaleMul((e->delta().x() > 0 ? 1.1 : 0.9), 500);
             item->scaleMul((e->delta().x() > 0 ? 1.1 : 0.9));
+        }else
+        {
+            item->setSize((e->delta().y() > 0) ? item->width() + 10 : item->width() - 10, item->height());
         }
     #endif
     }
@@ -348,9 +359,9 @@ void KRPTScene::paintEvent(QPainter &painter) noexcept
 //    qDebug().noquote() << "elapsed : " << t.elapsed();
 }
 
-//****************************************************************************************************
+//************************************************************************************************************************
 //*
-//****************************************************************************************************
+//************************************************************************************************************************
 
 KRPTSceneItem* KRPTScene::itemFromPosImpl(const QPointF &pos, CompFn comp, KRPTSceneItem *item) noexcept
 {

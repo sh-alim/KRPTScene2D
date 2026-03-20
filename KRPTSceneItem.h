@@ -1,8 +1,12 @@
-//####################################################################################################
+//########################################################################################################################
 //#
-//####################################################################################################
+//########################################################################################################################
 
 #pragma once
+
+//########################################################################################################################
+//#
+//########################################################################################################################
 
 #include <cstdint>
 #include <list>
@@ -14,18 +18,20 @@
 #include <QEasingCurve>
 #include "KRPTSceneEvent.h"
 
-//####################################################################################################
+#include <QDebug>
+
+//########################################################################################################################
 //#
-//####################################################################################################
+//########################################################################################################################
 
 class KRPTScene          ;
 class SceneMouseEvent    ;
 class SceneTransformEvent;
 class KRPTSceneItemData  ;
 
-//####################################################################################################
+//########################################################################################################################
 //#
-//####################################################################################################
+//########################################################################################################################
 
 class KRPTSceneItem
 {
@@ -37,14 +43,15 @@ protected:
         No                      = 0x0000,
         Transform               = 0x0001,
         TransformTrans          = 0x0002,
-        TransformScale          = 0x0004,
-        TransformRotate         = 0x0008,
-        TransformInv            = 0x0010,
-        SceneTransformInv       = 0x0020,
-        BBox                    = 0x0040,
-        BBoxMapToParent         = 0x0080,
-        VisibleChildItems       = 0x0100,
-        Outline                 = 0x0200,
+        TransformSize           = 0x0004,
+        TransformScale          = 0x0008,
+        TransformRotate         = 0x0010,
+        TransformInv            = 0x0020,
+        SceneTransformInv       = 0x0040,
+        BBox                    = 0x0080,
+        BBoxMapToParent         = 0x0100,
+        VisibleChildItems       = 0x0200,
+        Outline                 = 0x0400,
         All                     = 0xFFFF,
     };
     enum class State : uint8_t
@@ -104,6 +111,18 @@ public:
         All                     = 0xFFFFFF
     };
     enum class TransSrc : uint8_t{Self, Parent, Scene};
+    enum class TransformAnchor
+    {
+        Center      ,
+        LeftTop     ,
+        RightTop    ,
+        LeftBottom  ,
+        RightBottom ,
+        LeftCenter  ,
+        TopCenter   ,
+        RightCenter ,
+        BottomCenter
+    };
 public:
     using Ptr        = KRPTSceneItem*;
     using ItemsList  = std::list<KRPTSceneItem::Ptr>;
@@ -129,6 +148,14 @@ public:
     {
         _must.up(std::forward<Args>(args)...);
     }
+    template<typename ... Args> inline void upMust(Args&& ... args)                                               noexcept
+    {
+        _must.up(std::forward<Args>(args)...);
+    }
+    template<typename ... Args> inline void downMust(Args&& ... args)                                             noexcept
+    {
+        _must.down(std::forward<Args>(args)...);
+    }
 public:
     KRPTFlag<Must>       must                ()                                                              const noexcept;
     KRPTScene          * scene               ()                                                              const noexcept;
@@ -150,6 +177,7 @@ public:
     double               angle               ()                                                              const noexcept;
     double               scale               ()                                                              const noexcept;
     double               opaq                ()                                                              const noexcept;
+    TransformAnchor      transformAnchor     ()                                                              const noexcept;
     const QTransform   & transform           ()                                                                    noexcept;
     const QTransform   & transformInv        ()                                                                    noexcept;
     const QTransform   & sceneTransform      ()                                                                    noexcept;
@@ -194,6 +222,8 @@ public:
                                               uint32_t time = 0, QEasingCurve curve = QEasingCurve::OutExpo)       noexcept;
     bool                 setOpaq             (double opaq, 
                                               uint32_t time = 0, QEasingCurve curve = QEasingCurve::OutExpo)       noexcept;
+    void                 setTransformAnchor  (TransformAnchor anchor)                                              noexcept;
+
     void                 translate           (const QPointF &pos, 
                                               uint32_t time = 0, QEasingCurve curve = QEasingCurve::OutExpo)       noexcept;
     void                 translate           (double dx, double dy, 
@@ -231,17 +261,17 @@ public:
     bool                 needPaint           ()                                                              const noexcept;
     bool                 needChildPaint      ()                                                              const noexcept;
 protected:
-    virtual void         addChildEvent       (KRPTSceneItem *item)                                                 noexcept;
-    virtual void         delChildEvent       (KRPTSceneItem *item)                                                 noexcept;
-    virtual void         transformEvent      (SceneTransformEvent *e)                                              noexcept;
-    virtual void         mousePressEvent     (SceneMouseEvent *e)                                                  noexcept;
-    virtual void         mouseReleaseEvent   (SceneMouseEvent *e)                                                  noexcept;
-    virtual void         mouseMoveEvent      (SceneMouseEvent *e)                                                  noexcept;
-    virtual void         whellEvent          (SceneMouseEvent *e)                                                  noexcept;
-    virtual void         childTransformEvent (KRPTSceneItem *item, SceneTransformEvent *e)                         noexcept;
-    virtual void         sceneTransformEvent (const QTransform &transform)                                         noexcept;
-    virtual void         sceneScaleEvent     (double scale, double oldScale)                                       noexcept;
-    virtual void         sceneRotateEvent    (double angle, double oldAngle)                                       noexcept;
+    virtual void         addChildEvent       (KRPTSceneItem *item)                                                 noexcept {};
+    virtual void         delChildEvent       (KRPTSceneItem *item)                                                 noexcept {};
+    virtual void         transformEvent      (SceneTransformEvent *e)                                              noexcept {};
+    virtual void         mousePressEvent     (SceneMouseEvent *e)                                                  noexcept {};
+    virtual void         mouseReleaseEvent   (SceneMouseEvent *e)                                                  noexcept {};
+    virtual void         mouseMoveEvent      (SceneMouseEvent *e)                                                  noexcept {};
+    virtual void         whellEvent          (SceneMouseEvent *e)                                                  noexcept {};
+    virtual void         childTransformEvent (KRPTSceneItem *item, SceneTransformEvent *e)                         noexcept {};
+    virtual void         sceneTransformEvent (const QTransform &transform)                                         noexcept {};
+    virtual void         sceneScaleEvent     (double scale, double oldScale)                                       noexcept {};
+    virtual void         sceneRotateEvent    (double angle, double oldAngle)                                       noexcept {};
 protected:
     virtual void         update              ()                                                                    noexcept;
     virtual CItemsList & filterChildItems    ()                                                                    noexcept;
@@ -287,34 +317,37 @@ protected:
                                               uint32_t time, QEasingCurve curve, int loopCount = 1)                noexcept;
 protected:
     KRPTSceneItemData *_data;
-    KRPTFlag<Dirty>    _dirty            ;
-    KRPTFlag<Must>     _must             ;
-    KRPTFlag<State>    _state            ;
-    KRPTScene         *_scene            ;
-    KRPTSceneItem     *_parent           ;
-    ItemsList          _childItems       ;
-    ItemsList          _visibleChildItems;
-    IndexMap           _index            ;
-    uint32_t           _updateLocked     ; 
-    bool               _visible          ;
-    QRectF             _geometry         ;
-    QRectF             _rect             ;
-    double             _angle            ;
-    double             _scale            ;
-    double             _opaq             ;
-    QTransform         _transform        ;
-    QTransform         _transTransform   ;
-    QTransform         _scaleTransform   ;
-    QTransform         _rotateTransform  ;
-    QTransform         _transformInv     ;
-    QTransform         _sceneTransform   ;
-    QTransform         _sceneTransformInv;
-    QPainterPath       _outline          ;
-    uint32_t           _paintStageCount  ;
-    QRectF             _bBox             ;
-    QRectF             _bBoxMapToParent  ;
-    QColor             _borderColor      ;
-    QColor             _backgroundColor  ;
-    uint32_t           _tag              ;
+    KRPTFlag<Dirty>    _dirty               ;
+    KRPTFlag<Must>     _must                ;
+    KRPTFlag<State>    _state               ;
+    KRPTScene         *_scene               ;
+    KRPTSceneItem     *_parent              ;
+    ItemsList          _childItems          ;
+    ItemsList          _visibleChildItems   ;
+    IndexMap           _index               ;
+    uint32_t           _updateLocked        ;
+    bool               _visible             ;
+    QRectF             _geometry            ;
+    QRectF             _rect                ;
+    double             _angle               ;
+    double             _scale               ;
+    double             _opaq                ;
+    TransformAnchor    _transformAnchor     ;
+    QTransform         _transform           ;
+    QTransform         _transTransform      ;
+    QTransform         _rotateTransform     ;
+    QTransform         _scaleTransform      ;
+    QTransform         _rotScalTransform    ;
+    QTransform         _rotScalSizeTransform;
+    QTransform         _transformInv        ;
+    QTransform         _sceneTransform      ;
+    QTransform         _sceneTransformInv   ;
+    QPainterPath       _outline             ;
+    uint32_t           _paintStageCount     ;
+    QRectF             _bBox                ;
+    QRectF             _bBoxMapToParent     ;
+    QColor             _borderColor         ;
+    QColor             _backgroundColor     ;
+    uint32_t           _tag                 ;
 };
 

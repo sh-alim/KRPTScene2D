@@ -1,6 +1,6 @@
-//####################################################################################################
+//########################################################################################################################
 //#
-//####################################################################################################
+//########################################################################################################################
 
 #include "KRPTSceneView.h"
 #include "KRPTScene.h"
@@ -8,9 +8,9 @@
 #include <QSurfaceFormat>
 #include <QOpenGLWidget>
 
-//####################################################################################################
+//########################################################################################################################
 //#
-//####################################################################################################
+//########################################################################################################################
 
 class KRPTSceneViewPriv : public QGraphicsView
 {
@@ -29,9 +29,9 @@ private:
     KRPTSceneView *_owner;
 };
 
-//****************************************************************************************************
+//************************************************************************************************************************
 //*
-//****************************************************************************************************
+//************************************************************************************************************************
 
 KRPTSceneViewPriv::KRPTSceneViewPriv(QWidget *parent, KRPTSceneView *owner) noexcept
     : QGraphicsView(parent), _owner(owner)
@@ -47,9 +47,9 @@ KRPTSceneViewPriv::~KRPTSceneViewPriv() noexcept
 {
 }
 
-//****************************************************************************************************
+//************************************************************************************************************************
 //*
-//****************************************************************************************************
+//************************************************************************************************************************
 
 void KRPTSceneViewPriv::resizeEvent(QResizeEvent *e)
 {
@@ -61,24 +61,32 @@ void KRPTSceneViewPriv::mousePressEvent(QMouseEvent *e)
 {
     QGraphicsView::mousePressEvent(e);
     _owner->mousePressEventImpl(e);
+    if(_owner->_translateEvents && parentWidget())
+        QCoreApplication::sendEvent(parentWidget(), e);
 }
 
 void KRPTSceneViewPriv::mouseReleaseEvent(QMouseEvent *e)
 {
     QGraphicsView::mouseReleaseEvent(e);
     _owner->mouseReleaseEventImpl(e);
+    if(_owner->_translateEvents && parentWidget())
+        QCoreApplication::sendEvent(parentWidget(), e);
 }
 
 void KRPTSceneViewPriv::mouseMoveEvent(QMouseEvent *e)
 {
     QGraphicsView::mouseMoveEvent(e);
     _owner->mouseMoveEventImpl(e);
+    if(_owner->_translateEvents && parentWidget())
+        QCoreApplication::sendEvent(parentWidget(), e);
 }
 
 void KRPTSceneViewPriv::wheelEvent(QWheelEvent *e)
 {
     QGraphicsView::wheelEvent(e);
     _owner->wheelEventImpl(e);
+    if(_owner->_translateEvents && parentWidget())
+        QCoreApplication::sendEvent(parentWidget(), e);
 }
 
 void KRPTSceneViewPriv::paintEvent(QPaintEvent *e)
@@ -87,12 +95,12 @@ void KRPTSceneViewPriv::paintEvent(QPaintEvent *e)
     _owner->paintEventImpl(e);
 }
 
-//####################################################################################################
+//########################################################################################################################
 //#
-//####################################################################################################
+//########################################################################################################################
 
 KRPTSceneView::KRPTSceneView(QWidget *parent, KRPTScene *scene) noexcept
-    : QObject(parent), _scene(scene)
+    : QObject(parent), _scene(scene), _translateEvents(false)
 {
     _p = new KRPTSceneViewPriv(parent, this);
     _p->show();
@@ -107,13 +115,33 @@ KRPTSceneView::~KRPTSceneView() noexcept
 {
 }
 
-//****************************************************************************************************
+//************************************************************************************************************************
 //*
-//****************************************************************************************************
+//************************************************************************************************************************
+
+QRectF KRPTSceneView::geometry() const noexcept
+{
+    return _p->geometry();
+}
+
+KRPTScene *KRPTSceneView::scene() const noexcept
+{
+    return _scene;
+}
+
+bool KRPTSceneView::translateEvents() const noexcept
+{
+    return _translateEvents;
+}
+
+void KRPTSceneView::setGeometry(const QRect &geometry) noexcept
+{
+    _p->setGeometry(geometry); 
+}
 
 void KRPTSceneView::setGeometry(int ax, int ay, int aw, int ah) noexcept
 {
-    _p->setGeometry(QRect(ax, ay, aw, ah)); 
+    setGeometry(QRect(ax, ay, aw, ah)); 
 }
 
 void KRPTSceneView::setScene(KRPTScene *scene) noexcept
@@ -121,9 +149,14 @@ void KRPTSceneView::setScene(KRPTScene *scene) noexcept
     _scene = scene;
 }
 
-//****************************************************************************************************
+void KRPTSceneView::setTranslateEvents(bool translate) noexcept
+{
+    _translateEvents = translate;
+}
+
+//************************************************************************************************************************
 //*
-//****************************************************************************************************
+//************************************************************************************************************************
 
 void KRPTSceneView::update() noexcept
 {
@@ -154,9 +187,9 @@ void KRPTSceneView::paintEvent(QPainter &p)
 {
 }
 
-//****************************************************************************************************
+//************************************************************************************************************************
 //*
-//****************************************************************************************************
+//************************************************************************************************************************
 
  void KRPTSceneView::resizeEventImpl(QResizeEvent *e) noexcept
  {
@@ -206,9 +239,9 @@ void KRPTSceneView::paintEventImpl(QPaintEvent *e) noexcept
     paintEvent(painter);
 }
 
-//****************************************************************************************************
+//************************************************************************************************************************
 //*
-//****************************************************************************************************
+//************************************************************************************************************************
 
 SceneMouseEvent::Ptr KRPTSceneView::createMouseSceneEvent(QSinglePointEvent *e) noexcept
 {
