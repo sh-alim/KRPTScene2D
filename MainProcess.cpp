@@ -17,7 +17,9 @@ MainProcess::MainProcess(QWidget *parent)
 
     _root->addMust
     (
+            KRPTSceneItem::Must::NoClipPainter,
 //            KRPTSceneItem::Must::NoClipChilds,
+
 //            KRPTSceneItem::Must::NoSceneRotate,
 //            KRPTSceneItem::Must::NoSceneScale,
 //            KRPTSceneItem::Must::AccuracyClip,
@@ -37,7 +39,7 @@ MainProcess::MainProcess(QWidget *parent)
     child->addMust
     (
             KRPTSceneItem::Must::NoClipChilds,
-            KRPTSceneItem::Must::NoSceneRotate,
+//            KRPTSceneItem::Must::NoSceneRotate,
             KRPTSceneItem::Must::NoSceneScale,
 //            KRPTSceneItem::Must::AccuracyClip,
             KRPTSceneItem::Must::Anim,

@@ -12,10 +12,10 @@
 class KRPTSceneRoot : public KRPTSceneItem
 {
 public:
-    KRPTSceneRoot(KRPTScene *scene, KRPTSceneItem *parent) noexcept;
+    KRPTSceneRoot(KRPTScene *scene, KRPTSceneItem *parent)  noexcept;
 protected:
-    void paintBackground(QPainter &painter) noexcept override;
-    void paintForeground(QPainter &painter) noexcept override;
+    void paintBackground(QPainter &painter, uint32_t stage) noexcept override;
+    void paintForeground(QPainter &painter, uint32_t stage) noexcept override;
 };
 
 KRPTSceneRoot::KRPTSceneRoot(KRPTScene *scene, KRPTSceneItem *parent) noexcept
@@ -31,12 +31,12 @@ KRPTSceneRoot::KRPTSceneRoot(KRPTScene *scene, KRPTSceneItem *parent) noexcept
 
 }
 
-void KRPTSceneRoot::paintBackground(QPainter &painter) noexcept
+void KRPTSceneRoot::paintBackground(QPainter &painter, uint32_t stage) noexcept
 {
 //    painter.fillRect(_rect, _backgroundColor);
 }
 
-void KRPTSceneRoot::paintForeground(QPainter &painter) noexcept
+void KRPTSceneRoot::paintForeground(QPainter &painter, uint32_t stage) noexcept
 {
     painter.setRenderHint(QPainter::Antialiasing, false);
     QPen pen(_borderColor);
@@ -323,7 +323,7 @@ void KRPTScene::whellEvent(SceneMouseEvent *e) noexcept
     {
         item->whellImpl(SceneMouseEvent::get(item->mapFromScene(mousePos), e->btns(), 
             mousePos, e->keyModifers(), e->delta()).get());
-    #if 1
+    #if 0
         if(e->keyModifers()[SceneMouseEvent::KeyModifer::Ctrl])
         {
 //            item->rotateAround((e->delta().y() > 0 ? 5 : -5), mousePos, KRPTSceneItem::TransSrc::Scene, 500);
@@ -385,7 +385,7 @@ KRPTScene::Items KRPTScene::itemsFromPosImpl(const QPointF &pos, CompFn comp, KR
     return std::move(res);
 }
 
-void KRPTScene::paintImpl(QPainter &painter, KRPTSceneItem *item) noexcept
+void KRPTScene::paintImpl(QPainter &painter, KRPTSceneItem *item, uint32_t stage) noexcept
 {
 #if 0
     painter.setRenderHint(QPainter::Antialiasing);
@@ -421,9 +421,9 @@ void KRPTScene::paintImpl(QPainter &painter, KRPTSceneItem *item) noexcept
 
     painter.setOpacity(painter.opacity() * item->opaq());
     if(item->needPaint())
-        item->paintBackground(painter);
+        item->paintBackground(painter, stage);
 
-    painter.save();
+//    painter.save();
     if(!childs.empty() && !item->must(KRPTSceneItem::Must::NoClipChilds, KRPTSceneItem::Must::NoClipPainter))
     {
         if(!item->must(KRPTSceneItem::Must::AccuracyClip))
@@ -432,15 +432,32 @@ void KRPTScene::paintImpl(QPainter &painter, KRPTSceneItem *item) noexcept
     }
     if(!childs.empty() && item->needChildPaint())
     {
+        KRPTSceneItem::ItemsList ch; 
+        uint32_t st = 0;
         for(auto &child : childs)
         {
-            paintImpl(painter, child);
+            if(child->_paintStageCount > st + 1)
+                ch.emplace_back(child);
+            paintImpl(painter, child, st);
+        }
+        while(!ch.empty())
+        {
+            KRPTSceneItem::ItemsList tch;
+            ++st;
+            for(auto &child : ch)
+            {
+                if(child->_paintStageCount > st + 1)
+                    tch.emplace_back(child);
+                paintImpl(painter, child, st);
+            }
+            ch.clear();
+            ch.splice(ch.end(), tch);
         }
     }
-    painter.restore();
+//    painter.restore();
 
     if(item->needPaint())
-        item->paintForeground(painter);
+        item->paintForeground(painter, stage);
     painter.restore();
 #endif
 }

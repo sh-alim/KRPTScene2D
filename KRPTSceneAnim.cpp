@@ -32,6 +32,11 @@ QEasingCurve KRPTSceneAnim::easingCurve() const noexcept
     return _easingCurve;
 }
 
+uint32_t KRPTSceneAnim::id() const noexcept
+{
+    return _id;
+}
+
 void KRPTSceneAnim::setDuration(int duration) noexcept
 {
     _duration = duration;
@@ -45,11 +50,6 @@ void KRPTSceneAnim::setEasingCurve(QEasingCurve easingCurve) noexcept
 void KRPTSceneAnim::updateCurrentTime(int time)
 {
     if(!_event)return;
-
-//    this->loopCount();
-//    this->currentLoop();
-
-
     _event(_id, time, 
            _easingCurve.valueForProgress(static_cast<double>(time) / static_cast<double>(_duration)),
            loopCount(), currentLoop());

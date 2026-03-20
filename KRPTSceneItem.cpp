@@ -172,7 +172,7 @@ private:
 KRPTSceneItem::KRPTSceneItem(KRPTScene *scene, KRPTSceneItem *parent) noexcept
     : _scene(scene), _parent(parent), _data(new KRPTSceneItemData(this)), _dirty(Dirty::All), 
       _state(State::NeedPaint | State::VisibledInView | State::NeedChildPaint),
-      _updateLocked(0), _visible(true), _angle(0), _scale(1), _opaq(1), _tag(0),
+      _updateLocked(0), _visible(true), _angle(0), _scale(1), _opaq(1), _paintStageCount(1), _tag(0),
       _borderColor(255, 255, 255), _backgroundColor(30, 30, 30)
 {
 }
@@ -304,12 +304,14 @@ void KRPTSceneItem::setTag(uint32_t tag) noexcept
 
 const KRPTSceneItem::ItemsList& KRPTSceneItem::visibleChildItems() noexcept
 {
-    if(_childItems.empty() || must(KRPTSceneItem::Must::NoCheckChildVisibled))
-        return _childItems;
+    const auto &childItems = filterChildItems();
+
+    if(childItems.empty() || must(KRPTSceneItem::Must::NoCheckChildVisibled))
+        return childItems;
     if(!dirtyVisibleChilds())return _visibleChildItems;
     _visibleChildItems.clear();
 #ifndef _OPENMP
-    for(auto &item : _childItems)
+    for(auto &item : childItems)
     {
         item->updateCache(true);
         bool needPaint = (!item->_parent || 
@@ -318,9 +320,9 @@ const KRPTSceneItem::ItemsList& KRPTSceneItem::visibleChildItems() noexcept
             _visibleChildItems.emplace_back(item);
     }
 #else
-    if(_childItems.size() < 500)
+    if(childItems.size() < 500)
     {
-        for(auto &item : _childItems)
+        for(auto &item : childItems)
         {
             item->updateCache(true);
             bool needPaint = (!item->_parent || 
@@ -331,19 +333,19 @@ const KRPTSceneItem::ItemsList& KRPTSceneItem::visibleChildItems() noexcept
         return _visibleChildItems;
     }
     uint32_t threadCount = std::min(4, omp_get_num_procs());
-    size_t chsz = _childItems.size() / threadCount;
+    size_t chsz = childItems.size() / threadCount;
     struct Rec
     {
-        ItemsList::iterator begin;
-        ItemsList::iterator end  ;
-        ItemsList           list ;
+        ItemsList::const_iterator begin;
+        ItemsList::const_iterator end  ;
+        ItemsList                 list ;
     };
     std::vector<Rec> rec(threadCount);
-    ItemsList::iterator it = _childItems.begin();
+    ItemsList::const_iterator it = childItems.begin();
     for(uint32_t i = 0; i < threadCount; ++i)
     {
         rec[i].begin = it;
-        rec[i].end = i < threadCount - 1 ? std::next(rec[i].begin, chsz) : _childItems.end();
+        rec[i].end = i < threadCount - 1 ? std::next(rec[i].begin, chsz) : childItems.end();
         it = rec[i].end;
     }
     #pragma omp parallel num_threads(threadCount)
@@ -411,6 +413,18 @@ const QTransform& KRPTSceneItem::sceneTransformInv() noexcept
     }
     return _sceneTransformInv;
 #endif
+}
+
+double KRPTSceneItem::sceneScale() noexcept 
+{
+    dirtyTransform();
+    return _data->sceneScale;
+}
+
+double KRPTSceneItem::sceneAngle() noexcept 
+{
+    dirtyTransform();
+    return _data->sceneAngle;
 }
 
 QRectF KRPTSceneItem::bBox() noexcept
@@ -701,7 +715,9 @@ QPolygonF KRPTSceneItem::mapFromItem(KRPTSceneItem *item, const QPolygonF &polyg
 
 bool KRPTSceneItem::needPaint() const noexcept
 {
-    bool needPaint = !must(KRPTSceneItem::Must::NoPaint) && (!_parent || _state[State::NeedPaint]) && _visible;
+    bool needPaint = !must(KRPTSceneItem::Must::NoPaint) && 
+        (!_parent || _state[State::NeedPaint]) && _visible && 
+        !qFuzzyIsNull(_opaq) && !qFuzzyIsNull(_scale);
     return needPaint;
 }
 
@@ -747,6 +763,18 @@ void KRPTSceneItem::childTransformEvent(KRPTSceneItem *item, SceneTransformEvent
 {
 }
 
+void KRPTSceneItem::sceneTransformEvent(const QTransform &transform) noexcept
+{
+}
+
+void KRPTSceneItem::sceneScaleEvent(double scale, double oldScale) noexcept
+{
+}
+
+void KRPTSceneItem::sceneRotateEvent(double angle, double oldAngle) noexcept
+{
+}
+
 //****************************************************************************************************
 //*
 //****************************************************************************************************
@@ -757,6 +785,11 @@ void KRPTSceneItem::update() noexcept
     _scene->update();
 }
 
+const KRPTSceneItem::ItemsList &KRPTSceneItem::filterChildItems() noexcept
+{
+    return _childItems;
+}
+
 void KRPTSceneItem::addChildImpl(KRPTSceneItem::Ptr item, KRPTSceneItem *parent) noexcept
 {
     item->_parent = parent;
@@ -764,7 +797,7 @@ void KRPTSceneItem::addChildImpl(KRPTSceneItem::Ptr item, KRPTSceneItem *parent)
     parent->_index.emplace(item, it);
     addChildEvent(item);
     _dirty += Dirty::VisibleChildItems;
-    updateGeometry();
+    update();
 }
 
 bool KRPTSceneItem::delChildImpl(KRPTSceneItem *item, KRPTSceneItem *parent) noexcept
@@ -777,7 +810,7 @@ bool KRPTSceneItem::delChildImpl(KRPTSceneItem *item, KRPTSceneItem *parent) noe
     delChildEvent(item);
     delete item;
     _dirty += Dirty::VisibleChildItems;
-    updateGeometry();
+    update();
     return true;
 }
 
@@ -908,21 +941,16 @@ void KRPTSceneItem::animImpl(uint32_t id, const std::vector<double> &value,
     update();
 }
 
-void KRPTSceneItem::paintBackground(QPainter &painter) noexcept
+void KRPTSceneItem::paintBackground(QPainter &painter, uint32_t stage) noexcept
 {
     painter.fillRect(_rect, _backgroundColor);
 }
 
-void KRPTSceneItem::paintForeground(QPainter &painter) noexcept
+void KRPTSceneItem::paintForeground(QPainter &painter, uint32_t stage) noexcept
 {
     QPen pen(_borderColor, 2);
     painter.setPen(pen);
     painter.drawRect(_rect);
-}
-
-void KRPTSceneItem::updateGeometry() noexcept
-{
-    update();
 }
 
 //****************************************************************************************************
@@ -1090,6 +1118,8 @@ bool KRPTSceneItem::updateCache(bool visible) noexcept
     if(transform && i == _data->cache.size())
     {
         _sceneTransform = *transform;
+        if(must(KRPTSceneItem::Must::SceneTransformEvent))
+            sceneTransformEvent(_sceneTransform);
         _dirty += Dirty::SceneTransformInv;
     }
     return dirty;
@@ -1099,42 +1129,65 @@ bool KRPTSceneItem::dirtyTransform() noexcept
 {
     bool dirty = _dirty[Dirty::Transform];
     _dirty -= Dirty::Transform;
-    if(!must(KRPTSceneItem::Must::NoSceneScale) && 
-       !must(KRPTSceneItem::Must::NoSceneRotate))return dirty;
-//    double sceneScale = _data->sceneScale;
+    if(!must(KRPTSceneItem::Must::NoSceneScale    ) && 
+       !must(KRPTSceneItem::Must::NoSceneRotate   ) && 
+       !must(KRPTSceneItem::Must::SceneScaleEvent ) &&
+       !must(KRPTSceneItem::Must::SceneRotateEvent))return dirty;
+    if(_data->cache.empty())
+    {
+        KRPTSceneItem *item = this;
+        while(item)
+        {
+            _data->cache.emplace_back(item, item->_parent);
+            item = item->_parent;
+        }
+    }
+    bool scaleDirty   = false;
+    bool rotateDirty  = false;
+    double sceneScale = _data->sceneScale;
+    double sceneAngle = _data->sceneAngle;
     _data->sceneScale = 1;
     _data->sceneAngle = 0;
     for(auto &cache : _data->cache)
     {
-        if(must(KRPTSceneItem::Must::NoSceneScale))
+        if(must(KRPTSceneItem::Must::NoSceneScale) || must(KRPTSceneItem::Must::SceneScaleEvent))
         {
             if(cache.parent && cache.genScale != cache.parent->_data->genScale)
             {
-                dirty = true;
+                scaleDirty = true;
                 cache.genScale = cache.parent->_data->genScale;
-                _dirty += Dirty::TransformScale;
+                if(must(KRPTSceneItem::Must::NoSceneScale))_dirty += Dirty::TransformScale;
             }
             if(cache.item != this)
                 _data->sceneScale *= cache.item->_scale;
         }
-        if(must(KRPTSceneItem::Must::NoSceneRotate))
+        if(must(KRPTSceneItem::Must::NoSceneRotate) || must(KRPTSceneItem::Must::SceneRotateEvent))
         {
             if(cache.parent && cache.genAngle != cache.parent->_data->genAngle)
             {
-                dirty = true;
+                rotateDirty = true;
                 cache.genAngle = cache.parent->_data->genAngle;
-                _dirty += Dirty::TransformRotate;
+                if(must(KRPTSceneItem::Must::NoSceneRotate))_dirty += Dirty::TransformRotate;
             }
             if(cache.item != this)
                 _data->sceneAngle += cache.item->_angle;
         }
     }
-    if(dirty)
+    if(dirty || scaleDirty || rotateDirty)
     {
-        _dirty += Dirty::TransformInv;
-        _dirty += Dirty::Transform;
+        if(must(KRPTSceneItem::Must::SceneScaleEvent) && scaleDirty)
+            sceneScaleEvent(_data->sceneScale, sceneScale);
+        if(must(KRPTSceneItem::Must::SceneRotateEvent) && rotateDirty)
+            sceneScaleEvent(_data->sceneAngle, sceneAngle);
+
+        if(must(KRPTSceneItem::Must::NoSceneScale) || must(KRPTSceneItem::Must::NoSceneRotate))
+        {
+            _dirty += Dirty::TransformInv;
+            _dirty += Dirty::Transform;
+        }
     }
-    return dirty;
+    return must(KRPTSceneItem::Must::NoSceneScale) || must(KRPTSceneItem::Must::NoSceneRotate) ?
+        dirty || scaleDirty || rotateDirty : dirty;
 }
 
 bool KRPTSceneItem::dirtyVisibleChilds() noexcept

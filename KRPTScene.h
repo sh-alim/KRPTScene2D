@@ -93,7 +93,8 @@ protected:
     Items              itemsFromPosImpl   (const QPointF &pos, CompFn comp, 
                                            KRPTSceneItem *item, bool one, 
                                            uint32_t level = 0)                     noexcept;
-    void               paintImpl          (QPainter &painter, KRPTSceneItem *item) noexcept;
+    void               paintImpl          (QPainter &painter, KRPTSceneItem *item, 
+                                           uint32_t stage = 0)                     noexcept;
 private:
     KRPTSceneView * _view              ;
     KRPTSceneItem * _item              ;

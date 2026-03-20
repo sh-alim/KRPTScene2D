@@ -20,7 +20,7 @@ public:
     KRPTSceneEllipseItem(KRPTScene *scene, KRPTSceneItem *parent) noexcept;
     virtual ~KRPTSceneEllipseItem()                               noexcept;
 protected:
-    void outlineImpl     ()                  noexcept override;
-    void paintBackground (QPainter &painter) noexcept override;
-    void paintForeground (QPainter &painter) noexcept override;
+    void outlineImpl     ()                                  noexcept override;
+    void paintBackground (QPainter &painter, uint32_t stage) noexcept override;
+    void paintForeground (QPainter &painter, uint32_t stage) noexcept override;
 };

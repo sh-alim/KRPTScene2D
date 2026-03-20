@@ -66,31 +66,49 @@ protected:
 public:
     enum class Must : uint32_t
     {
-        No                      = 0x000000,
-        NoPaint                 = 0x000001,
-        NoClipChilds            = 0x000002,
-        NoClipPainter           = 0x000004,
-        NoSceneScale            = 0x000008,
-        NoSceneRotate           = 0x000010,
-        NoMouseEventTranslate   = 0x000020,
-        NoCheckChildVisibled    = 0x000040,
-        MousePressEvent         = 0x000080,
-        MouseReleaseEvent       = 0x000100,
-        MouseMoveEvent          = 0x000200,
-        TransformEvent          = 0x000400,
-        WhellEvent              = 0x000800,
-        ChildTransformEvent     = 0x001000,
-        Anim                    = 0x002000,
-        AccuracyCheckContains   = 0x004000,
-        AccuracyClip            = 0x008000,
-        MouseMoveble            = 0x010000,
+        No                      = 0x00000000,
+        NoPaint                 = 0x00000001,
+        NoClipChilds            = 0x00000002,
+        NoClipPainter           = 0x00000004,
+        NoSceneScale            = 0x00000008,
+        NoSceneRotate           = 0x00000010,
+        NoMouseEventTranslate   = 0x00000020,
+        NoCheckChildVisibled    = 0x00000040,
+        MousePressEvent         = 0x00000080,
+        MouseReleaseEvent       = 0x00000100,
+        MouseMoveEvent          = 0x00000200,
+        WhellEvent              = 0x00000400,
+        TransformEvent          = 0x00000800,
+        ChildTransformEvent     = 0x00001000,
+        SceneTransformEvent     = 0x00002000,
+        SceneScaleEvent         = 0x00004000,
+        SceneRotateEvent        = 0x00008000,
+        Anim                    = 0x00010000,
+        AccuracyCheckContains   = 0x00020000,
+        AccuracyClip            = 0x00040000,
+        MouseMoveble            = 0x00080000,
+    #if 0
+        Event                   = 0x00100000,
+        Event                   = 0x00200000,
+        Event                   = 0x00400000,
+        Event                   = 0x00800000,
+        Event                   = 0x01000000,
+        Event                   = 0x02000000,
+        Event                   = 0x04000000,
+        Event                   = 0x08000000,
+        Event                   = 0x10000000,
+        Event                   = 0x20000000,
+        Event                   = 0x40000000,
+        Event                   = 0x80000000,
+    #endif
         All                     = 0xFFFFFF
     };
     enum class TransSrc : uint8_t{Self, Parent, Scene};
 public:
-    using Ptr       = KRPTSceneItem*;
-    using ItemsList = std::list<KRPTSceneItem::Ptr>;
-    using IndexMap  = std::unordered_map<KRPTSceneItem*, ItemsList::iterator>;
+    using Ptr        = KRPTSceneItem*;
+    using ItemsList  = std::list<KRPTSceneItem::Ptr>;
+    using CItemsList = const ItemsList;
+    using IndexMap   = std::unordered_map<KRPTSceneItem*, ItemsList::iterator>;
 public:
     KRPTSceneItem(KRPTScene *scene, KRPTSceneItem *parent)                                                         noexcept;
     virtual ~KRPTSceneItem()                                                                                       noexcept;
@@ -136,6 +154,8 @@ public:
     const QTransform   & transformInv        ()                                                                    noexcept;
     const QTransform   & sceneTransform      ()                                                                    noexcept;
     const QTransform   & sceneTransformInv   ()                                                                    noexcept;
+    double               sceneScale          ()                                                                    noexcept;
+    double               sceneAngle          ()                                                                    noexcept;
     const QPainterPath & outline             ()                                                                    noexcept;
     QRectF               bBox                ()                                                                    noexcept;
     QRectF               bBoxMapToParent     ()                                                                    noexcept;
@@ -219,8 +239,12 @@ protected:
     virtual void         mouseMoveEvent      (SceneMouseEvent *e)                                                  noexcept;
     virtual void         whellEvent          (SceneMouseEvent *e)                                                  noexcept;
     virtual void         childTransformEvent (KRPTSceneItem *item, SceneTransformEvent *e)                         noexcept;
+    virtual void         sceneTransformEvent (const QTransform &transform)                                         noexcept;
+    virtual void         sceneScaleEvent     (double scale, double oldScale)                                       noexcept;
+    virtual void         sceneRotateEvent    (double angle, double oldAngle)                                       noexcept;
 protected:
     virtual void         update              ()                                                                    noexcept;
+    virtual CItemsList & filterChildItems    ()                                                                    noexcept;
     virtual void         addChildImpl        (KRPTSceneItem::Ptr item, KRPTSceneItem *parent)                      noexcept;
     virtual bool         delChildImpl        (KRPTSceneItem *item, KRPTSceneItem *parent)                          noexcept;
     virtual bool         setGeometryImpl     (const QRectF &geometry)                                              noexcept;
@@ -235,9 +259,8 @@ protected:
     virtual void         whellImpl           (SceneMouseEvent *e)                                                  noexcept;
     virtual void         animImpl            (uint32_t id, const std::vector<double> &value, 
                                               uint32_t time, bool completed, int loop)                             noexcept;
-    virtual void         paintBackground     (QPainter &painter)                                                   noexcept;
-    virtual void         paintForeground     (QPainter &painter)                                                   noexcept;
-    virtual void         updateGeometry      ()                                                                    noexcept;
+    virtual void         paintBackground     (QPainter &painter, uint32_t stage)                                   noexcept;
+    virtual void         paintForeground     (QPainter &painter, uint32_t stage)                                   noexcept;
 protected:
     void                 transform           (const QRectF &rect, double angle, 
                                               double scale, QTransform &transform)                                 noexcept;
@@ -287,10 +310,11 @@ protected:
     QTransform         _sceneTransform   ;
     QTransform         _sceneTransformInv;
     QPainterPath       _outline          ;
+    uint32_t           _paintStageCount  ;
     QRectF             _bBox             ;
     QRectF             _bBoxMapToParent  ;
     QColor             _borderColor      ;
     QColor             _backgroundColor  ;
-    uint32_t           _tag              ; 
+    uint32_t           _tag              ;
 };
 
