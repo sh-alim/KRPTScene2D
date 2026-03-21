@@ -25,6 +25,7 @@ KRPTSceneRoot::KRPTSceneRoot(KRPTScene *scene, KRPTSceneItem *parent) noexcept
 //        KRPTSceneItem::Must::NoPaint
 //        KRPTSceneItem::Must::TransformEvent,
 //        KRPTSceneItem::Must::NoClipChilds
+        KRPTSceneItem::Must::NoClipPainter
 //        KRPTSceneItem::Must::NoCheckChildVisibled,
 //        KRPTSceneItem::Must::Anim
     );
@@ -33,15 +34,16 @@ KRPTSceneRoot::KRPTSceneRoot(KRPTScene *scene, KRPTSceneItem *parent) noexcept
 
 void KRPTSceneRoot::paintBackground(QPainter &painter, uint32_t stage) noexcept
 {
-//    painter.fillRect(_rect, _backgroundColor);
+    painter.fillRect(_clientRect, _backgroundColor);
 }
 
 void KRPTSceneRoot::paintForeground(QPainter &painter, uint32_t stage) noexcept
 {
     painter.setRenderHint(QPainter::Antialiasing, false);
-    QPen pen(_borderColor);
+    QPen pen(_borderColor, 1);
+    pen.setCosmetic(true);
     painter.setPen(pen);
-    painter.drawRect(_rect);
+    painter.drawRect(_clientRect.adjusted(0.5, 0.5, -1.5, -1.5));
 }
 
 //########################################################################################################################
@@ -63,14 +65,14 @@ KRPTScene::~KRPTScene() noexcept
 //*
 //************************************************************************************************************************
 
-const QRectF& KRPTScene::geometry() const noexcept 
+const QRectF &KRPTScene::geometry() const noexcept 
 {
     return _item->geometry();
 }
 
-const QRectF& KRPTScene::rect() const noexcept 
+const QRectF &KRPTScene::clientRect() const noexcept 
 {
-    return _item->rect();
+    return _item->clientRect();
 }
 
 QPointF KRPTScene::pos() const noexcept 
@@ -406,7 +408,7 @@ void KRPTScene::paintImpl(QPainter &painter, KRPTSceneItem *item, uint32_t stage
     {
     #if 1
         if(!item->must(KRPTSceneItem::Must::AccuracyClip))
-            painter.setClipRect(item->_rect.adjusted(0, 0, 0.5, 0.5), Qt::ClipOperation::IntersectClip);
+            painter.setClipRect(item->_clientRect.adjusted(0, 0, 0.5, 0.5), Qt::ClipOperation::IntersectClip);
         else painter.setClipPath(item->outline(), Qt::ClipOperation::IntersectClip);
     #endif
     }
@@ -438,7 +440,7 @@ void KRPTScene::paintImpl(QPainter &painter, KRPTSceneItem *item, uint32_t stage
     if(!childs.empty() && !item->must(KRPTSceneItem::Must::NoClipChilds, KRPTSceneItem::Must::NoClipPainter))
     {
         if(!item->must(KRPTSceneItem::Must::AccuracyClip))
-            painter.setClipRect(item->_rect.adjusted(0, 0, 0.5, 0.5), Qt::ClipOperation::IntersectClip);
+            painter.setClipRect(item->_clientRect.adjusted(0, 0, 0.5, 0.5), Qt::ClipOperation::IntersectClip);
         else painter.setClipPath(item->outline(), Qt::ClipOperation::IntersectClip);
     }
     if(!childs.empty() && item->needChildPaint())

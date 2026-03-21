@@ -12,6 +12,17 @@
 //#
 //########################################################################################################################
 
+class KRPTSceneViewPort : public QOpenGLWidget 
+{
+protected:
+//    void initializeGL() override {}
+};
+
+
+//########################################################################################################################
+//#
+//########################################################################################################################
+
 class KRPTSceneViewPriv : public QGraphicsView
 {
 friend class KRPTSceneView;
@@ -41,6 +52,7 @@ KRPTSceneViewPriv::KRPTSceneViewPriv(QWidget *parent, KRPTSceneView *owner) noex
     setAutoFillBackground(false);
     setMouseTracking(false);
     setCacheMode(QGraphicsView::CacheNone);
+    setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
 }
 
 KRPTSceneViewPriv::~KRPTSceneViewPriv() noexcept
@@ -103,12 +115,14 @@ KRPTSceneView::KRPTSceneView(QWidget *parent, KRPTScene *scene) noexcept
     : QObject(parent), _scene(scene), _translateEvents(false)
 {
     _p = new KRPTSceneViewPriv(parent, this);
-    _p->show();
+#if 1
     QSurfaceFormat fmt;
-    fmt.setSamples(8);
+    fmt.setSamples     (4);
     fmt.setSwapInterval(0);
-    QSurfaceFormat::setDefaultFormat(fmt);
-    _p->setViewport(new QOpenGLWidget);
+    auto w = new KRPTSceneViewPort();
+    w->setFormat(fmt);
+    _p->setViewport(w);
+#endif
 }
 
 KRPTSceneView::~KRPTSceneView() noexcept
@@ -194,8 +208,9 @@ void KRPTSceneView::paintEvent(QPainter &p)
  void KRPTSceneView::resizeEventImpl(QResizeEvent *e) noexcept
  {
 //    if(_scene)_scene->setGeometry(QRectF(100, 100, _p->width() - 200, _p->height() - 200));
-    
-    if(_scene)_scene->setGeometry(QRectF(0, 0, _p->width() - 3, _p->height() - 3));
+//     qDebug() << _p->normalGeometry() << _p->frameRect() << _p->rect();
+
+    if(_scene)_scene->setGeometry(QRectF(0, 0, _p->width() - 1, _p->height() - 1));
     resizeEvent(e);
  }
 

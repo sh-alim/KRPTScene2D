@@ -164,7 +164,7 @@ public:
     const ItemsList    & visibleChildItems   ()                                                                    noexcept;
     bool                 visible             ()                                                              const noexcept;
     const QRectF       & geometry            ()                                                              const noexcept;
-    const QRectF       & rect                ()                                                              const noexcept;
+    const QRectF       & clientRect          ()                                                              const noexcept;
     QPointF              pos                 ()                                                              const noexcept;
     QSizeF               size                ()                                                              const noexcept;
     double               x                   ()                                                              const noexcept;
@@ -328,7 +328,7 @@ protected:
     uint32_t           _updateLocked        ;
     bool               _visible             ;
     QRectF             _geometry            ;
-    QRectF             _rect                ;
+    QRectF             _clientRect          ;
     double             _angle               ;
     double             _scale               ;
     double             _opaq                ;

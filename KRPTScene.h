@@ -47,7 +47,7 @@ public:
     }
 public:
     const QRectF     & geometry           ()                                 const noexcept;
-    const QRectF     & rect               ()                                 const noexcept;
+    const QRectF     & clientRect         ()                                 const noexcept;
     QPointF            pos                ()                                 const noexcept;
     QSizeF             size               ()                                 const noexcept;
     double             x                  ()                                 const noexcept;

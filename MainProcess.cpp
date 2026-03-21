@@ -16,6 +16,8 @@ MainProcess::MainProcess(QWidget *parent)
 
     _view = new KRPTSceneView(this);
     _scene = new KRPTScene(_view);
+    _scene->setBackgroundColor(QColor(30, 50, 50));
+
     _view->setTranslateEvents(true);
 
     setGeometry(400, 50, 2000, 1000);
@@ -66,6 +68,7 @@ MainProcess::MainProcess(QWidget *parent)
 
 MainProcess::~MainProcess()
 {
+    delete _scene;
 }
 
 //************************************************************************************************************************
@@ -96,8 +99,8 @@ void MainProcess::mousePressEvent(QMouseEvent *e)
         (
 //            KRPTSceneItem::Must::NoClipChilds,
             KRPTSceneItem::Must::NoClipPainter,
-            KRPTSceneItem::Must::NoSceneRotate,
-            KRPTSceneItem::Must::NoSceneScale,
+//            KRPTSceneItem::Must::NoSceneRotate,
+//            KRPTSceneItem::Must::NoSceneScale,
 //            KRPTSceneItem::Must::AccuracyClip,
             KRPTSceneItem::Must::Anim,
 //            KRPTSceneItem::Must::AccuracyClip,
@@ -107,6 +110,8 @@ void MainProcess::mousePressEvent(QMouseEvent *e)
             KRPTSceneItem::Must::MouseMoveEvent,
             KRPTSceneItem::Must::WhellEvent
         );
+
+        child->setTransformAnchor(KRPTSceneItem::TransformAnchor::BottomCenter);
     }
 
 }

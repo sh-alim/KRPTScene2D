@@ -227,9 +227,9 @@ const QRectF & KRPTSceneItem::geometry() const noexcept
     return _geometry;
 }
 
-const QRectF & KRPTSceneItem::rect() const noexcept 
+const QRectF & KRPTSceneItem::clientRect() const noexcept 
 {
-    return _rect;
+    return _clientRect;
 }
 
 QPointF KRPTSceneItem::pos() const noexcept 
@@ -444,13 +444,13 @@ QRectF KRPTSceneItem::bBoxMapToParent() noexcept
 
 bool KRPTSceneItem::contains(const QPointF &point) noexcept
 {
-    bool ret = _rect.contains(point);
+    bool ret = _clientRect.contains(point);
     if(ret && must(KRPTSceneItem::Must::AccuracyCheckContains))
         ret = outline().contains(point);
     return ret;
 }
 
-const QPainterPath & KRPTSceneItem::outline() noexcept
+const QPainterPath &KRPTSceneItem::outline() noexcept
 {
     if(!_dirty[Dirty::Outline])return _outline;
     _dirty -= Dirty::Outline;
@@ -780,7 +780,7 @@ bool KRPTSceneItem::setGeometryImpl(const QRectF &geometry) noexcept
     if(!isMoved && ! isResized)return false;
     QRectF oldGeometry = _geometry;
     _geometry = geometry;
-    _rect.setSize(_geometry.size());
+    _clientRect.setSize(_geometry.size());
     _dirty += Dirty::Transform   ;
     _dirty += Dirty::TransformInv;
     if(isMoved)
@@ -866,7 +866,7 @@ void KRPTSceneItem::transformImpl(SceneTransformEvent *e) noexcept
 
 void KRPTSceneItem::outlineImpl() noexcept
 {
-    _outline.addRect(_rect);
+    _outline.addRect(_clientRect);
 }
 
 void KRPTSceneItem::mousePressImpl(SceneMouseEvent *e) noexcept
@@ -904,14 +904,14 @@ void KRPTSceneItem::animImpl(uint32_t id, const std::vector<double> &value,
 
 void KRPTSceneItem::paintBackground(QPainter &painter, uint32_t stage) noexcept
 {
-    painter.fillRect(_rect, _backgroundColor);
+    painter.fillRect(_clientRect, _backgroundColor);
 }
 
 void KRPTSceneItem::paintForeground(QPainter &painter, uint32_t stage) noexcept
 {
     QPen pen(_borderColor, 2);
     painter.setPen(pen);
-    painter.drawRect(_rect);
+    painter.drawRect(_clientRect);
 }
 
 //************************************************************************************************************************
@@ -973,9 +973,10 @@ void KRPTSceneItem::transform(const QRectF &rect, double angle, double scale, QT
     {
         _rotScalTransform = _rotateTransform * _scaleTransform;
     }
+
     if(_dirty[Dirty::TransformRotate] || _dirty[Dirty::TransformScale] || _dirty[Dirty::TransformSize])
     {
-    #if 1
+    #if 0
         double wd2 = rect.width () * 0.5;
         double hd2 = rect.height() * 0.5;
     #else
@@ -986,6 +987,30 @@ void KRPTSceneItem::transform(const QRectF &rect, double angle, double scale, QT
             case TransformAnchor::Center :
                 wd2 = rect.width () * 0.5;
                 hd2 = rect.height() * 0.5;
+                break;
+            case TransformAnchor::RightTop:
+                wd2 = rect.width () ;
+                break;
+            case TransformAnchor::LeftBottom :
+                hd2 = rect.height();
+                break;
+            case TransformAnchor::RightBottom :
+                wd2 = rect.width ();
+                hd2 = rect.height();
+                break;
+            case TransformAnchor::LeftCenter :
+                hd2 = rect.height() * 0.5;
+                break;
+            case TransformAnchor::RightCenter :
+                wd2 = rect.width ();
+                hd2 = rect.height() * 0.5;
+                break;
+            case TransformAnchor::TopCenter :
+                wd2 = rect.width () * 0.5;
+                break;
+            case TransformAnchor::BottomCenter :
+                wd2 = rect.width () * 0.5;
+                hd2 = rect.height();
                 break;
         }
     #endif
@@ -1025,10 +1050,10 @@ QPointF KRPTSceneItem::transformShift(QTransform &t, TransSrc src, const QPointF
 void KRPTSceneItem::bBox(const QTransform &transform, const QRectF &rect, QRectF &bBox) noexcept 
 {
     QPointF p[4];
-    p[0] = transform.map(_rect.topLeft    ());
-    p[1] = transform.map(_rect.topRight   ());
-    p[2] = transform.map(_rect.bottomRight());
-    p[3] = transform.map(_rect.bottomLeft ());
+    p[0] = transform.map(_clientRect.topLeft    ());
+    p[1] = transform.map(_clientRect.topRight   ());
+    p[2] = transform.map(_clientRect.bottomRight());
+    p[3] = transform.map(_clientRect.bottomLeft ());
     QPointF pMin(std::numeric_limits<double>::max(), std::numeric_limits<double>::max());
     QPointF pMax;
     for(int i = 0; i < 4; ++i)
@@ -1075,7 +1100,7 @@ bool KRPTSceneItem::updateCache(bool visible) noexcept
         if(dirty)
         {
             cache.transform = transform ? *transform * cache.item->transform() : cache.item->transform();
-            bBox(cache.transform, _rect, cache.bBox);
+            bBox(cache.transform, _clientRect, cache.bBox);
             if(cache.item == this)
             {
                 _bBoxMapToParent = cache.bBox;
@@ -1103,7 +1128,7 @@ bool KRPTSceneItem::updateCache(bool visible) noexcept
         {
             if(!cache.parent)cache.visible = true; else
                 cache.visible = cache.parent->must(KRPTSceneItem::Must::NoClipChilds) ? true :
-                cache.parent->_rect.intersects(cache.bBox);
+                cache.parent->_clientRect.intersects(cache.bBox);
             cache.visibleDirty = false;
         }
         if(!cache.visible)
