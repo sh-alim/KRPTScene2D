@@ -87,20 +87,29 @@ void MainProcess::mousePressEvent(QMouseEvent *e)
 //    auto item = items.front();
 //    item->setBorderColor(QColor(255, 0, 0));
 
+    if(e->buttons() & Qt::MouseButton::LeftButton)
+    {
+        auto item = _scene->mousePressedItem();
+        if(!item)return;
+        QPointF p = item->mapFromScene(e->position());
+
+        qDebug() << p;
+    }else
+
     if(e->buttons() & Qt::MouseButton::RightButton)
     {
         auto item = _scene->mousePressedItem();
         if(!item)return;
         QPointF p = item->mapFromScene(e->position());
+
         auto child = item->addChild<KRPTSceneRectItem>();
-        child->setGeometry(p, QSizeF(50, 50));
         child->setBackgroundColor(QColor(0, 255, 0));
         child->addMust
         (
 //            KRPTSceneItem::Must::NoClipChilds,
             KRPTSceneItem::Must::NoClipPainter,
-//            KRPTSceneItem::Must::NoSceneRotate,
-//            KRPTSceneItem::Must::NoSceneScale,
+            KRPTSceneItem::Must::NoSceneRotate,
+            KRPTSceneItem::Must::NoSceneScale,
 //            KRPTSceneItem::Must::AccuracyClip,
             KRPTSceneItem::Must::Anim,
 //            KRPTSceneItem::Must::AccuracyClip,
@@ -111,7 +120,27 @@ void MainProcess::mousePressEvent(QMouseEvent *e)
             KRPTSceneItem::Must::WhellEvent
         );
 
-        child->setTransformAnchor(KRPTSceneItem::TransformAnchor::BottomCenter);
+        child->setSize(50, 50);
+        child->setPos(p);
+
+//        child->setGeometry(p, QSizeF(50, 50));
+
+
+
+//        child->setTransformAnchor(KRPTSceneItem::TransformAnchor::LeftTop);
+//        child->setTransformAnchor(KRPTSceneItem::TransformAnchor::RightTop);
+//        child->setTransformAnchor(KRPTSceneItem::TransformAnchor::LeftBottom);
+//        child->setTransformAnchor(KRPTSceneItem::TransformAnchor::RightCenter);
+//        child->setTransformAnchor(KRPTSceneItem::TransformAnchor::BottomCenter);
+
+
+//        child->setPosAnchor(KRPTSceneItem::TransformAnchor::LeftTop);
+//        child->setPosAnchor(KRPTSceneItem::TransformAnchor::Center);
+//        child->setPosAnchor(KRPTSceneItem::TransformAnchor::RightTop);
+//        child->setPosAnchor(KRPTSceneItem::TransformAnchor::LeftBottom);
+//        child->setPosAnchor(KRPTSceneItem::TransformAnchor::RightCenter);
+//        child->setPosAnchor(KRPTSceneItem::TransformAnchor::BottomCenter);
+
     }
 
 }

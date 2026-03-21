@@ -28,7 +28,7 @@ KRPTSceneEllipseItem::~KRPTSceneEllipseItem() noexcept
 
 void KRPTSceneEllipseItem::outlineImpl() noexcept
 {
-    _outline.addEllipse(_clientRect);
+    _outline.addEllipse(_rect);
 }
 
 void KRPTSceneEllipseItem::paintBackground(QPainter &painter, uint32_t stage) noexcept
@@ -40,7 +40,7 @@ void KRPTSceneEllipseItem::paintForeground(QPainter &painter, uint32_t stage) no
 {
     QPen pen(_borderColor, 2);
     painter.setPen(pen);
-//    painter.drawRect(_clientRect);
+//    painter.drawRect(_rect);
 //    painter.drawPath(outline());
-    painter.drawEllipse(_clientRect);
+    painter.drawEllipse(_rect);
 }

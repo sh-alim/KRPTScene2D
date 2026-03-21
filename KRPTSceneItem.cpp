@@ -172,7 +172,8 @@ private:
 KRPTSceneItem::KRPTSceneItem(KRPTScene *scene, KRPTSceneItem *parent) noexcept
     : _scene(scene), _parent(parent), _data(new KRPTSceneItemData(this)), _dirty(Dirty::All), 
       _state(State::NeedPaint | State::VisibledInView | State::NeedChildPaint),
-      _updateLocked(0), _visible(true), _angle(0), _scale(1), _opaq(1), _transformAnchor(TransformAnchor::Center), 
+      _updateLocked(0), _visible(true), _angle(0), _scale(1), _opaq(1), 
+      _transformAnchor(TransformAnchor::Center), _posAnchor(TransformAnchor::LeftTop), 
       _paintStageCount(1), _tag(0), _borderColor(255, 255, 255), _backgroundColor(30, 30, 30)
 {
 }
@@ -227,9 +228,9 @@ const QRectF & KRPTSceneItem::geometry() const noexcept
     return _geometry;
 }
 
-const QRectF & KRPTSceneItem::clientRect() const noexcept 
+const QRectF & KRPTSceneItem::rect() const noexcept 
 {
-    return _clientRect;
+    return _rect;
 }
 
 QPointF KRPTSceneItem::pos() const noexcept 
@@ -373,6 +374,11 @@ KRPTSceneItem::TransformAnchor KRPTSceneItem::transformAnchor() const noexcept
     return _transformAnchor;
 }
 
+KRPTSceneItem::TransformAnchor KRPTSceneItem::posAnchor() const noexcept
+{
+    return _posAnchor;
+}
+
 const QTransform& KRPTSceneItem::transform() noexcept 
 {
     if(!dirtyTransform())return _transform;
@@ -444,7 +450,7 @@ QRectF KRPTSceneItem::bBoxMapToParent() noexcept
 
 bool KRPTSceneItem::contains(const QPointF &point) noexcept
 {
-    bool ret = _clientRect.contains(point);
+    bool ret = _rect.contains(point);
     if(ret && must(KRPTSceneItem::Must::AccuracyCheckContains))
         ret = outline().contains(point);
     return ret;
@@ -569,6 +575,12 @@ void KRPTSceneItem::setTransformAnchor(TransformAnchor anchor) noexcept
 {
     if(anchor == _transformAnchor)return;
     _transformAnchor = anchor;
+}
+
+void KRPTSceneItem::setPosAnchor(TransformAnchor anchor) noexcept
+{
+    if(anchor == _posAnchor)return;
+    _posAnchor = anchor;
 }
 
 void KRPTSceneItem::translate(const QPointF &pos, uint32_t time, QEasingCurve curve) noexcept
@@ -728,6 +740,14 @@ bool KRPTSceneItem::needPaint() const noexcept
     return needPaint;
 }
 
+bool KRPTSceneItem::canBeUpdated() const noexcept
+{
+    bool canBeUpdated = (!_childItems.empty() || !must(Must::NoPaint)) && 
+        (!_parent ||_state[State::NeedPaint] || _dirty[Dirty::Transform]) && 
+        _visible && !qFuzzyIsNull(_opaq) && !qFuzzyIsNull(_scale);
+    return canBeUpdated;
+}
+
 bool KRPTSceneItem::needChildPaint() const noexcept
 {
     bool needPaint = (!_parent || _state[State::NeedChildPaint]) && _visible;
@@ -740,7 +760,7 @@ bool KRPTSceneItem::needChildPaint() const noexcept
 
 void KRPTSceneItem::update() noexcept
 {
-    if(_updateLocked != 0 || !needPaint())return;
+    if(_updateLocked != 0 || !canBeUpdated())return;
     _scene->update();
 }
 
@@ -780,7 +800,7 @@ bool KRPTSceneItem::setGeometryImpl(const QRectF &geometry) noexcept
     if(!isMoved && ! isResized)return false;
     QRectF oldGeometry = _geometry;
     _geometry = geometry;
-    _clientRect.setSize(_geometry.size());
+    _rect.setSize(_geometry.size());
     _dirty += Dirty::Transform   ;
     _dirty += Dirty::TransformInv;
     if(isMoved)
@@ -866,7 +886,7 @@ void KRPTSceneItem::transformImpl(SceneTransformEvent *e) noexcept
 
 void KRPTSceneItem::outlineImpl() noexcept
 {
-    _outline.addRect(_clientRect);
+    _outline.addRect(_rect);
 }
 
 void KRPTSceneItem::mousePressImpl(SceneMouseEvent *e) noexcept
@@ -904,14 +924,14 @@ void KRPTSceneItem::animImpl(uint32_t id, const std::vector<double> &value,
 
 void KRPTSceneItem::paintBackground(QPainter &painter, uint32_t stage) noexcept
 {
-    painter.fillRect(_clientRect, _backgroundColor);
+    painter.fillRect(_rect, _backgroundColor);
 }
 
 void KRPTSceneItem::paintForeground(QPainter &painter, uint32_t stage) noexcept
 {
     QPen pen(_borderColor, 2);
     painter.setPen(pen);
-    painter.drawRect(_clientRect);
+    painter.drawRect(_rect);
 }
 
 //************************************************************************************************************************
@@ -923,7 +943,7 @@ void KRPTSceneItem::transform(const QRectF &rect, double angle, double scale, QT
 #if 0
     double wd2 = rect.width () * 0.5;
     double hd2 = rect.height() * 0.5;
-//    if(_dirty[Dirty::TransformScale])
+    if(_dirty[Dirty::TransformScale])
     {
         double tscale = !must(KRPTSceneItem::Must::NoSceneScale ) ? scale : scale *= 1.0 / _data->sceneScale;
         _scaleTransform.reset();
@@ -931,7 +951,7 @@ void KRPTSceneItem::transform(const QRectF &rect, double angle, double scale, QT
         _scaleTransform.scale(tscale, tscale);
         _scaleTransform.translate(-wd2, -hd2);
     }
-//    if(_dirty[Dirty::TransformRotate])
+    if(_dirty[Dirty::TransformRotate])
     {
         double tangle = !must(KRPTSceneItem::Must::NoSceneRotate) ? angle : angle -= _data->sceneAngle;
         _rotateTransform.reset();
@@ -939,14 +959,13 @@ void KRPTSceneItem::transform(const QRectF &rect, double angle, double scale, QT
         _rotateTransform.rotate(tangle);
         _rotateTransform.translate(-wd2, -hd2);
     }
-//    if(_dirty[Dirty::TransformTrans])
+    if(_dirty[Dirty::TransformTrans])
     {
         _transTransform.reset();
         _transTransform.translate(rect.x(), rect.y());
     }
 
-
-    transform = _rotateTransform * _scaleTransform * _transTransform;
+    transform = _rotateTransform * _scaleTransform  * _transTransform;
 
     _dirty -= Dirty::TransformScale;
     _dirty -= Dirty::TransformRotate;
@@ -959,15 +978,13 @@ void KRPTSceneItem::transform(const QRectF &rect, double angle, double scale, QT
     }
     if(_dirty[Dirty::TransformScale])
     {
-        double tscale = !must(KRPTSceneItem::Must::NoSceneScale ) ? scale : scale *= 1.0 / _data->sceneScale;
         _scaleTransform.reset();
-        _scaleTransform.scale(tscale, tscale);
+        _scaleTransform.scale(scale, scale);
     }
     if(_dirty[Dirty::TransformRotate])
     {
-        double tangle = !must(KRPTSceneItem::Must::NoSceneRotate) ? angle : angle -= _data->sceneAngle;
         _rotateTransform.reset();
-        _rotateTransform.rotate(tangle);
+        _rotateTransform.rotate(angle);
     }
     if(_dirty[Dirty::TransformRotate] || _dirty[Dirty::TransformScale])
     {
@@ -976,54 +993,92 @@ void KRPTSceneItem::transform(const QRectF &rect, double angle, double scale, QT
 
     if(_dirty[Dirty::TransformRotate] || _dirty[Dirty::TransformScale] || _dirty[Dirty::TransformSize])
     {
-    #if 0
-        double wd2 = rect.width () * 0.5;
-        double hd2 = rect.height() * 0.5;
-    #else
-        double wd2 = 0;
-        double hd2 = 0;
+        double dx0 = 0, dy0 = 0, dx1 = 0, dy1 = 0;
+        double w = rect.width(), h = rect.height();
+        double w2 = w * 0.5, h2 = h * 0.5;
         switch(_transformAnchor)
         {
-            case TransformAnchor::Center :
-                wd2 = rect.width () * 0.5;
-                hd2 = rect.height() * 0.5;
-                break;
-            case TransformAnchor::RightTop:
-                wd2 = rect.width () ;
-                break;
-            case TransformAnchor::LeftBottom :
-                hd2 = rect.height();
-                break;
-            case TransformAnchor::RightBottom :
-                wd2 = rect.width ();
-                hd2 = rect.height();
-                break;
-            case TransformAnchor::LeftCenter :
-                hd2 = rect.height() * 0.5;
-                break;
-            case TransformAnchor::RightCenter :
-                wd2 = rect.width ();
-                hd2 = rect.height() * 0.5;
-                break;
-            case TransformAnchor::TopCenter :
-                wd2 = rect.width () * 0.5;
-                break;
-            case TransformAnchor::BottomCenter :
-                wd2 = rect.width () * 0.5;
-                hd2 = rect.height();
-                break;
+            case TransformAnchor::Center       : dx0 = w2; dy0 = h2; break;
+            case TransformAnchor::RightTop     : dx0 =  w; dy0 =  0; break;
+            case TransformAnchor::LeftBottom   : dx0 =  0; dy0 =  h; break;
+            case TransformAnchor::RightBottom  : dx0 =  w; dy0 =  h; break;
+            case TransformAnchor::LeftCenter   : dx0 =  0; dy0 = h2; break;
+            case TransformAnchor::RightCenter  : dx0 =  w; dy0 = h2; break;
+            case TransformAnchor::TopCenter    : dx0 = w2; dy0 =  0; break;
+            case TransformAnchor::BottomCenter : dx0 = w2; dy0 =  h; break;
+        }
+        switch(_posAnchor)
+        {
+            case TransformAnchor::Center       : dx1 = w2; dy1 = h2; break;
+            case TransformAnchor::RightTop     : dx1 =  w; dy1 =  0; break;
+            case TransformAnchor::LeftBottom   : dx1 =  0; dy1 =  h; break;
+            case TransformAnchor::RightBottom  : dx1 =  w; dy1 =  h; break;
+            case TransformAnchor::LeftCenter   : dx1 =  0; dy1 = h2; break;
+            case TransformAnchor::RightCenter  : dx1 =  w; dy1 = h2; break;
+            case TransformAnchor::TopCenter    : dx1 = w2; dy1 =  0; break;
+            case TransformAnchor::BottomCenter : dx1 = w2; dy1 =  h; break;
+        }
+        _rotScalSizeTransform.reset();
+        _rotScalSizeTransform.translate(dx0 - dx1, dy0 - dy1);
+        _rotScalSizeTransform = _rotScalTransform * _rotScalSizeTransform;
+        _rotScalSizeTransform.translate(-dx0, -dy0);
+
+    #if 0
+        if(must(KRPTSceneItem::Must::NoSceneScale))
+        {
+            double scale = 1.0 / _data->sceneScale;
+            _rotScalSizeTransform.scale(scale, scale);
+        }
+
+        if(must(KRPTSceneItem::Must::NoSceneRotate))
+        {
+            _rotScalSizeTransform.rotate(-_data->sceneAngle);
         }
     #endif
-        _rotScalSizeTransform.reset();
-        _rotScalSizeTransform.translate(wd2, hd2);
-        _rotScalSizeTransform = _rotScalTransform * _rotScalSizeTransform;
-        _rotScalSizeTransform.translate(-wd2, -hd2);
+
     }
-    transform = _rotScalSizeTransform * _transTransform;
+
+    if(must(KRPTSceneItem::Must::NoSceneScale))
+    {
+        if(_dirty[Dirty::SceneScale])
+        {
+            _sceneScaleTransform.reset();
+            double scale = 1.0 / _data->sceneScale;
+            _sceneScaleTransform.scale(scale, scale);
+        }
+        if(_dirty[Dirty::TransformRotate] || _dirty[Dirty::TransformScale] || 
+           _dirty[Dirty::TransformSize  ] || _dirty[Dirty::SceneScale    ])
+        {
+            _rotScalSizeSceneTransform = _rotScalSizeTransform * _sceneScaleTransform;
+        }
+    }else _rotScalSizeSceneTransform = _rotScalSizeTransform;
+
+    if(must(KRPTSceneItem::Must::NoSceneRotate))
+    {
+        if(_dirty[Dirty::SceneRotate])
+        {
+            _sceneRotateTransform.reset();
+            _sceneRotateTransform.rotate(-_data->sceneAngle);
+        }
+        if(_dirty[Dirty::TransformRotate] || _dirty[Dirty::TransformScale] || 
+           _dirty[Dirty::TransformSize  ] || _dirty[Dirty::SceneRotate   ]|| _dirty[Dirty::SceneScale    ])
+        {
+            _rotScalSizeSceneTransform1 = _rotScalSizeSceneTransform * _sceneRotateTransform;
+        }
+    }else _rotScalSizeSceneTransform1 = _rotScalSizeSceneTransform;
+
+
+    transform = _rotScalSizeSceneTransform1 * _transTransform;
+
+//    transform = _rotScalSizeTransform * _transTransform;
+
+
     _dirty -= Dirty::TransformScale ;
     _dirty -= Dirty::TransformRotate;
     _dirty -= Dirty::TransformTrans ;
     _dirty -= Dirty::TransformSize  ;
+    _dirty -= Dirty::SceneScale     ;
+    _dirty -= Dirty::SceneRotate    ;
 #endif
 }
 
@@ -1050,10 +1105,10 @@ QPointF KRPTSceneItem::transformShift(QTransform &t, TransSrc src, const QPointF
 void KRPTSceneItem::bBox(const QTransform &transform, const QRectF &rect, QRectF &bBox) noexcept 
 {
     QPointF p[4];
-    p[0] = transform.map(_clientRect.topLeft    ());
-    p[1] = transform.map(_clientRect.topRight   ());
-    p[2] = transform.map(_clientRect.bottomRight());
-    p[3] = transform.map(_clientRect.bottomLeft ());
+    p[0] = transform.map(_rect.topLeft    ());
+    p[1] = transform.map(_rect.topRight   ());
+    p[2] = transform.map(_rect.bottomRight());
+    p[3] = transform.map(_rect.bottomLeft ());
     QPointF pMin(std::numeric_limits<double>::max(), std::numeric_limits<double>::max());
     QPointF pMax;
     for(int i = 0; i < 4; ++i)
@@ -1100,7 +1155,7 @@ bool KRPTSceneItem::updateCache(bool visible) noexcept
         if(dirty)
         {
             cache.transform = transform ? *transform * cache.item->transform() : cache.item->transform();
-            bBox(cache.transform, _clientRect, cache.bBox);
+            bBox(cache.transform, _rect, cache.bBox);
             if(cache.item == this)
             {
                 _bBoxMapToParent = cache.bBox;
@@ -1128,7 +1183,7 @@ bool KRPTSceneItem::updateCache(bool visible) noexcept
         {
             if(!cache.parent)cache.visible = true; else
                 cache.visible = cache.parent->must(KRPTSceneItem::Must::NoClipChilds) ? true :
-                cache.parent->_clientRect.intersects(cache.bBox);
+                cache.parent->_rect.intersects(cache.bBox);
             cache.visibleDirty = false;
         }
         if(!cache.visible)
@@ -1187,7 +1242,11 @@ bool KRPTSceneItem::dirtyTransform() noexcept
             {
                 scaleDirty = true;
                 cache.genScale = cache.parent->_data->genScale;
-                if(must(KRPTSceneItem::Must::NoSceneScale))_dirty += Dirty::TransformScale;
+                if(must(KRPTSceneItem::Must::NoSceneScale))
+                {
+//                    _dirty += Dirty::TransformScale;
+                    _dirty += Dirty::SceneScale;
+                }
             }
             if(cache.item != this)
                 _data->sceneScale *= cache.item->_scale;
@@ -1198,7 +1257,11 @@ bool KRPTSceneItem::dirtyTransform() noexcept
             {
                 rotateDirty = true;
                 cache.genAngle = cache.parent->_data->genAngle;
-                if(must(KRPTSceneItem::Must::NoSceneRotate))_dirty += Dirty::TransformRotate;
+                if(must(KRPTSceneItem::Must::NoSceneRotate))
+                {
+  //                  _dirty += Dirty::TransformRotate;
+                    _dirty += Dirty::SceneRotate;
+                }
             }
             if(cache.item != this)
                 _data->sceneAngle += cache.item->_angle;
@@ -1246,6 +1309,11 @@ bool KRPTSceneItem::mustAnim(uint32_t time) const noexcept
 //************************************************************************************************************************
 //*
 //************************************************************************************************************************
+
+void KRPTSceneItem::stopAnimImpl(uint32_t id) noexcept
+{
+    if(must(KRPTSceneItem::Must::Anim))_data->stopAnim(id);
+}
 
 void KRPTSceneItem::startAnimImpl(uint32_t id, const std::vector<double> &start, 
     const std::vector<double> &end, uint32_t time, QEasingCurve curve, int loopCount) noexcept

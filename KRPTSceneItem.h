@@ -46,6 +46,11 @@ protected:
         TransformSize           = 0x0004,
         TransformScale          = 0x0008,
         TransformRotate         = 0x0010,
+
+        SceneScale              = 0x0800,
+        SceneRotate             = 0x1000,
+
+
         TransformInv            = 0x0020,
         SceneTransformInv       = 0x0040,
         BBox                    = 0x0080,
@@ -164,7 +169,7 @@ public:
     const ItemsList    & visibleChildItems   ()                                                                    noexcept;
     bool                 visible             ()                                                              const noexcept;
     const QRectF       & geometry            ()                                                              const noexcept;
-    const QRectF       & clientRect          ()                                                              const noexcept;
+    const QRectF       & rect                ()                                                              const noexcept;
     QPointF              pos                 ()                                                              const noexcept;
     QSizeF               size                ()                                                              const noexcept;
     double               x                   ()                                                              const noexcept;
@@ -178,6 +183,7 @@ public:
     double               scale               ()                                                              const noexcept;
     double               opaq                ()                                                              const noexcept;
     TransformAnchor      transformAnchor     ()                                                              const noexcept;
+    TransformAnchor      posAnchor           ()                                                              const noexcept;
     const QTransform   & transform           ()                                                                    noexcept;
     const QTransform   & transformInv        ()                                                                    noexcept;
     const QTransform   & sceneTransform      ()                                                                    noexcept;
@@ -223,7 +229,7 @@ public:
     bool                 setOpaq             (double opaq, 
                                               uint32_t time = 0, QEasingCurve curve = QEasingCurve::OutExpo)       noexcept;
     void                 setTransformAnchor  (TransformAnchor anchor)                                              noexcept;
-
+    void                 setPosAnchor        (TransformAnchor anchor)                                              noexcept;
     void                 translate           (const QPointF &pos, 
                                               uint32_t time = 0, QEasingCurve curve = QEasingCurve::OutExpo)       noexcept;
     void                 translate           (double dx, double dy, 
@@ -259,6 +265,7 @@ public:
     QPolygonF            mapFromItem         (KRPTSceneItem *item, const QRectF &rect)                             noexcept;
     QPolygonF            mapFromItem         (KRPTSceneItem *item, const QPolygonF &polygon)                       noexcept;
     bool                 needPaint           ()                                                              const noexcept;
+    bool                 canBeUpdated        ()                                                              const noexcept;
     bool                 needChildPaint      ()                                                              const noexcept;
 protected:
     virtual void         addChildEvent       (KRPTSceneItem *item)                                                 noexcept {};
@@ -302,6 +309,7 @@ protected:
     bool                 dirtyVisibleChilds  ()                                                                    noexcept;
     bool                 mustAnim            (uint32_t time)                                                 const noexcept;
 protected:
+    void                 stopAnimImpl        (uint32_t id)                                                         noexcept;
     void                 startAnimImpl       (uint32_t id, 
                                               const std::vector<double> &start, const std::vector<double> &end, 
                                               uint32_t time, QEasingCurve curve, int loopCount = 1)                noexcept;
@@ -328,17 +336,26 @@ protected:
     uint32_t           _updateLocked        ;
     bool               _visible             ;
     QRectF             _geometry            ;
-    QRectF             _clientRect          ;
+    QRectF             _rect                ;
     double             _angle               ;
     double             _scale               ;
     double             _opaq                ;
     TransformAnchor    _transformAnchor     ;
+    TransformAnchor    _posAnchor           ;
     QTransform         _transform           ;
+
     QTransform         _transTransform      ;
     QTransform         _rotateTransform     ;
     QTransform         _scaleTransform      ;
     QTransform         _rotScalTransform    ;
     QTransform         _rotScalSizeTransform;
+
+    QTransform         _sceneScaleTransform;
+    QTransform         _sceneRotateTransform;
+
+    QTransform         _rotScalSizeSceneTransform;
+    QTransform         _rotScalSizeSceneTransform1;
+
     QTransform         _transformInv        ;
     QTransform         _sceneTransform      ;
     QTransform         _sceneTransformInv   ;

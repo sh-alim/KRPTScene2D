@@ -28,12 +28,12 @@ void KRPTSceneRectItem::setColor() noexcept
 
 void KRPTSceneRectItem::outlineImpl() noexcept
 {
-    _outline.addRect(_clientRect);
+    _outline.addRect(_rect);
 }
 
 void KRPTSceneRectItem::paintBackground(QPainter &painter, uint32_t stage) noexcept
 {
-//    painter.fillRect(_clientRect, _backgroundColor);
+//    painter.fillRect(_rect, _backgroundColor);
 }
 
 void KRPTSceneRectItem::paintForeground(QPainter &painter, uint32_t stage) noexcept
@@ -42,15 +42,16 @@ void KRPTSceneRectItem::paintForeground(QPainter &painter, uint32_t stage) noexc
     QPen pen(_borderColor, 1);
     pen.setCosmetic(true);
     painter.setPen(pen);
-    painter.drawRect(_clientRect);
+    painter.drawRect(_rect);
 
-#if 1
+#if 0
     painter.save();
     if(_parent)
     {
         painter.setTransform(_parent->sceneTransform());
-        painter.drawRect(bBoxMapToParent());
+//        painter.drawRect(bBoxMapToParent());
 //        painter.drawRect(bBox());
+        painter.drawRect(_geometry);
     }
     painter.restore();
 #endif
