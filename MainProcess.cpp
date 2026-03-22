@@ -102,7 +102,7 @@ void MainProcess::mousePressEvent(QMouseEvent *e)
         if(!item)return;
         QPointF p = item->mapFromScene(e->position());
 
-    #if 1
+    #if 0
         auto child = item->addChild<KRPTSceneRectItem>();
         child->setBackgroundColor(QColor(0, 255, 0));
         child->addMust
@@ -140,7 +140,7 @@ void MainProcess::mousePressEvent(QMouseEvent *e)
 
         int x = 0;
         int y = 0;
-        for(int i = 0; i < 500000; ++i)
+        for(int i = 0; i < 300000; ++i)
         {
             auto child = item->addChild<KRPTSceneRectItem>();
             child->setBackgroundColor(QColor(0, 255, 0));
@@ -148,7 +148,7 @@ void MainProcess::mousePressEvent(QMouseEvent *e)
             (
 //            KRPTSceneItem::Must::NoClipChilds,
                 KRPTSceneItem::Must::NoClipPainter,
-//                KRPTSceneItem::Must::NoSceneRotate,
+                KRPTSceneItem::Must::NoSceneRotate,
                 KRPTSceneItem::Must::NoSceneScale,
 //            KRPTSceneItem::Must::AccuracyClip,
                 KRPTSceneItem::Must::Anim,

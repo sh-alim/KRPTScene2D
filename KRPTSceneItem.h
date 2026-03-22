@@ -42,22 +42,20 @@ protected:
     {
         No                      = 0x0000,
         Transform               = 0x0001,
-        TransformTrans          = 0x0002,
-        TransformSize           = 0x0004,
-        TransformScale          = 0x0008,
-        TransformRotate         = 0x0010,
-
-        SceneScale              = 0x0800,
-        SceneRotate             = 0x1000,
-
-
-        TransformInv            = 0x0020,
-        SceneTransformInv       = 0x0040,
-        BBox                    = 0x0080,
-        BBoxMapToParent         = 0x0100,
-        VisibleChildItems       = 0x0200,
-        Outline                 = 0x0400,
-        All                     = 0xFFFF,
+        TransformInv            = 0x0002,
+        TransformTrans          = 0x0004,
+        TransformSize           = 0x0008,
+        TransformScale          = 0x0010,
+        TransformRotate         = 0x0020,
+        SceneTransform          = 0x0040,
+        SceneTransformInv       = 0x0080,
+        SceneScale              = 0x0100,
+        SceneRotate             = 0x0200,
+        BBox                    = 0x0400,
+        BBoxMapToParent         = 0x0800,
+        VisibleChildItems       = 0x1000,
+        Outline                 = 0x2000,
+        All                     = 0xFFFF
     };
     enum class State : uint8_t
     {
@@ -358,5 +356,7 @@ protected:
     QTransform _scaleTransform;
     QTransform _rotateTransform;
     QTransform _transTransform;
+
+    bool _b = true;
 };
 
