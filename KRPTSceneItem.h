@@ -147,7 +147,7 @@ public:
     bool delChild(KRPTSceneItem *item)                                                                             noexcept;
     template<typename ... Args> inline bool must(Args&& ... args)                                            const noexcept
     {
-        return _must.upped(std::forward<Args>(args)...);
+        return _must.any(std::forward<Args>(args)...);
     }
     template<typename ... Args> inline void addMust(Args&& ... args)                                               noexcept
     {
@@ -325,46 +325,38 @@ protected:
                                               uint32_t time, QEasingCurve curve, int loopCount = 1)                noexcept;
 protected:
     KRPTSceneItemData *_data;
-    KRPTFlag<Dirty>    _dirty               ;
-    KRPTFlag<Must>     _must                ;
-    KRPTFlag<State>    _state               ;
-    KRPTScene         *_scene               ;
-    KRPTSceneItem     *_parent              ;
-    ItemsList          _childItems          ;
-    ItemsList          _visibleChildItems   ;
-    IndexMap           _index               ;
-    uint32_t           _updateLocked        ;
-    bool               _visible             ;
-    QRectF             _geometry            ;
-    QRectF             _rect                ;
-    double             _angle               ;
-    double             _scale               ;
-    double             _opaq                ;
-    TransformAnchor    _transformAnchor     ;
-    TransformAnchor    _posAnchor           ;
-    QTransform         _transform           ;
+    KRPTFlag<Dirty>    _dirty            ;
+    KRPTFlag<Must>     _must             ;
+    KRPTFlag<State>    _state            ;
+    KRPTScene         *_scene            ;
+    KRPTSceneItem     *_parent           ;
+    ItemsList          _childItems       ;
+    ItemsList          _visibleChildItems;
+    IndexMap           _index            ;
+    uint32_t           _updateLocked     ;
+    bool               _visible          ;
+    QRectF             _geometry         ;
+    QRectF             _rect             ;
+    double             _angle            ;
+    double             _scale            ;
+    double             _opaq             ;
+    TransformAnchor    _transformAnchor  ;
+    TransformAnchor    _posAnchor        ;
+    QTransform         _transform        ;
+    QTransform         _transformInv     ;
+    QTransform         _sceneTransform   ;
+    QTransform         _sceneTransformInv;
+    QPainterPath       _outline          ;
+    uint32_t           _paintStageCount  ;
+    QRectF             _bBox             ;
+    QRectF             _bBoxMapToParent  ;
+    QColor             _borderColor      ;
+    QColor             _backgroundColor  ;
+    uint32_t           _tag              ;
 
-    QTransform         _transTransform      ;
-    QTransform         _rotateTransform     ;
-    QTransform         _scaleTransform      ;
-    QTransform         _rotScalTransform    ;
-    QTransform         _rotScalSizeTransform;
 
-    QTransform         _sceneScaleTransform;
-    QTransform         _sceneRotateTransform;
-
-    QTransform         _rotScalSizeSceneTransform;
-    QTransform         _rotScalSizeSceneTransform1;
-
-    QTransform         _transformInv        ;
-    QTransform         _sceneTransform      ;
-    QTransform         _sceneTransformInv   ;
-    QPainterPath       _outline             ;
-    uint32_t           _paintStageCount     ;
-    QRectF             _bBox                ;
-    QRectF             _bBoxMapToParent     ;
-    QColor             _borderColor         ;
-    QColor             _backgroundColor     ;
-    uint32_t           _tag                 ;
+    QTransform _scaleTransform;
+    QTransform _rotateTransform;
+    QTransform _transTransform;
 };
 

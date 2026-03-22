@@ -44,14 +44,14 @@ void KRPTSceneRectItem::paintForeground(QPainter &painter, uint32_t stage) noexc
     painter.setPen(pen);
     painter.drawRect(_rect);
 
-#if 0
+#if 1
     painter.save();
     if(_parent)
     {
         painter.setTransform(_parent->sceneTransform());
-//        painter.drawRect(bBoxMapToParent());
+        painter.drawRect(bBoxMapToParent());
 //        painter.drawRect(bBox());
-        painter.drawRect(_geometry);
+//        painter.drawRect(_geometry);
     }
     painter.restore();
 #endif

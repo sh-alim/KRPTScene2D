@@ -1,59 +1,71 @@
-//########################################################################################################################
-//#
-//########################################################################################################################
+//######################################################################################################################################################
+//
+//######################################################################################################################################################
 
 #pragma once
 
-//########################################################################################################################
-//#
-//########################################################################################################################
-
-#include <type_traits>
-#include <cstdint>
-#include <utility>
-
-//########################################################################################################################
-//#
-//########################################################################################################################
+//######################################################################################################################################################
+//
+//######################################################################################################################################################
 
 template<typename T>
 class KRPTFlag
 {
 public:
-    static_assert(std::is_enum_v<T>, "type must be enum or enum class");
+    static_assert(std::is_enum_v<T>, "T must be enum");
     using TFlag = std::underlying_type_t<T>;
-    KRPTFlag() : _flag(0){}
-    KRPTFlag(T flag) : _flag(static_cast<TFlag>(flag)){}
+
+    KRPTFlag() noexcept = default;
+    KRPTFlag(T f) noexcept : _flag(static_cast<TFlag>(f)) {}
+
     TFlag flag() const noexcept {return _flag;}
-    template<typename ... Args> constexpr inline void up(Args&& ... args) noexcept
-    {_flag |= _or(std::forward<Args>(args)...);}
-    template<typename ... Args> constexpr inline void down(Args&& ... args) noexcept
-    {_flag &= ~_or(std::forward<Args>(args)...);}
-    template<typename ... Args> constexpr inline bool upped(Args&& ... args) const noexcept
-    {return _flag & _or(std::forward<Args>(args)...);}
-    template<typename ... Args> constexpr inline bool uppedAll(Args&& ... args) const noexcept
-    {return _flag > 0 && (_flag & _or(std::forward<Args>(args)...)) == _flag;}
-    template<typename T1> constexpr inline void operator += (T1 arg) noexcept
-    {up(std::forward<T1>(arg));}
-    inline void operator += (KRPTFlag arg) noexcept {_flag |= arg._flag;}
-    template<typename T1> constexpr inline void operator -= (T1 arg) noexcept
-    {down(std::forward<T1>(arg));}
-    template<typename ... Args> constexpr inline bool operator()(Args&& ... args) const noexcept
-    {return uppedAll(std::forward<Args>(args)...);}
-    template<typename ... Args> constexpr inline bool operator[](Args&& ... args) const noexcept
-    {return upped(std::forward<Args>(args)...);}
-    friend constexpr inline bool operator == (KRPTFlag lhs, KRPTFlag rhs) noexcept
-    {return lhs._flag == rhs._flag;}
-    friend constexpr inline bool operator < (KRPTFlag lhs, KRPTFlag rhs) noexcept
-    {return lhs._flag < rhs._flag;}
-private:
-    template<typename ... Args> constexpr inline TFlag _or(Args&& ... args) const noexcept
+
+    template<typename... Args> void up  (Args... args) noexcept {_flag |=  combine(args...);}
+    template<typename... Args> void down(Args... args) noexcept {_flag &= ~combine(args...);}
+    template<typename... Args> constexpr bool any(Args... args) const noexcept 
     {
-        static_assert((std::is_same_v<T, std::remove_reference_t<Args&&>>&& ...), 
-            "argument type must be flag enum"); 
-        static_assert(((sizeof(std::remove_reference_t<Args&&>) <= sizeof(T))&& ...), 
-            "argument type out of range"); 
-        return (0 | ... | (static_cast<TFlag>(args)));
+        return (_flag & combine(args...)) != 0;
+    }
+    template<typename... Args> constexpr bool all(Args... args) const noexcept 
+    {
+        if constexpr (sizeof...(args) == 0)return false;
+        TFlag mask = combine(args...);
+        return (_flag & mask) == mask;
+    }
+    template<typename... Args> bool operator()(Args... args) const noexcept 
+    {
+        return all(args...);
+    }
+    bool operator[](T arg) const noexcept 
+    {
+        return (_flag & static_cast<TFlag>(arg)) != 0;
+    }
+    void operator += (T arg) noexcept {up  (arg);}
+    void operator -= (T arg) noexcept {down(arg);}
+
+    friend bool operator == (KRPTFlag lhs, KRPTFlag rhs) noexcept 
+    {
+        return lhs._flag == rhs._flag;
+    }
+    friend bool operator != (KRPTFlag lhs, KRPTFlag rhs) noexcept 
+    {
+        return lhs._flag != rhs._flag;
+    }
+    friend bool operator < (KRPTFlag lhs, KRPTFlag rhs) noexcept 
+    {
+        return lhs._flag < rhs._flag;
+    }
+
+    KRPTFlag& operator=(TFlag mask) noexcept 
+    {
+        _flag = mask;
+        return *this;
+    }
+private:
+    template<typename... Args>
+    static constexpr TFlag combine(Args... args) noexcept 
+    {
+        return (0 | ... | static_cast<TFlag>(args));
     }
 private:
     TFlag _flag = 0;

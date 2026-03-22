@@ -20,10 +20,10 @@ MainProcess::MainProcess(QWidget *parent)
 
     _view->setTranslateEvents(true);
 
-    setGeometry(400, 50, 2000, 1000);
+    setGeometry(300, 50, 1600, 1000);
 
     auto _root = _scene->addItem<KRPTSceneRectItem>();
-    _root->setGeometry(QRectF(10, 10, 1000, 1200));
+    _root->setGeometry(QRectF(10, 10, 1000, 800));
 
     _root->addMust
     (
@@ -102,6 +102,7 @@ void MainProcess::mousePressEvent(QMouseEvent *e)
         if(!item)return;
         QPointF p = item->mapFromScene(e->position());
 
+    #if 1
         auto child = item->addChild<KRPTSceneRectItem>();
         child->setBackgroundColor(QColor(0, 255, 0));
         child->addMust
@@ -124,23 +125,54 @@ void MainProcess::mousePressEvent(QMouseEvent *e)
         child->setPos(p);
 
 //        child->setGeometry(p, QSizeF(50, 50));
-
-
-
 //        child->setTransformAnchor(KRPTSceneItem::TransformAnchor::LeftTop);
 //        child->setTransformAnchor(KRPTSceneItem::TransformAnchor::RightTop);
 //        child->setTransformAnchor(KRPTSceneItem::TransformAnchor::LeftBottom);
 //        child->setTransformAnchor(KRPTSceneItem::TransformAnchor::RightCenter);
 //        child->setTransformAnchor(KRPTSceneItem::TransformAnchor::BottomCenter);
-
-
 //        child->setPosAnchor(KRPTSceneItem::TransformAnchor::LeftTop);
 //        child->setPosAnchor(KRPTSceneItem::TransformAnchor::Center);
 //        child->setPosAnchor(KRPTSceneItem::TransformAnchor::RightTop);
 //        child->setPosAnchor(KRPTSceneItem::TransformAnchor::LeftBottom);
 //        child->setPosAnchor(KRPTSceneItem::TransformAnchor::RightCenter);
 //        child->setPosAnchor(KRPTSceneItem::TransformAnchor::BottomCenter);
+    #else
 
+        int x = 0;
+        int y = 0;
+        for(int i = 0; i < 500000; ++i)
+        {
+            auto child = item->addChild<KRPTSceneRectItem>();
+            child->setBackgroundColor(QColor(0, 255, 0));
+            child->addMust
+            (
+//            KRPTSceneItem::Must::NoClipChilds,
+                KRPTSceneItem::Must::NoClipPainter,
+//                KRPTSceneItem::Must::NoSceneRotate,
+                KRPTSceneItem::Must::NoSceneScale,
+//            KRPTSceneItem::Must::AccuracyClip,
+                KRPTSceneItem::Must::Anim,
+//            KRPTSceneItem::Must::AccuracyClip,
+//            KRPTSceneItem::Must::AccuracyCheckContains,
+                KRPTSceneItem::Must::MouseMoveble,
+                KRPTSceneItem::Must::MousePressEvent,
+                KRPTSceneItem::Must::MouseMoveEvent,
+                KRPTSceneItem::Must::WhellEvent
+            );
+
+            child->setSize(50, 50);
+            child->setPos(x, y);
+
+            x += child->width();
+
+            if(x > item->width())
+            {
+                x = 0;
+                y += child->height();
+            }
+        }
+
+    #endif
     }
 
 }
