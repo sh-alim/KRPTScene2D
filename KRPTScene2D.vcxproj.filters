@@ -31,9 +31,6 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="KRPTSceneWidget.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="KRPTScene.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -55,9 +52,6 @@
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="MainProcess.h">
-      <Filter>Header Files</Filter>
-    </QtMoc>
-    <QtMoc Include="KRPTSceneWidget.h">
       <Filter>Header Files</Filter>
     </QtMoc>
   </ItemGroup>

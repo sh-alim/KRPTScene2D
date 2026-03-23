@@ -32,7 +32,6 @@ protected:
     void wheelEvent       (QWheelEvent  *e) override;
     void resizeEvent      (QResizeEvent *e) override;
 private:
-//    KRPTSceneWidget *_sceneWidget;
     KRPTScene       *_scene     ;
     KRPTSceneView   *_view      ;
 };
