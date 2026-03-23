@@ -804,6 +804,12 @@ bool KRPTSceneItem::setGeometryImpl(const QRectF &geometry) noexcept
     }
     _dirty += Dirty::BBoxMapToParent  ;
     _dirty += Dirty::VisibleChildItems;
+
+    #if 1
+    _dirty += Dirty::SceneTransform   ;
+    _dirty += Dirty::SceneTransformInv;
+    #endif
+
     if(_parent)
         _parent->_dirty += Dirty::VisibleChildItems;
     ++_data->genTransform;
@@ -829,6 +835,12 @@ bool KRPTSceneItem::setAngleImpl(double angle) noexcept
     _dirty += Dirty::BBox             ;
     _dirty += Dirty::BBoxMapToParent  ;
     _dirty += Dirty::VisibleChildItems;
+
+    #if 1
+    _dirty += Dirty::SceneTransform   ;
+    _dirty += Dirty::SceneTransformInv;
+    #endif
+
     if(_parent)
         _parent->_dirty += Dirty::VisibleChildItems;
     ++_data->genTransform;
@@ -1108,6 +1120,7 @@ bool KRPTSceneItem::updateCache(bool visible) noexcept
         dirty = true;
 
     }
+
     _state += State::VisibledInView;
     _state += State::NeedPaint     ;
     _state += State::NeedChildPaint;

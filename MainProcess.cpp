@@ -8,6 +8,34 @@
 //#
 //########################################################################################################################
 
+static const std::vector<std::pair<KRPTSceneItem::Must, QString>> must =
+{
+    {KRPTSceneItem::Must::NoPaint               , "NoPaint"              },
+    {KRPTSceneItem::Must::NoClipChilds          , "NoClipChilds"         },
+    {KRPTSceneItem::Must::NoClipPainter         , "NoClipPainter"        },
+    {KRPTSceneItem::Must::NoSceneScale          , "NoSceneScale"         },
+    {KRPTSceneItem::Must::NoSceneRotate         , "NoSceneRotate"        },
+    {KRPTSceneItem::Must::NoMouseEventTranslate , "NoMouseEventTranslate"},
+    {KRPTSceneItem::Must::NoCheckChildVisibled  , "NoCheckChildVisibled" },
+    {KRPTSceneItem::Must::MousePressEvent       , "MousePressEvent"      },
+    {KRPTSceneItem::Must::MouseReleaseEvent     , "MouseReleaseEvent"    },
+    {KRPTSceneItem::Must::MouseMoveEvent        , "MouseMoveEvent"       },
+    {KRPTSceneItem::Must::WhellEvent            , "WhellEvent"           },
+    {KRPTSceneItem::Must::TransformEvent        , "TransformEvent"       },
+    {KRPTSceneItem::Must::ChildTransformEvent   , "SceneTransformEvent"  },
+    {KRPTSceneItem::Must::SceneTransformEvent   , "SceneTransformEvent"  },
+    {KRPTSceneItem::Must::SceneScaleEvent       , "SceneScaleEvent"      },
+    {KRPTSceneItem::Must::SceneRotateEvent      , "SceneRotateEvent"     },
+    {KRPTSceneItem::Must::Anim                  , "Anim"                 },
+    {KRPTSceneItem::Must::AccuracyCheckContains , "AccuracyCheckContains"},
+    {KRPTSceneItem::Must::AccuracyClip          , "AccuracyClip"         },
+    {KRPTSceneItem::Must::MouseMoveble          , "MouseMoveble"         }
+};
+
+//########################################################################################################################
+//#
+//########################################################################################################################
+
 MainProcess::MainProcess(QWidget *parent)
     : QMainWindow(parent)
 {
@@ -27,8 +55,9 @@ MainProcess::MainProcess(QWidget *parent)
 
     _root->addMust
     (
-            KRPTSceneItem::Must::NoClipPainter,
+        KRPTSceneItem::Must::NoClipPainter,
 //            KRPTSceneItem::Must::NoClipChilds,
+//        KRPTSceneItem::Must::NoCheckChildVisibled,
 
 //            KRPTSceneItem::Must::NoSceneRotate,
 //            KRPTSceneItem::Must::NoSceneScale,
@@ -50,6 +79,8 @@ MainProcess::MainProcess(QWidget *parent)
     (
 //            KRPTSceneItem::Must::NoClipChilds,
             KRPTSceneItem::Must::NoClipPainter,
+
+//        KRPTSceneItem::Must::NoCheckChildVisibled,
  
 //            KRPTSceneItem::Must::NoSceneRotate,
 //            KRPTSceneItem::Must::NoSceneScale,
@@ -64,6 +95,89 @@ MainProcess::MainProcess(QWidget *parent)
     );
 
     child->setTag(1);
+
+    _sliders.resize(6);
+    int x = 10, y = 10;
+    for(int i = 0; i < _sliders.size(); ++i)
+    {
+        _sliders[i] = new QSlider(Qt::Orientation::Horizontal, this); 
+        _sliders[i]->setGeometry(x, y, 180, 20); 
+        y += _sliders[i]->height();
+
+        if(i == 0)
+        {
+            _sliders[i]->setMinimum(1);
+            _sliders[i]->setMaximum(200);
+            _sliders[i]->setValue(100);
+        }
+        if(i == 1)
+        {
+            _sliders[i]->setMinimum(0);
+            _sliders[i]->setMaximum(360 * 2);
+            _sliders[i]->setValue(0);
+        }
+        if(i == 4 || i == 5)
+        {
+            _sliders[i]->setMinimum(-100);
+            _sliders[i]->setMaximum(1500);
+            _sliders[i]->setValue(0);
+        }
+        connect(_sliders[i], &QSlider::valueChanged, [this, i] (int value)
+        {
+            if(!_selectedItem)return;
+            if(i == 0)_selectedItem->setScale(value / 100.0);
+            if(i == 1)_selectedItem->setAngle(value / 2.0);
+            if(i == 2)_selectedItem->setWidth(value);
+            if(i == 3)_selectedItem->setHeight(value);
+            if(i == 4)_selectedItem->setX(value);
+            if(i == 5)_selectedItem->setY(value);
+        });
+    }
+    y +=10;
+
+    _mustBtns.resize(must.size());
+
+    for(int i = 0; i < _mustBtns.size(); ++i)
+    {
+        _mustBtns[i] = new QPushButton(this);
+        _mustBtns[i]->setCheckable(true);
+        _mustBtns[i]->setText(must[i].second);
+        _mustBtns[i]->setGeometry(x, y, 180, 30);
+        y += _mustBtns[i]->height();
+        connect(_mustBtns[i], &QPushButton::toggled, [this, i](bool checked)
+        {
+            if(!_selectedItem)return;
+            if(checked)_selectedItem->upMust(must[i].first);
+            else _selectedItem->downMust(must[i].first);
+        });
+    }
+
+#if 0
+     QButtonGroup *group = new QButtonGroup(this);
+     _btns.resize(urls.size());
+    int x = 10;
+    int y = 10;
+    for(int i = 0; i < _btns.size(); ++i)
+    {
+        _btns[i] = new QPushButton(this);
+        _btns[i]->setCheckable(true);
+        _btns[i]->setText(urls[i].first);
+
+        _btns[i]->setStyleSheet(btnStyle);
+        _btns[i]->setGeometry(x, y, 130, 30);
+
+        y += _btns[i]->height() + 5;
+        group->addButton(_btns[i]);
+        connect(_btns[i], &QPushButton::toggled, [this, i](bool checked)
+        {
+            if(checked)
+            {
+                _geoWidget->setSourceUrl(urls[i].second);
+            }
+        });
+    }
+#endif
+
 }
 
 MainProcess::~MainProcess()
@@ -82,18 +196,52 @@ void MainProcess::resizeEvent(QResizeEvent *value)
 
 void MainProcess::mousePressEvent(QMouseEvent *e)
 {
-//    const auto &items = _scene->selectedItems();
-//    if(items.empty())return;
-//    auto item = items.front();
-//    item->setBorderColor(QColor(255, 0, 0));
+    _selectedItem = _scene->itemFromPos(e->position(), [](KRPTSceneItem *item)
+    {
+//        return item->must(KRPTSceneItem::Must::MousePressEvent);
+        return true;
+    });
+    if(!_selectedItem)return;
+
+    QPointF p = _selectedItem->mapFromScene(e->position());
+    qDebug() << p;
 
     if(e->buttons() & Qt::MouseButton::LeftButton)
     {
-        auto item = _scene->mousePressedItem();
-        if(!item)return;
-        QPointF p = item->mapFromScene(e->position());
+        _sliders[0]->blockSignals(true);
+        _sliders[0]->setValue(_selectedItem->scale() * 100);
+        _sliders[0]->blockSignals(false);
+        _sliders[1]->blockSignals(true);
+        _sliders[1]->setValue(_selectedItem->angle() * 2);
+        _sliders[1]->blockSignals(false);
+        _sliders[2]->blockSignals(true);
+        _sliders[2]->setMinimum(_selectedItem->width() / 2);
+        _sliders[2]->setMaximum(_selectedItem->width() * 2);
+        _sliders[2]->setValue(_selectedItem->width());
+        _sliders[2]->blockSignals(false);
+        _sliders[3]->blockSignals(true);
+        _sliders[3]->setMinimum(_selectedItem->height() / 2);
+        _sliders[3]->setMaximum(_selectedItem->height() * 2);
+        _sliders[3]->setValue(_selectedItem->height());
+        _sliders[3]->blockSignals(false);
+        _sliders[4]->blockSignals(true);
+        _sliders[4]->setMinimum(-100);
+//        _sliders[4]->setMaximum(width());
+        _sliders[4]->setMaximum(500);
 
-        qDebug() << p;
+        _sliders[4]->setValue(_selectedItem->x());
+        _sliders[4]->blockSignals(false);
+        _sliders[5]->blockSignals(true);
+        _sliders[5]->setMinimum(-100);
+        _sliders[5]->setMaximum(height());
+        _sliders[5]->setValue(_selectedItem->y());
+        _sliders[5]->blockSignals(false);
+
+        for(int i = 0; i < _mustBtns.size(); ++i)
+        {
+            _mustBtns[i]->setChecked(_selectedItem->must(must[i].first));
+        }
+
     }else
 
     if(e->buttons() & Qt::MouseButton::RightButton)
@@ -102,7 +250,7 @@ void MainProcess::mousePressEvent(QMouseEvent *e)
         if(!item)return;
         QPointF p = item->mapFromScene(e->position());
 
-    #if 0
+    #if 1
         auto child = item->addChild<KRPTSceneRectItem>();
         child->setBackgroundColor(QColor(0, 255, 0));
         child->addMust

@@ -78,7 +78,8 @@ public:
 
 public:
     KRPTSceneItem    * itemFromPos        (const QPointF &pos, CompFn comp)        noexcept;
-    Items              itemsFromPos       (const QPointF &, CompFn comp, bool one) noexcept;
+    Items              itemsFromPos       (const QPointF &pos, CompFn comp, 
+                                           bool one)                               noexcept;
 public:
     virtual void       update             ()                                       noexcept;
 public:

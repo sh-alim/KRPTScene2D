@@ -358,5 +358,6 @@ protected:
     QTransform _transTransform;
 
     bool _b = true;
+    double _ss = 1;
 };
 

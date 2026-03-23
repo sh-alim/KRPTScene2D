@@ -15,6 +15,10 @@
 #include "KRPTSceneView.h"
 #include "KRPTSceneRectItem.h"
 
+#include <QSlider>
+#include <QPushButton>
+#include <QButtonGroup>
+
 //########################################################################################################################
 //#
 //########################################################################################################################
@@ -34,4 +38,10 @@ protected:
 private:
     KRPTScene       *_scene     ;
     KRPTSceneView   *_view      ;
+
+    KRPTSceneItem   *_selectedItem;
+    std::vector<QSlider*> _sliders;
+
+    std::vector<QPushButton*> _mustBtns;
+
 };
