@@ -352,12 +352,10 @@ protected:
     QColor             _backgroundColor  ;
     uint32_t           _tag              ;
 
-
+#if 0
     QTransform _scaleTransform;
     QTransform _rotateTransform;
     QTransform _transTransform;
-
-    bool _b = true;
-    double _ss = 1;
+#endif
 };
 
