@@ -66,6 +66,10 @@ public:
         bool           visible             ;
         bool           dirty               ;
         bool           visibleDirty        ;
+
+
+        std::array<QPointF, 5>  points; //!!!!!
+
     };
     struct Anim
     {
@@ -1048,13 +1052,18 @@ QPointF KRPTSceneItem::transformShift(QTransform &t, TransSrc src, const QPointF
     return p0 - t.map(p1);
 }
 
-void KRPTSceneItem::bBox(const QTransform &transform, const QRectF &rect, QRectF &bBox) noexcept 
+void KRPTSceneItem::mappedRectPoints(const QTransform &transform, const QRectF &rect, 
+    std::array<QPointF, 5> &p) noexcept 
 {
-    QPointF p[4];
-    p[0] = transform.map(_rect.topLeft    ());
-    p[1] = transform.map(_rect.topRight   ());
-    p[2] = transform.map(_rect.bottomRight());
-    p[3] = transform.map(_rect.bottomLeft ());
+    p[0] = transform.map(rect.topLeft    ());
+    p[1] = transform.map(rect.topRight   ());
+    p[2] = transform.map(rect.bottomRight());
+    p[3] = transform.map(rect.bottomLeft ());
+    p[4] = transform.map(rect.center     ());
+}
+
+void KRPTSceneItem::bBox(const std::array<QPointF, 5> &p, QRectF &bBox) noexcept 
+{
     QPointF pMin(std::numeric_limits<double>::max(), std::numeric_limits<double>::max());
     QPointF pMax;
     for(int i = 0; i < 4; ++i)
@@ -1065,6 +1074,13 @@ void KRPTSceneItem::bBox(const QTransform &transform, const QRectF &rect, QRectF
         if(p[i].y() > pMax.y())pMax.setY(p[i].y());
     }
     bBox.setRect(pMin.x(), pMin.y(), pMax.x() - pMin.x(), pMax.y() - pMin.y());
+}
+
+void KRPTSceneItem::bBox(const QTransform &transform, const QRectF &rect, QRectF &bBox) noexcept 
+{
+    std::array<QPointF, 5> p;
+    mappedRectPoints(transform, rect, p);
+    this->bBox(p, bBox);
 }
 
 QRectF KRPTSceneItem::bBox(const QTransform &transform, const QRectF &rect) noexcept 
@@ -1107,6 +1123,7 @@ bool KRPTSceneItem::updateCache(bool visible) noexcept
         if(dirty)
         {
             cache.transform = transform ? *transform * cache.item->transform() : cache.item->transform();
+        #if 0
             bBox(cache.transform, _rect, cache.bBox);
             if(cache.item == this)
             {
@@ -1115,6 +1132,17 @@ bool KRPTSceneItem::updateCache(bool visible) noexcept
                 _dirty -= Dirty::BBox;
                 _dirty -= Dirty::BBoxMapToParent;
             }
+        #else
+            mappedRectPoints(cache.transform, _rect, cache.points);
+            bBox(cache.points, cache.bBox);
+            if(cache.item == this)
+            {
+                _bBoxMapToParent = cache.bBox;
+                _bBox = _bBoxMapToParent.translated(-_geometry.topLeft());
+                _dirty -= Dirty::BBox;
+                _dirty -= Dirty::BBoxMapToParent;
+            }
+        #endif
             if(cache.parent)
                 cache.genParentTransform = cache.parent->_data->genTransform;
             cache.visibleDirty = true;
@@ -1128,9 +1156,24 @@ bool KRPTSceneItem::updateCache(bool visible) noexcept
         }
         if(cache.visibleDirty)
         {
+        #if 0
             if(!cache.parent)cache.visible = true; else
                 cache.visible = cache.parent->must(KRPTSceneItem::Must::NoClipChilds) ? true :
                 cache.parent->_rect.intersects(cache.bBox);
+        #else
+            if(!cache.parent || cache.parent->must(KRPTSceneItem::Must::NoClipChilds))cache.visible = true; else
+            {
+                cache.visible = cache.parent->_rect.intersects(cache.bBox);
+
+                if(cache.visible && !cache.parent->_rect.contains(cache.points[4]))
+                {
+                    QPointF p;
+                    p.dotProduct
+//                    cache.visible = false;
+                }
+
+            }
+        #endif
             cache.visibleDirty = false;
         }
         if(!cache.visible)

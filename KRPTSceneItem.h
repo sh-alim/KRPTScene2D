@@ -300,6 +300,9 @@ protected:
     void                 transform           (const QRectF &rect, double angle, 
                                               double scale, QTransform &transform)                                 noexcept;
     QPointF              transformShift      (QTransform &transform, TransSrc src, const QPointF &pt)              noexcept;
+    void                 mappedRectPoints    (const QTransform &transform, const QRectF &rect, 
+                                              std::array<QPointF, 5> &p)                                           noexcept;
+    void                 bBox                (const std::array<QPointF, 5> &p, QRectF &bBox)                       noexcept;
     void                 bBox                (const QTransform &transform, const QRectF &rect, QRectF &bBox)       noexcept;
     QRectF               bBox                (const QTransform &transform, const QRectF &rect)                     noexcept;
     bool                 updateCache         (bool visible = false)                                                noexcept;
