@@ -50,12 +50,13 @@ public:
     struct Cache
     {
         Cache(KRPTSceneItem *item, KRPTSceneItem *parent) 
-            : item(item), parent(parent), genTransform(0), genParentTransform(0), 
-              genVisibleChildItems(0), genScale(0), genAngle(0), visible(false), 
-              nextDirty(false), visibleDirty(false){}
+            : item(item), parent(parent), scale(1), angle(0), genTransform(0), genParentTransform(0), 
+              genVisibleChildItems(0), genScale(0), genAngle(0), visible(false), dirty(true), visibleDirty(false){}
         KRPTSceneItem *item                ;
         KRPTSceneItem *parent              ;
         QTransform     transform           ;
+        double         scale               ;
+        double         angle               ;
         uint32_t       genTransform        ;
         uint32_t       genParentTransform  ;
         uint32_t       genVisibleChildItems;
@@ -63,7 +64,7 @@ public:
         uint32_t       genAngle            ;  
         QRectF         bBox                ;
         bool           visible             ;
-        bool           nextDirty           ;
+        bool           dirty               ;
         bool           visibleDirty        ;
     };
     struct Anim
@@ -397,10 +398,16 @@ const QTransform& KRPTSceneItem::transformInv() noexcept
 
 const QTransform& KRPTSceneItem::sceneTransform() noexcept 
 {
+#if 1
+    transform();
     if(!_dirty[Dirty::SceneTransform])return _sceneTransform;
     _dirty -= Dirty::SceneTransform;
+    updateCache();
+    return _sceneTransform;
+#else
     _sceneTransform = _parent ? transform() * _parent->sceneTransform() : transform();
     return _sceneTransform;
+#endif
 }
 
 const QTransform& KRPTSceneItem::sceneTransformInv() noexcept 
@@ -863,6 +870,12 @@ bool KRPTSceneItem::setScaleImpl(double scale) noexcept
     _dirty += Dirty::BBox             ;
     _dirty += Dirty::BBoxMapToParent  ;
     _dirty += Dirty::VisibleChildItems;
+
+    #if 1
+    _dirty += Dirty::SceneTransform   ;
+    _dirty += Dirty::SceneTransformInv;
+    #endif
+
     if(_parent)
         _parent->_dirty += Dirty::VisibleChildItems;
     ++_data->genTransform;
@@ -1107,8 +1120,6 @@ QRectF KRPTSceneItem::bBox(const QTransform &transform, const QRectF &rect) noex
 
 bool KRPTSceneItem::updateCache(bool visible) noexcept 
 {
-    bool dirty = false;
-
     if(_data->cache.empty())
     {
         KRPTSceneItem *item = this;
@@ -1117,19 +1128,22 @@ bool KRPTSceneItem::updateCache(bool visible) noexcept
             _data->cache.emplace_back(item, item->_parent);
             item = item->_parent;
         }
-        dirty = true;
-
     }
 
+    bool dirty = false;
     _state += State::VisibledInView;
     _state += State::NeedPaint     ;
     _state += State::NeedChildPaint;
-//    bool dirty = false;
-    uint32_t i = 0;
     QTransform *transform = nullptr;
-    for(auto &cache : _data->cache)
+    auto it = _data->cache.begin();
+    for(; it != _data->cache.end(); ++it)
     {
-//        if(cache.item->_dirty[Dirty::Transform] || cache.genTransform != cache.item->_data->genTransform)
+        auto &cache = *it;
+        if(cache.dirty)
+        {
+            dirty = cache.dirty;
+            cache.dirty = false;
+        }
         if(cache.genTransform != cache.item->_data->genTransform)
         {
             dirty = true;
@@ -1157,11 +1171,6 @@ bool KRPTSceneItem::updateCache(bool visible) noexcept
                 cache.visibleDirty = true;
             }
         }
-        if(cache.nextDirty)
-        {
-            cache.nextDirty = false;
-            dirty = true;
-        }
         if(cache.visibleDirty)
         {
             if(!cache.parent)cache.visible = true; else
@@ -1177,14 +1186,15 @@ bool KRPTSceneItem::updateCache(bool visible) noexcept
                 _state -= State::NeedChildPaint;
             if(visible)
             {
-                cache.nextDirty = true;
+                auto next = std::next(it);
+                if(next != _data->cache.end())
+                    next->dirty = true;
                 break;
             }
         }
         transform = &cache.transform;
-        ++i;
     }
-    if(transform && i == _data->cache.size())
+    if(transform && it == _data->cache.end())
     {
         _sceneTransform = *transform;
         _dirty -= Dirty::SceneTransform;
@@ -1197,6 +1207,7 @@ bool KRPTSceneItem::updateCache(bool visible) noexcept
 
 bool KRPTSceneItem::dirtyTransform() noexcept
 {
+#if 0
     bool dirty = _dirty[Dirty::Transform];
     _dirty -= Dirty::Transform;
     if(!must(KRPTSceneItem::Must::NoSceneScale    ) && 
@@ -1218,6 +1229,7 @@ bool KRPTSceneItem::dirtyTransform() noexcept
     double sceneAngle = _data->sceneAngle;
     _data->sceneScale = 1;
     _data->sceneAngle = 0;
+
     for(auto &cache : _data->cache)
     {
         if(must(KRPTSceneItem::Must::NoSceneScale) || must(KRPTSceneItem::Must::SceneScaleEvent))
@@ -1229,6 +1241,7 @@ bool KRPTSceneItem::dirtyTransform() noexcept
                 if(must(KRPTSceneItem::Must::NoSceneScale))
                 {
                     _dirty += Dirty::SceneScale;
+                    cache.dirty = true;
                 }
             }
             if(cache.item != this)
@@ -1243,6 +1256,7 @@ bool KRPTSceneItem::dirtyTransform() noexcept
                 if(must(KRPTSceneItem::Must::NoSceneRotate))
                 {
                     _dirty += Dirty::SceneRotate;
+                    cache.dirty = true;
                 }
             }
             if(cache.item != this)
@@ -1267,6 +1281,98 @@ bool KRPTSceneItem::dirtyTransform() noexcept
     }
     return must(KRPTSceneItem::Must::NoSceneScale) || must(KRPTSceneItem::Must::NoSceneRotate) ?
         dirty || scaleDirty || rotateDirty : dirty;
+#else
+    bool dirty = _dirty[Dirty::Transform];
+    _dirty -= Dirty::Transform;
+    if(!must(KRPTSceneItem::Must::NoSceneScale    ) && 
+       !must(KRPTSceneItem::Must::NoSceneRotate   ) && 
+       !must(KRPTSceneItem::Must::SceneScaleEvent ) &&
+       !must(KRPTSceneItem::Must::SceneRotateEvent))return dirty;
+    if(_data->cache.empty())
+    {
+        KRPTSceneItem *item = this;
+        while(item)
+        {
+            _data->cache.emplace_back(item, item->_parent);
+            item = item->_parent;
+        }
+    }
+    bool scaleDirty = false;
+    bool angleDirty = false;
+    double sceneScale = _data->sceneScale;
+    double sceneAngle = _data->sceneAngle;
+    _data->sceneScale = 1;
+    _data->sceneAngle = 0;
+    auto it = _data->cache.rbegin();
+    for(; it != _data->cache.rend(); ++it)
+    {
+        auto &cache = *it;
+        if(cache.item == this)
+        {
+            if((scaleDirty || angleDirty) && (must(KRPTSceneItem::Must::NoSceneScale) || 
+               must(KRPTSceneItem::Must::NoSceneRotate)))cache.dirty = true;
+            break;
+        }
+        if(cache.genScale != cache.item->_data->genScale)
+        {
+            cache.genScale = cache.item->_data->genScale;
+            scaleDirty = true;
+            if(must(KRPTSceneItem::Must::NoSceneScale))_dirty += Dirty::SceneScale;
+        }
+        if(cache.genAngle != cache.item->_data->genAngle)
+        {
+            cache.genAngle = cache.item->_data->genAngle;
+            angleDirty = true;
+            if(must(KRPTSceneItem::Must::NoSceneRotate))_dirty += Dirty::SceneRotate;
+        }
+        if(scaleDirty)
+        {
+            if(!cache.item->must(KRPTSceneItem::Must::NoSceneScale))
+            {
+                _data->sceneScale *= cache.item->_scale;
+                cache.scale = _data->sceneScale;
+            }
+            else
+            {
+                _data->sceneScale *= 1 / _data->sceneScale * cache.item->_scale;
+                cache.scale = _data->sceneScale;
+            }
+        }
+        if(angleDirty)
+        {
+            if(!cache.item->must(KRPTSceneItem::Must::NoSceneRotate))
+            {
+                _data->sceneAngle += cache.item->_angle;
+                cache.angle = _data->sceneAngle;
+            }
+            else
+            {
+                _data->sceneAngle += -_data->sceneAngle + cache.item->_angle;
+                cache.angle = _data->sceneAngle;
+            }
+        }
+        _data->sceneScale = cache.scale;
+        _data->sceneAngle = cache.angle;
+    }
+    if(dirty || scaleDirty || angleDirty)
+    {
+        if(must(KRPTSceneItem::Must::SceneScaleEvent) && scaleDirty)
+            sceneScaleEvent(_data->sceneScale, sceneScale);
+        if(must(KRPTSceneItem::Must::SceneRotateEvent) && angleDirty)
+            sceneScaleEvent(_data->sceneAngle, sceneAngle);
+        if(must(KRPTSceneItem::Must::NoSceneScale) || must(KRPTSceneItem::Must::NoSceneRotate))
+        {
+            _dirty += Dirty::Transform        ;
+            _dirty += Dirty::TransformInv     ;
+            _dirty += Dirty::SceneTransform   ;
+            _dirty += Dirty::SceneTransformInv;
+            _dirty += Dirty::BBox             ;
+            _dirty += Dirty::BBoxMapToParent  ;
+        }
+    }
+    return must(KRPTSceneItem::Must::NoSceneScale) || must(KRPTSceneItem::Must::NoSceneRotate) ?
+        dirty || scaleDirty || angleDirty : dirty;
+#endif
 }
 
 bool KRPTSceneItem::dirtyVisibleChilds() noexcept

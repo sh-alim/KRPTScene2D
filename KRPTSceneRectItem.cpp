@@ -44,7 +44,7 @@ void KRPTSceneRectItem::paintForeground(QPainter &painter, uint32_t stage) noexc
     painter.setPen(pen);
     painter.drawRect(_rect);
 
-#if 0
+#if 1
     painter.save();
     if(_parent)
     {

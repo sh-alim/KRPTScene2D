@@ -272,6 +272,9 @@ void MainProcess::mousePressEvent(QMouseEvent *e)
         child->setSize(50, 50);
         child->setPos(p);
 
+        child->setTag(100);
+
+
 //        child->setGeometry(p, QSizeF(50, 50));
 //        child->setTransformAnchor(KRPTSceneItem::TransformAnchor::LeftTop);
 //        child->setTransformAnchor(KRPTSceneItem::TransformAnchor::RightTop);
@@ -288,7 +291,7 @@ void MainProcess::mousePressEvent(QMouseEvent *e)
 
         int x = 0;
         int y = 0;
-        for(int i = 0; i < 300000; ++i)
+        for(int i = 0; i < 500000; ++i)
         {
             auto child = item->addChild<KRPTSceneRectItem>();
             child->setBackgroundColor(QColor(0, 255, 0));
@@ -296,8 +299,8 @@ void MainProcess::mousePressEvent(QMouseEvent *e)
             (
 //            KRPTSceneItem::Must::NoClipChilds,
                 KRPTSceneItem::Must::NoClipPainter,
-                KRPTSceneItem::Must::NoSceneRotate,
-                KRPTSceneItem::Must::NoSceneScale,
+//                KRPTSceneItem::Must::NoSceneRotate,
+//                KRPTSceneItem::Must::NoSceneScale,
 //            KRPTSceneItem::Must::AccuracyClip,
                 KRPTSceneItem::Must::Anim,
 //            KRPTSceneItem::Must::AccuracyClip,
