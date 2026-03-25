@@ -112,6 +112,42 @@ void MainProcess::mousePressEvent(QMouseEvent *e)
         );
 
         child->setTransformAnchor(KRPTSceneItem::TransformAnchor::BottomCenter);
+
+        int x = 0;
+        int y = 0;
+        for(int i = 0; i < 500000; ++i)
+        {
+            auto child = item->addChild<KRPTSceneRectItem>();
+            child->setBackgroundColor(QColor(0, 255, 0));
+            child->addMust
+            (
+//            KRPTSceneItem::Must::NoClipChilds,
+                KRPTSceneItem::Must::NoClipPainter,
+//                KRPTSceneItem::Must::NoSceneRotate,
+//                KRPTSceneItem::Must::NoSceneScale,
+//            KRPTSceneItem::Must::AccuracyClip,
+                KRPTSceneItem::Must::Anim,
+//            KRPTSceneItem::Must::AccuracyClip,
+//            KRPTSceneItem::Must::AccuracyCheckContains,
+                KRPTSceneItem::Must::MouseMoveble,
+                KRPTSceneItem::Must::MousePressEvent,
+                KRPTSceneItem::Must::MouseMoveEvent,
+                KRPTSceneItem::Must::WhellEvent
+            );
+
+            child->setSize(50, 50);
+            child->setPos(x, y);
+
+            x += child->width();
+
+            if(x > item->width())
+            {
+                x = 0;
+                y += child->height();
+            }
+        }
+
+
     }
 
 }
