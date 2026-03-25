@@ -27,6 +27,34 @@ static bool qFuzzyCompare(const QColor &s1, const QColor &s2) noexcept
     return s1 == s2;
 }
 
+static inline void project(const std::array<QPointF, 5> &pts, const QPointF &axis, double &min, double &max) 
+{
+    min = max = QPointF::dotProduct(pts[0], axis);
+    for(size_t i = 1; i < pts.size(); ++i) 
+    {
+        double p = QPointF::dotProduct(pts[i], axis);
+        if(p < min)min = p;
+        if(p > max)max = p;
+    }
+}
+
+static inline bool intersect(const QRectF &rect, const std::array<QPointF, 5> &p) 
+{
+    QPointF axes[4] = {{1, 0}, {0, 1},
+        {p[1].x() - p[0].x(), p[1].y() - p[0].y()},
+        {p[3].x() - p[0].x(), p[3].y() - p[0].y()}};
+    std::array<QPointF, 5> r = {rect.topLeft    (), rect.topRight  (),
+                                rect.bottomRight(), rect.bottomLeft(), rect.center()};
+    for(auto &ax : axes) 
+    {
+        double minA, maxA, minB, maxB;
+        project(r, ax, minA, maxA);
+        project(p, ax, minB, maxB);
+        if(maxA < minB || maxB < minA)return false;
+    }
+    return true;
+}
+
 //########################################################################################################################
 //#
 //########################################################################################################################
@@ -1164,14 +1192,10 @@ bool KRPTSceneItem::updateCache(bool visible) noexcept
             if(!cache.parent || cache.parent->must(KRPTSceneItem::Must::NoClipChilds))cache.visible = true; else
             {
                 cache.visible = cache.parent->_rect.intersects(cache.bBox);
-
                 if(cache.visible && !cache.parent->_rect.contains(cache.points[4]))
                 {
-                    QPointF p;
-                    p.dotProduct
-//                    cache.visible = false;
+                    cache.visible = intersect(cache.parent->_rect, cache.points);
                 }
-
             }
         #endif
             cache.visibleDirty = false;

@@ -250,7 +250,7 @@ void MainProcess::mousePressEvent(QMouseEvent *e)
         if(!item)return;
         QPointF p = item->mapFromScene(e->position());
 
-    #if 1
+    #if 0
         auto child = item->addChild<KRPTSceneRectItem>();
         child->setBackgroundColor(QColor(0, 255, 0));
         child->addMust
