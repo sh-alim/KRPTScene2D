@@ -1192,10 +1192,10 @@ bool KRPTSceneItem::updateCache(bool visible) noexcept
             if(!cache.parent || cache.parent->must(KRPTSceneItem::Must::NoClipChilds))cache.visible = true; else
             {
                 cache.visible = cache.parent->_rect.intersects(cache.bBox);
-                if(cache.visible && !cache.parent->_rect.contains(cache.points[4]))
-                {
-                    cache.visible = intersect(cache.parent->_rect, cache.points);
-                }
+//                if(cache.visible && !cache.parent->_rect.contains(cache.points[4]))
+//                {
+//                    cache.visible = intersect(cache.parent->_rect, cache.points);
+//                }
             }
         #endif
             cache.visibleDirty = false;
