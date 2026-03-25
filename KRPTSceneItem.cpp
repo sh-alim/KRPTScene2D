@@ -1163,7 +1163,6 @@ bool KRPTSceneItem::updateCache(bool visible) noexcept
 bool KRPTSceneItem::dirtyTransform() noexcept
 {
     bool dirty = _dirty[Dirty::Transform];
-//    _dirty -= Dirty::Transform;
     if(!must(KRPTSceneItem::Must::NoSceneScale    ) && 
        !must(KRPTSceneItem::Must::NoSceneRotate   ) && 
        !must(KRPTSceneItem::Must::SceneScaleEvent ) &&
@@ -1207,8 +1206,8 @@ bool KRPTSceneItem::dirtyTransform() noexcept
         }
         if(scaleDirty)
         {
-            _data->sceneScale *= !cache.item->must(KRPTSceneItem::Must::NoSceneScale) ? cache.item->_scale :
-                _data->sceneScale *= 1 / _data->sceneScale * cache.item->_scale;
+            _data->sceneScale *= (!cache.item->must(KRPTSceneItem::Must::NoSceneScale)) ? cache.item->_scale :
+                1 / _data->sceneScale * cache.item->_scale;
             cache.scale = _data->sceneScale;
         }
         if(angleDirty)
