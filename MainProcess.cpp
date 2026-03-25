@@ -299,8 +299,8 @@ void MainProcess::mousePressEvent(QMouseEvent *e)
             (
 //            KRPTSceneItem::Must::NoClipChilds,
                 KRPTSceneItem::Must::NoClipPainter,
-//                KRPTSceneItem::Must::NoSceneRotate,
-//                KRPTSceneItem::Must::NoSceneScale,
+                KRPTSceneItem::Must::NoSceneRotate,
+                KRPTSceneItem::Must::NoSceneScale,
 //            KRPTSceneItem::Must::AccuracyClip,
                 KRPTSceneItem::Must::Anim,
 //            KRPTSceneItem::Must::AccuracyClip,
