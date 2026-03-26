@@ -80,24 +80,21 @@ public:
         Cache(KRPTSceneItem *item, KRPTSceneItem *parent) 
             : item(item), parent(parent), scale(1), angle(0), genTransform(0), genParentTransform(0), 
               genVisibleChildItems(0), genScale(0), genAngle(0), visible(false), dirty(true), visibleDirty(false){}
-        KRPTSceneItem *item                ;
-        KRPTSceneItem *parent              ;
-        QTransform     transform           ;
-        double         scale               ;
-        double         angle               ;
-        uint32_t       genTransform        ;
-        uint32_t       genParentTransform  ;
-        uint32_t       genVisibleChildItems;
-        uint32_t       genScale            ;
-        uint32_t       genAngle            ;  
-        QRectF         bBox                ;
-        bool           visible             ;
-        bool           dirty               ;
-        bool           visibleDirty        ;
-
-
-        std::array<QPointF, 5>  points; //!!!!!
-
+        KRPTSceneItem          *item                ;
+        KRPTSceneItem          *parent              ;
+        QTransform              transform           ;
+        double                  scale               ;
+        double                  angle               ;
+        uint32_t                genTransform        ;
+        uint32_t                genParentTransform  ;
+        uint32_t                genVisibleChildItems;
+        uint32_t                genScale            ;
+        uint32_t                genAngle            ;  
+        QRectF                  bBox                ;
+        std::array<QPointF, 5>  points              ;
+        bool                    visible             ;
+        bool                    dirty               ;
+        bool                    visibleDirty        ;
     };
     struct Anim
     {
@@ -189,7 +186,11 @@ private:
 private:
     KRPTSceneItem            *owner       ;
     std::array<QTransform, 9> transforms  ;
+#if 0
     std::list<Cache>          cache       ;
+#else
+    std::vector<Cache>        cache       ;
+#endif
     uint32_t                  genTransform;
     uint32_t                  genScale    ;
     uint32_t                  genAngle    ;
@@ -339,8 +340,20 @@ void KRPTSceneItem::setTag(uint32_t tag) noexcept
 
 const KRPTSceneItem::ItemsList& KRPTSceneItem::visibleChildItems() noexcept
 {
-    const auto &childItems = filterChildItems();
+#if 0
+    int i = 0;
+    _visibleChildItems.clear();
+    for(auto &item : _childItems)
+    {
+        item->updateCache(true);
 
+        if(i++ < 100)
+            _visibleChildItems.emplace_back(item);
+    }
+    return _visibleChildItems;
+#endif
+
+    const auto &childItems = filterChildItems();
     if(childItems.empty() || must(KRPTSceneItem::Must::NoCheckChildVisibled))
         return childItems;
     if(!dirtyVisibleChilds())return _visibleChildItems;
@@ -1041,7 +1054,6 @@ void KRPTSceneItem::transform(const QRectF &rect, double angle, double scale, QT
             _data->transforms[7] = _data->transforms[4] * _data->transforms[5];
         }
     }else _data->transforms[7] = _data->transforms[4];
-
     if(must(KRPTSceneItem::Must::NoSceneRotate))
     {
         if(_dirty[Dirty::SceneRotate])
@@ -1151,26 +1163,18 @@ bool KRPTSceneItem::updateCache(bool visible) noexcept
         if(dirty)
         {
             cache.transform = transform ? *transform * cache.item->transform() : cache.item->transform();
-        #if 0
-            bBox(cache.transform, _rect, cache.bBox);
-            if(cache.item == this)
+            if(!cache.parent || !cache.parent->must(KRPTSceneItem::Must::NoClipChilds))
             {
-                _bBoxMapToParent = cache.bBox;
-                _bBox = _bBoxMapToParent.translated(-_geometry.topLeft());
-                _dirty -= Dirty::BBox;
-                _dirty -= Dirty::BBoxMapToParent;
+                mappedRectPoints(cache.transform, _rect, cache.points);
+                bBox(cache.points, cache.bBox);
+                if(cache.item == this)
+                {
+                    _bBoxMapToParent = cache.bBox;
+                    _bBox = _bBoxMapToParent.translated(-_geometry.topLeft());
+                    _dirty -= Dirty::BBox;
+                    _dirty -= Dirty::BBoxMapToParent;
+                }
             }
-        #else
-            mappedRectPoints(cache.transform, _rect, cache.points);
-            bBox(cache.points, cache.bBox);
-            if(cache.item == this)
-            {
-                _bBoxMapToParent = cache.bBox;
-                _bBox = _bBoxMapToParent.translated(-_geometry.topLeft());
-                _dirty -= Dirty::BBox;
-                _dirty -= Dirty::BBoxMapToParent;
-            }
-        #endif
             if(cache.parent)
                 cache.genParentTransform = cache.parent->_data->genTransform;
             cache.visibleDirty = true;
@@ -1184,20 +1188,12 @@ bool KRPTSceneItem::updateCache(bool visible) noexcept
         }
         if(cache.visibleDirty)
         {
-        #if 0
-            if(!cache.parent)cache.visible = true; else
-                cache.visible = cache.parent->must(KRPTSceneItem::Must::NoClipChilds) ? true :
-                cache.parent->_rect.intersects(cache.bBox);
-        #else
             if(!cache.parent || cache.parent->must(KRPTSceneItem::Must::NoClipChilds))cache.visible = true; else
             {
                 cache.visible = cache.parent->_rect.intersects(cache.bBox);
-//                if(cache.visible && !cache.parent->_rect.contains(cache.points[4]))
-//                {
-//                    cache.visible = intersect(cache.parent->_rect, cache.points);
-//                }
+                if(cache.visible && !cache.parent->_rect.contains(cache.points[4]))
+                    cache.visible = intersect(cache.parent->_rect, cache.points);
             }
-        #endif
             cache.visibleDirty = false;
         }
         if(!cache.visible)
@@ -1208,9 +1204,12 @@ bool KRPTSceneItem::updateCache(bool visible) noexcept
                 _state -= State::NeedChildPaint;
             if(visible)
             {
-                auto next = std::next(it);
-                if(next != _data->cache.end())
-                    next->dirty = true;
+                if(dirty)
+                {
+                    auto next = std::next(it);
+                    if(next != _data->cache.end())
+                        next->dirty = dirty;
+                }
                 break;
             }
         }
