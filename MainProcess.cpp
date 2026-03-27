@@ -293,7 +293,7 @@ void MainProcess::mousePressEvent(QMouseEvent *e)
 
         int x = 0;
         int y = 0;
-        for(int i = 0; i < 100000; ++i)
+        for(int i = 0; i < 500000; ++i)
         {
             auto child = item->addChild<KRPTSceneRectItem>();
             child->setBackgroundColor(QColor(0, 255, 0));

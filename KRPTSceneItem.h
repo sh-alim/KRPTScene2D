@@ -355,10 +355,9 @@ protected:
     QColor             _backgroundColor  ;
     uint32_t           _tag              ;
 
-#if 0
-    QTransform _scaleTransform;
-    QTransform _rotateTransform;
-    QTransform _transTransform;
+#if 1
+    std::vector<KRPTSceneItem::Ptr> _childItemsV;
+
 #endif
 };
 

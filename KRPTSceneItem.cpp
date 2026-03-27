@@ -353,6 +353,23 @@ const KRPTSceneItem::ItemsList& KRPTSceneItem::visibleChildItems() noexcept
     return _visibleChildItems;
 #endif
 
+#if 0
+    if(_childItems.empty() || must(KRPTSceneItem::Must::NoCheckChildVisibled))
+        return _childItems;
+    if(!dirtyVisibleChilds())return _visibleChildItems;
+    _visibleChildItems.clear();
+    for(auto &item : _childItemsV)
+    {
+        item->updateCache(true);
+        bool needPaint = (!item->_parent || 
+            item->_state[State::VisibledInView, State::NeedChildPaint]) && _visible;
+        if(needPaint)
+            _visibleChildItems.emplace_back(item);
+    }
+    return _visibleChildItems;
+
+#endif
+
     const auto &childItems = filterChildItems();
     if(childItems.empty() || must(KRPTSceneItem::Must::NoCheckChildVisibled))
         return childItems;
@@ -819,6 +836,15 @@ void KRPTSceneItem::addChildImpl(KRPTSceneItem::Ptr item, KRPTSceneItem *parent)
     parent->_index.emplace(item, it);
     addChildEvent(item);
     _dirty += Dirty::VisibleChildItems;
+
+#if 1
+//    parent->_childItemsV.resize(parent->_childItems.size());
+//    parent->_childItemsV.clear();
+//    parent->_childItemsV.reserve(parent->_childItems.size());
+//    for(auto &item : parent->_childItems)
+        parent->_childItemsV.emplace_back(item);
+#endif
+
     update();
 }
 
