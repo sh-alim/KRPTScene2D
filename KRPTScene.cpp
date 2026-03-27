@@ -338,14 +338,32 @@ void KRPTScene::whellEvent(SceneMouseEvent *e) noexcept
     #if 1
         if(e->keyModifers()[SceneMouseEvent::KeyModifer::Ctrl])
         {
-//            item->rotateAround((e->delta().y() > 0 ? 5 : -5), mousePos, KRPTSceneItem::TransSrc::Scene, 500);
-            item->rotate((e->delta().y() > 0 ? 5 : -5));
+//            QPointF p = mousePos;
+//            KRPTSceneItem::TransSrc trn = KRPTSceneItem::TransSrc::Scene;
+
+//            QPointF p = item->mapFromScene(mousePos);
+//            KRPTSceneItem::TransSrc trn = KRPTSceneItem::TransSrc::Self;
+
+            QPointF p = item->parent()->mapFromScene(mousePos);
+            KRPTSceneItem::TransSrc trn = KRPTSceneItem::TransSrc::Parent;
+
+            item->setAngle((e->delta().y() > 0 ? item->angle() + 5 : item->angle() -5), mousePos, KRPTSceneItem::TransSrc::Scene);
+//            item->rotate((e->delta().y() > 0 ? 5 : -5));
         }else
         if(e->keyModifers()[SceneMouseEvent::KeyModifer::Alt])
         {
-//            item->scaleFromPoint((e->delta().x() > 0 ? 1.1 : 0.9), mousePos, KRPTSceneItem::TransSrc::Scene, 500);
-//            item->scaleMul((e->delta().x() > 0 ? 1.1 : 0.9), 500);
-            item->scaleMul((e->delta().x() > 0 ? 1.1 : 0.9));
+//            QPointF p = mousePos;
+//            KRPTSceneItem::TransSrc trn = KRPTSceneItem::TransSrc::Scene;
+
+//            QPointF p = item->mapFromScene(mousePos);
+//            KRPTSceneItem::TransSrc trn = KRPTSceneItem::TransSrc::Self;
+
+            QPointF p = item->parent()->mapFromScene(mousePos);
+            KRPTSceneItem::TransSrc trn = KRPTSceneItem::TransSrc::Parent;
+
+
+            item->setScale((e->delta().x() > 0 ? item->scale() * 1.1 : item->scale() * 0.9), p, trn);
+
         }else
         {
             item->setSize((e->delta().y() > 0) ? item->width() + 10 : item->width() - 10, item->height());
@@ -433,11 +451,9 @@ void KRPTScene::paintImpl(QPainter &painter, KRPTSceneItem *item, uint32_t stage
     const auto &childs = item->visibleChildItems();
     painter.save();
     painter.setTransform(item->transform(), true);
-
     painter.setOpacity(painter.opacity() * item->opaq());
     if(item->needPaint())
         item->paintBackground(painter, stage);
-
 //    painter.save();
     if(!childs.empty() && !item->must(KRPTSceneItem::Must::NoClipChilds, KRPTSceneItem::Must::NoClipPainter))
     {
@@ -470,7 +486,6 @@ void KRPTScene::paintImpl(QPainter &painter, KRPTSceneItem *item, uint32_t stage
         }
     }
 //    painter.restore();
-
     if(item->needPaint())
         item->paintForeground(painter, stage);
     painter.restore();

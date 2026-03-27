@@ -94,6 +94,20 @@ MainProcess::MainProcess(QWidget *parent)
             KRPTSceneItem::Must::WhellEvent
     );
 
+//        child->setTransformAnchor(KRPTSceneItem::TransformAnchor::LeftTop);
+//        child->setTransformAnchor(KRPTSceneItem::TransformAnchor::RightTop);
+//        child->setTransformAnchor(KRPTSceneItem::TransformAnchor::LeftBottom);
+//        child->setTransformAnchor(KRPTSceneItem::TransformAnchor::RightCenter);
+//        child->setTransformAnchor(KRPTSceneItem::TransformAnchor::BottomCenter);
+ 
+//        child->setPosAnchor(KRPTSceneItem::TransformAnchor::LeftTop);
+//        child->setPosAnchor(KRPTSceneItem::TransformAnchor::Center);
+//        child->setPosAnchor(KRPTSceneItem::TransformAnchor::RightTop);
+//        child->setPosAnchor(KRPTSceneItem::TransformAnchor::LeftBottom);
+//        child->setPosAnchor(KRPTSceneItem::TransformAnchor::RightCenter);
+//        child->setPosAnchor(KRPTSceneItem::TransformAnchor::BottomCenter);
+
+
     child->setTag(1);
 
     _sliders.resize(6);
@@ -275,8 +289,8 @@ void MainProcess::mousePressEvent(QMouseEvent *e)
 
         child->setTag(100);
 
-
 //        child->setGeometry(p, QSizeF(50, 50));
+ 
 //        child->setTransformAnchor(KRPTSceneItem::TransformAnchor::LeftTop);
 //        child->setTransformAnchor(KRPTSceneItem::TransformAnchor::RightTop);
 //        child->setTransformAnchor(KRPTSceneItem::TransformAnchor::LeftBottom);
