@@ -117,7 +117,7 @@ KRPTSceneView::KRPTSceneView(QWidget *parent, KRPTScene *scene) noexcept
     _p = new KRPTSceneViewPriv(parent, this);
 #if 1
     QSurfaceFormat fmt;
-    fmt.setSamples     (4);
+    fmt.setSamples     (8);
     fmt.setSwapInterval(0);
     auto w = new KRPTSceneViewPort();
     w->setFormat(fmt);
@@ -207,9 +207,6 @@ void KRPTSceneView::paintEvent(QPainter &p)
 
  void KRPTSceneView::resizeEventImpl(QResizeEvent *e) noexcept
  {
-//    if(_scene)_scene->setGeometry(QRectF(100, 100, _p->width() - 200, _p->height() - 200));
-//     qDebug() << _p->normalGeometry() << _p->frameRect() << _p->rect();
-
     if(_scene)_scene->setGeometry(QRectF(0, 0, _p->width() - 1, _p->height() - 1));
     resizeEvent(e);
  }

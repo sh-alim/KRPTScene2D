@@ -1093,13 +1093,19 @@ void KRPTSceneItem::transform(const QRectF &rect, double angle, double scale, QT
         {
             _data->transforms[7].reset();
             _data->transforms[7].translate(dx0 - dx1, dy0 - dy1);
+        #if 0
             _data->transforms[7] = !mustSceneTransformed ? 
                 _data->transforms[3] * _data->transforms[7] :
                 _data->transforms[3] * _data->transforms[6] * _data->transforms[7];
+        #else
+            _data->transforms[7] = _data->transforms[3] * _data->transforms[7];
+            if(mustSceneTransformed)_data->transforms[7] *= _data->transforms[6];
+        #endif
             _data->transforms[7].translate(-dx0, -dy0);
         }
     }
     transform = _data->transforms[7] * _data->transforms[0];
+
     _dirty.down(Dirty::TransformScale, Dirty::TransformRotate, Dirty::TransformTrans,
                 Dirty::TransformSize , Dirty::SceneScale     , Dirty::SceneRotate   , Dirty::Transform);
 }
