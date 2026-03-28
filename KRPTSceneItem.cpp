@@ -613,21 +613,6 @@ void KRPTSceneItem::setAngle(double angle, const QPointF &pt,
     lockUpdate(false);
     translate(p0 - p1, time, curve);
     setAngle(angle, time, curve);
-#if 0
-    switch(src)
-    {
-        case TransSrc::Self   : 
-        p1 = mapToScene(pt);
-        p1 = mapFromScene(p1);
-        break;
-        case TransSrc::Parent : 
-        p1 = parent()->mapToScene(pt);
-        p1 = mapFromScene(p1);
-        break;
-        case TransSrc::Scene  : p1 = mapFromScene(pt); break;
-    }
-    qDebug() << p1;
-#endif
 }
 
 bool KRPTSceneItem::setScale(double scale, uint32_t time, QEasingCurve curve) noexcept
@@ -662,22 +647,6 @@ void KRPTSceneItem::setScale(double scale, const QPointF &pt, TransSrc src,
     lockUpdate(false);
     translate(p0 - p1, time, curve);
     setScale(scale, time, curve);
-
-#if 0
-    switch(src)
-    {
-        case TransSrc::Self   : 
-        p1 = mapToScene(pt);
-        p1 = mapFromScene(p1);
-        break;
-        case TransSrc::Parent : 
-        p1 = parent()->mapToScene(pt);
-        p1 = mapFromScene(p1);
-        break;
-        case TransSrc::Scene  : p1 = mapFromScene(pt); break;
-    }
-    qDebug() << p1;
-#endif
 }
 
 bool KRPTSceneItem::setOpaq(double opaq, uint32_t time, QEasingCurve curve) noexcept
@@ -752,12 +721,7 @@ void KRPTSceneItem::setBackgroundColor(const QColor &color) noexcept
 
 void KRPTSceneItem::lockUpdate(bool lock) noexcept 
 {
-#if 0
-    if(lock)++_updateLocked; else
-    if(_updateLocked > 0)--_updateLocked;
-#else
     _updateLocked += lock ? 1 : _updateLocked > 0 ? -1 : 0;
-#endif
     if(_updateLocked == 0)update();
 }
 
@@ -926,30 +890,11 @@ bool KRPTSceneItem::setGeometryImpl(const QRectF &geometry) noexcept
     QRectF oldGeometry = _geometry;
     _geometry = geometry;
     _rect.setSize(_geometry.size());
-#if 0
-    _dirty += Dirty::Transform   ;
-    _dirty += Dirty::TransformInv;
-    if(isMoved)
-        _dirty += Dirty::TransformTrans;
-    if(isResized)
-    {
-        _dirty += Dirty::TransformSize;
-        _dirty += Dirty::BBox         ;
-        _dirty += Dirty::Outline      ;
-    }
-    _dirty += Dirty::VisibleChildItems;
-    _dirty += Dirty::SceneTransform   ;
-    _dirty += Dirty::SceneTransformInv;
-    _dirty += Dirty::BBoxMapToParent  ;
-    if(_parent)
-        _parent->_dirty += Dirty::VisibleChildItems;
-#else
     _dirty.up(Dirty::Transform     , Dirty::TransformInv     , Dirty::VisibleChildItems,
               Dirty::SceneTransform, Dirty::SceneTransformInv, Dirty::BBoxMapToParent);
     if(isMoved  )_dirty.up(Dirty::TransformTrans);
     if(isResized)_dirty.up(Dirty::TransformSize, Dirty::BBox, Dirty::Outline);
     if(_parent)_parent->_dirty.up(Dirty::VisibleChildItems);
-#endif
     ++_data->genTransform;
     if(must(Must::TransformEvent) || (_parent && _parent->must(Must::ChildTransformEvent)))
     {
@@ -967,20 +912,9 @@ bool KRPTSceneItem::setAngleImpl(double angle) noexcept
 {
     if(qFuzzyCompare(_angle, angle))return false;
     double oldAngle = _angle;
-#if 0
-    _dirty += Dirty::Transform        ;
-    _dirty += Dirty::TransformRotate  ;
-    _dirty += Dirty::TransformInv     ;
-    _dirty += Dirty::VisibleChildItems;
-    _dirty += Dirty::SceneTransform   ;
-    _dirty += Dirty::SceneTransformInv;
-    _dirty += Dirty::BBox             ;
-    _dirty += Dirty::BBoxMapToParent  ;
-#else
     _dirty.up(Dirty::Transform        , Dirty::TransformRotate, Dirty::TransformInv     ,
               Dirty::VisibleChildItems, Dirty::SceneTransform , Dirty::SceneTransformInv,
               Dirty::BBox             , Dirty::BBoxMapToParent);
-#endif
     if(_parent)
         _parent->_dirty += Dirty::VisibleChildItems;
     ++_data->genTransform;
@@ -997,20 +931,9 @@ bool KRPTSceneItem::setScaleImpl(double scale) noexcept
 {
     if(qFuzzyCompare(_scale, scale))return false;
     double oldScale = _scale;
-#if 0
-    _dirty += Dirty::Transform        ;
-    _dirty += Dirty::TransformScale   ;
-    _dirty += Dirty::TransformInv     ;
-    _dirty += Dirty::SceneTransform   ;
-    _dirty += Dirty::SceneTransformInv;
-    _dirty += Dirty::VisibleChildItems;
-    _dirty += Dirty::BBox             ;
-    _dirty += Dirty::BBoxMapToParent  ;
-#else
     _dirty.up(Dirty::Transform     , Dirty::TransformScale   , Dirty::TransformInv     ,
               Dirty::SceneTransform, Dirty::SceneTransformInv, Dirty::VisibleChildItems, 
               Dirty::BBox          , Dirty::BBoxMapToParent);
-#endif
     if(_parent)
         _parent->_dirty += Dirty::VisibleChildItems;
     ++_data->genTransform;
@@ -1214,25 +1137,8 @@ QRectF KRPTSceneItem::bBox(const QTransform &transform, const QRectF &rect) noex
 
 bool KRPTSceneItem::updateCache(bool visible) noexcept 
 {
-#if 0
-    if(_data->cache.empty())
-    {
-        KRPTSceneItem *item = this;
-        while(item)
-        {
-            _data->cache.emplace_back(item, item->_parent);
-            item = item->_parent;
-        }
-    }
-#endif
     bool dirty = false;
-#if 0
-    _state += State::VisibledInView;
-    _state += State::NeedPaint     ;
-    _state += State::NeedChildPaint;
-#else
     _state.up(State::VisibledInView, State::NeedPaint, State::NeedChildPaint);
-#endif
     QTransform *transform = nullptr;
     auto it = _data->cache.begin();
     for(; it != _data->cache.end(); ++it)
@@ -1259,12 +1165,7 @@ bool KRPTSceneItem::updateCache(bool visible) noexcept
                 {
                     _bBoxMapToParent = cache.bBox;
                     _bBox = _bBoxMapToParent.translated(-_geometry.topLeft());
-                #if 0
-                    _dirty -= Dirty::BBox;
-                    _dirty -= Dirty::BBoxMapToParent;
-                #else
                     _dirty.down(Dirty::BBox, Dirty::BBoxMapToParent);
-                #endif
                 }
             }
             if(cache.parent)
@@ -1290,12 +1191,7 @@ bool KRPTSceneItem::updateCache(bool visible) noexcept
         }
         if(!cache.visible)
         {
-        #if 0
-            _state -= State::VisibledInView;
-            _state -= State::NeedPaint;
-        #else
             _state.down(State::VisibledInView, State::NeedPaint);
-        #endif
             if(cache.parent && !must(KRPTSceneItem::Must::NoClipChilds))
                 _state -= State::NeedChildPaint;
             if(visible)
@@ -1316,7 +1212,7 @@ bool KRPTSceneItem::updateCache(bool visible) noexcept
         _sceneTransform = *transform;
         _dirty -= Dirty::SceneTransform;
         _dirty += Dirty::SceneTransformInv;
-        if(must(KRPTSceneItem::Must::SceneTransformEvent))
+        if(must(KRPTSceneItem::Must::SceneTransformEvent) && !eventLocked())
             sceneTransformEvent(_sceneTransform);
     }
     return dirty;
@@ -1329,17 +1225,6 @@ bool KRPTSceneItem::dirtyTransform() noexcept
        !must(KRPTSceneItem::Must::NoSceneRotate   ) && 
        !must(KRPTSceneItem::Must::SceneScaleEvent ) &&
        !must(KRPTSceneItem::Must::SceneRotateEvent))return dirty;
-#if 0
-    if(_data->cache.empty())
-    {
-        KRPTSceneItem *item = this;
-        while(item)
-        {
-            _data->cache.emplace_back(item, item->_parent);
-            item = item->_parent;
-        }
-    }
-#endif
     bool scaleDirty = false;
     bool angleDirty = false;
     double sceneScale = _data->sceneScale;
@@ -1394,17 +1279,8 @@ bool KRPTSceneItem::dirtyTransform() noexcept
         }
         if(must(KRPTSceneItem::Must::NoSceneScale) || must(KRPTSceneItem::Must::NoSceneRotate))
         {
-        #if 0
-            _dirty += Dirty::Transform        ;
-            _dirty += Dirty::TransformInv     ;
-            _dirty += Dirty::SceneTransform   ;
-            _dirty += Dirty::SceneTransformInv;
-            _dirty += Dirty::BBox             ;
-            _dirty += Dirty::BBoxMapToParent  ;
-        #else
             _dirty.up(Dirty::Transform        , Dirty::TransformInv, Dirty::SceneTransform, 
                       Dirty::SceneTransformInv, Dirty::BBox        , Dirty::BBoxMapToParent);
-        #endif
         }
     }
     return must(KRPTSceneItem::Must::NoSceneScale) || must(KRPTSceneItem::Must::NoSceneRotate) ?

@@ -125,7 +125,7 @@ const QTransform& KRPTScene::sceneTransform() const noexcept
     return _item->sceneTransform();
 }
 
-KRPTSceneItem *KRPTScene::mousePressedItem() const noexcept
+KRPTSceneItem::Ptr KRPTScene::mousePressedItem() const noexcept
 {
     return _mousePressedItem;
 }
@@ -212,7 +212,7 @@ void KRPTScene::setBackgroundColor(const QColor &color) noexcept
 //*
 //************************************************************************************************************************
 
-KRPTSceneItem* KRPTScene::itemFromPos(const QPointF &pos, CompFn comp) noexcept
+KRPTSceneItem::Ptr KRPTScene::itemFromPos(const QPointF &pos, CompFn comp) noexcept
 {
     QPointF p = _item->transformInv().map(pos);
     return itemFromPosImpl(p, comp, _item);
@@ -385,7 +385,7 @@ void KRPTScene::paintEvent(QPainter &painter) noexcept
 //*
 //************************************************************************************************************************
 
-KRPTSceneItem* KRPTScene::itemFromPosImpl(const QPointF &pos, CompFn comp, KRPTSceneItem *item) noexcept
+KRPTSceneItem::Ptr KRPTScene::itemFromPosImpl(const QPointF &pos, CompFn comp, KRPTSceneItem *item) noexcept
 {
     auto res = itemsFromPosImpl(pos, comp, item, false);
     return !res.empty() ? res.back() : nullptr;

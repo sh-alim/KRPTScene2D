@@ -58,7 +58,7 @@ public:
     QPointF            center             ()                                 const noexcept;
     const QTransform & transform          ()                                 const noexcept;
     const QTransform & sceneTransform     ()                                 const noexcept;
-    KRPTSceneItem    * mousePressedItem   ()                                 const noexcept;
+    KRPTSceneItem::Ptr mousePressedItem   ()                                 const noexcept;
     QColor             borderColor        ()                                 const noexcept;
     QColor             backgroundColor    ()                                 const noexcept;
 
@@ -77,7 +77,7 @@ public:
     void               setBackgroundColor(const QColor &color)                     noexcept;
 
 public:
-    KRPTSceneItem    * itemFromPos        (const QPointF &pos, CompFn comp)        noexcept;
+    KRPTSceneItem::Ptr itemFromPos        (const QPointF &pos, CompFn comp)        noexcept;
     Items              itemsFromPos       (const QPointF &pos, CompFn comp, 
                                            bool one)                               noexcept;
 public:
@@ -90,7 +90,7 @@ public:
     void               whellEvent         (SceneMouseEvent     *e)                 noexcept;
     void               paintEvent         (QPainter &painter     )                 noexcept;
 protected:
-    KRPTSceneItem    * itemFromPosImpl    (const QPointF &pos, CompFn comp, 
+    KRPTSceneItem::Ptr itemFromPosImpl    (const QPointF &pos, CompFn comp, 
                                            KRPTSceneItem *item)                    noexcept;
     Items              itemsFromPosImpl   (const QPointF &pos, CompFn comp, 
                                            KRPTSceneItem *item, bool one, 
@@ -98,9 +98,9 @@ protected:
     void               paintImpl          (QPainter &painter, KRPTSceneItem *item, 
                                            uint32_t stage = 0)                     noexcept;
 private:
-    KRPTSceneView * _view              ;
-    KRPTSceneItem * _item              ;
-    KRPTSceneItem *_mousePressedItem   ;
-    QPointF        _mousePressedItemPos;
-    QPointF        _lastMousePos       ;
+    KRPTSceneView      * _view               ;
+    KRPTSceneItem::Ptr   _item               ;
+    KRPTSceneItem::Ptr   _mousePressedItem   ;
+    QPointF              _mousePressedItemPos;
+    QPointF              _lastMousePos       ;
 };
