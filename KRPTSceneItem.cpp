@@ -1062,29 +1062,38 @@ void KRPTSceneItem::transform(const QRectF &rect, double angle, double scale, QT
             case TransformAnchor::TopCenter    : dx1 = w2; dy1 =  0; break;
             case TransformAnchor::BottomCenter : dx1 = w2; dy1 =  h; break;
         }
-        bool sceneTransformed = false;
-        if(must(KRPTSceneItem::Must::NoSceneScale) && _dirty[Dirty::SceneScale])
+        bool mustSceneTransformed = false;
+        bool dirtySceneTransformed = false;
+        if(must(KRPTSceneItem::Must::NoSceneScale))
         {
-            double scale = 1.0 / _data->sceneScale;
-            _data->transforms[4].reset();
-            _data->transforms[4].scale(scale, scale);
-            sceneTransformed = true;
+            if(_dirty[Dirty::SceneScale])
+            {
+                double scale = 1.0 / _data->sceneScale;
+                _data->transforms[4].reset();
+                _data->transforms[4].scale(scale, scale);
+                dirtySceneTransformed = true;
+            }
+            mustSceneTransformed = true;
         }
-        if(must(KRPTSceneItem::Must::NoSceneRotate) && _dirty[Dirty::SceneRotate])
+        if(must(KRPTSceneItem::Must::NoSceneRotate))
         {
-            _data->transforms[5].reset();
-            _data->transforms[5].rotate(-_data->sceneAngle);
-            sceneTransformed = true;
+            if(_dirty[Dirty::SceneRotate])
+            {
+                _data->transforms[5].reset();
+                _data->transforms[5].rotate(-_data->sceneAngle);
+                dirtySceneTransformed = true;
+            }
+            mustSceneTransformed = true;
         }
-        if(sceneTransformed)
+        if(dirtySceneTransformed)
         {
             _data->transforms[6] = _data->transforms[4] * _data->transforms[5];
         }
-        if(_dirty.any(Dirty::TransformRotate, Dirty::TransformScale, Dirty::TransformSize) || sceneTransformed)
+        if(_dirty.any(Dirty::TransformRotate, Dirty::TransformScale, Dirty::TransformSize) || dirtySceneTransformed)
         {
             _data->transforms[7].reset();
             _data->transforms[7].translate(dx0 - dx1, dy0 - dy1);
-            _data->transforms[7] = !sceneTransformed ? 
+            _data->transforms[7] = !mustSceneTransformed ? 
                 _data->transforms[3] * _data->transforms[7] :
                 _data->transforms[3] * _data->transforms[6] * _data->transforms[7];
             _data->transforms[7].translate(-dx0, -dy0);
