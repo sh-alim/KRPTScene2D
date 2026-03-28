@@ -487,7 +487,7 @@ const QPainterPath &KRPTSceneItem::outline() noexcept
 
 bool KRPTSceneItem::eventLocked() const noexcept 
 {
-    return _eventLocked == 0;
+    return _eventLocked > 0;
 }
 
 uint32_t KRPTSceneItem::tag() const noexcept
@@ -1034,7 +1034,8 @@ void KRPTSceneItem::transform(const QRectF &rect, double angle, double scale, QT
     {
         _data->transforms[3] = _data->transforms[2] * _data->transforms[1];
     }
-    if(_dirty.any(Dirty::TransformRotate, Dirty::TransformScale, Dirty::TransformSize))
+    if(_dirty.any(Dirty::TransformRotate, Dirty::TransformScale, Dirty::TransformSize, 
+                  Dirty::SceneScale     , Dirty::SceneRotate))
     {
         double dx0 = 0, dy0 = 0, dx1 = 0, dy1 = 0;
         double w = rect.width(), h = rect.height();
@@ -1061,38 +1062,35 @@ void KRPTSceneItem::transform(const QRectF &rect, double angle, double scale, QT
             case TransformAnchor::TopCenter    : dx1 = w2; dy1 =  0; break;
             case TransformAnchor::BottomCenter : dx1 = w2; dy1 =  h; break;
         }
-        _data->transforms[4].reset();
-        _data->transforms[4].translate(dx0 - dx1, dy0 - dy1);
-        _data->transforms[4] = _data->transforms[3] * _data->transforms[4];
-        _data->transforms[4].translate(-dx0, -dy0);
-    }
-    if(must(KRPTSceneItem::Must::NoSceneScale))
-    {
-        if(_dirty[Dirty::SceneScale])
+        bool sceneTransformed = false;
+        if(must(KRPTSceneItem::Must::NoSceneScale) && _dirty[Dirty::SceneScale])
         {
             double scale = 1.0 / _data->sceneScale;
+            _data->transforms[4].reset();
+            _data->transforms[4].scale(scale, scale);
+            sceneTransformed = true;
+        }
+        if(must(KRPTSceneItem::Must::NoSceneRotate) && _dirty[Dirty::SceneRotate])
+        {
             _data->transforms[5].reset();
-            _data->transforms[5].scale(scale, scale);
+            _data->transforms[5].rotate(-_data->sceneAngle);
+            sceneTransformed = true;
         }
-        if(_dirty.any(Dirty::TransformRotate, Dirty::TransformScale, Dirty::TransformSize, Dirty::SceneScale))
+        if(sceneTransformed)
         {
-            _data->transforms[7] = _data->transforms[4] * _data->transforms[5];
+            _data->transforms[6] = _data->transforms[4] * _data->transforms[5];
         }
-    }else _data->transforms[7] = _data->transforms[4];
-    if(must(KRPTSceneItem::Must::NoSceneRotate))
-    {
-        if(_dirty[Dirty::SceneRotate])
+        if(_dirty.any(Dirty::TransformRotate, Dirty::TransformScale, Dirty::TransformSize) || sceneTransformed)
         {
-            _data->transforms[6].reset();
-            _data->transforms[6].rotate(-_data->sceneAngle);
+            _data->transforms[7].reset();
+            _data->transforms[7].translate(dx0 - dx1, dy0 - dy1);
+            _data->transforms[7] = !sceneTransformed ? 
+                _data->transforms[3] * _data->transforms[7] :
+                _data->transforms[3] * _data->transforms[6] * _data->transforms[7];
+            _data->transforms[7].translate(-dx0, -dy0);
         }
-        if(_dirty.any(Dirty::TransformRotate, Dirty::TransformScale, Dirty::TransformSize, 
-                      Dirty::SceneRotate, Dirty::SceneScale))
-        {
-            _data->transforms[8] = _data->transforms[7] * _data->transforms[6];
-        }
-    }else _data->transforms[8] = _data->transforms[7];
-    transform = _data->transforms[8] * _data->transforms[0];
+    }
+    transform = _data->transforms[7] * _data->transforms[0];
     _dirty.down(Dirty::TransformScale, Dirty::TransformRotate, Dirty::TransformTrans,
                 Dirty::TransformSize , Dirty::SceneScale     , Dirty::SceneRotate   , Dirty::Transform);
 }
