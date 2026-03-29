@@ -403,6 +403,37 @@ KRPTSceneItem::TransformAnchor KRPTSceneItem::posAnchor() const noexcept
     return _posAnchor;
 }
 
+void KRPTSceneItem::anchorPoint(TransformAnchor anchor, const QSizeF &size, double &dx, double &dy) const noexcept
+{
+    double w = size.width(), h = size.height();
+    double w2 = w * 0.5, h2 = h * 0.5;
+    switch(anchor)
+    {
+        case TransformAnchor::Center       : dx = w2; dy = h2; break;
+        case TransformAnchor::RightTop     : dx =  w; dy =  0; break;
+        case TransformAnchor::LeftBottom   : dx =  0; dy =  h; break;
+        case TransformAnchor::RightBottom  : dx =  w; dy =  h; break;
+        case TransformAnchor::LeftCenter   : dx =  0; dy = h2; break;
+        case TransformAnchor::RightCenter  : dx =  w; dy = h2; break;
+        case TransformAnchor::TopCenter    : dx = w2; dy =  0; break;
+        case TransformAnchor::BottomCenter : dx = w2; dy =  h; break;
+    }
+}
+
+QPointF KRPTSceneItem::transformAnchorPoint() const noexcept
+{
+    double dx, dy;
+    anchorPoint(_transformAnchor, size(), dx, dy);
+    return QPointF(dx, dy);
+}
+
+QPointF KRPTSceneItem::posAnchorPoint() const noexcept
+{
+    double dx, dy;
+    anchorPoint(_posAnchor, size(), dx, dy);
+    return QPointF(dx, dy);
+}
+
 const QTransform& KRPTSceneItem::transform() noexcept 
 {
     if(!dirtyTransform())return _transform;
@@ -1037,6 +1068,7 @@ void KRPTSceneItem::transform(const QRectF &rect, double angle, double scale, QT
     if(_dirty.any(Dirty::TransformRotate, Dirty::TransformScale, Dirty::TransformSize, 
                   Dirty::SceneScale     , Dirty::SceneRotate))
     {
+    #if 0
         double dx0 = 0, dy0 = 0, dx1 = 0, dy1 = 0;
         double w = rect.width(), h = rect.height();
         double w2 = w * 0.5, h2 = h * 0.5;
@@ -1062,6 +1094,11 @@ void KRPTSceneItem::transform(const QRectF &rect, double angle, double scale, QT
             case TransformAnchor::TopCenter    : dx1 = w2; dy1 =  0; break;
             case TransformAnchor::BottomCenter : dx1 = w2; dy1 =  h; break;
         }
+    #else
+        double dx0 = 0, dy0 = 0, dx1 = 0, dy1 = 0;
+        anchorPoint(_transformAnchor, rect.size(), dx0, dy0);
+        anchorPoint(_posAnchor      , rect.size(), dx1, dy1);
+    #endif
         bool mustSceneTransformed = false;
         bool dirtySceneTransformed = false;
         if(must(KRPTSceneItem::Must::NoSceneScale))

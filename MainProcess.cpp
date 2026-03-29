@@ -218,7 +218,8 @@ void MainProcess::mousePressEvent(QMouseEvent *e)
     if(!_selectedItem)return;
 
     QPointF p = _selectedItem->mapFromScene(e->position());
-    qDebug() << p;
+    QPointF p1 = _selectedItem->mapToParent(QPointF(0, 0));
+    qDebug() << p1 << _selectedItem->pos();
 
     if(e->buttons() & Qt::MouseButton::LeftButton)
     {
@@ -297,10 +298,11 @@ void MainProcess::mousePressEvent(QMouseEvent *e)
 //        child->setTransformAnchor(KRPTSceneItem::TransformAnchor::RightCenter);
 //        child->setTransformAnchor(KRPTSceneItem::TransformAnchor::BottomCenter);
 //        child->setPosAnchor(KRPTSceneItem::TransformAnchor::LeftTop);
-//        child->setPosAnchor(KRPTSceneItem::TransformAnchor::Center);
+        child->setPosAnchor(KRPTSceneItem::TransformAnchor::Center);
 //        child->setPosAnchor(KRPTSceneItem::TransformAnchor::RightTop);
 //        child->setPosAnchor(KRPTSceneItem::TransformAnchor::LeftBottom);
 //        child->setPosAnchor(KRPTSceneItem::TransformAnchor::RightCenter);
+//        child->setPosAnchor(KRPTSceneItem::TransformAnchor::LeftCenter);
 //        child->setPosAnchor(KRPTSceneItem::TransformAnchor::BottomCenter);
         }else
         {
