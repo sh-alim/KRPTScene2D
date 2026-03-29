@@ -182,12 +182,8 @@ public:
     double               opaq                ()                                                              const noexcept;
     TransformAnchor      transformAnchor     ()                                                              const noexcept;
     TransformAnchor      posAnchor           ()                                                              const noexcept;
-    void                 anchorPoint         (TransformAnchor anchor, const QSizeF &size, 
-                                              double &dx, double &dy)                                        const noexcept;
     QPointF              transformAnchorPoint()                                                              const noexcept;
     QPointF              posAnchorPoint      ()                                                              const noexcept;
-
-
     const QTransform   & transform           ()                                                                    noexcept;
     const QTransform   & transformInv        ()                                                                    noexcept;
     const QTransform   & sceneTransform      ()                                                                    noexcept;
@@ -337,6 +333,9 @@ protected:
                                               uint32_t time, QEasingCurve curve, int loopCount = 1)                noexcept;
     void                 startAnimImpl       (uint32_t id, const QColor &start, const QColor &end, 
                                               uint32_t time, QEasingCurve curve, int loopCount = 1)                noexcept;
+private:
+    void                 anchorPoint         (TransformAnchor anchor, const QSizeF &size, 
+                                              double &dx, double &dy)                                        const noexcept;
 protected:
     KRPTSceneItemData *_data;
     KRPTFlag<Dirty>    _dirty            ;
