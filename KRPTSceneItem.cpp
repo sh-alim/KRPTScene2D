@@ -511,6 +511,12 @@ uint32_t KRPTSceneItem::tag() const noexcept
 
 void KRPTSceneItem::setParent(KRPTSceneItem::Ptr parent) noexcept
 {
+    if(!parent || parent == _parent)return;
+    if(_parent)
+    {
+        _parent->delChild(this);
+        _parent->_dirty += Dirty::VisibleChildItems;
+    }
     _parent = parent;
     _dirty += Dirty::All;
     _data->cache.clear();
@@ -1051,37 +1057,9 @@ void KRPTSceneItem::transform(const QRectF &rect, double angle, double scale, QT
     if(_dirty.any(Dirty::TransformRotate, Dirty::TransformScale, Dirty::TransformSize, 
                   Dirty::SceneScale     , Dirty::SceneRotate))
     {
-    #if 0
-        double dx0 = 0, dy0 = 0, dx1 = 0, dy1 = 0;
-        double w = rect.width(), h = rect.height();
-        double w2 = w * 0.5, h2 = h * 0.5;
-        switch(_transformAnchor)
-        {
-            case TransformAnchor::Center       : dx0 = w2; dy0 = h2; break;
-            case TransformAnchor::RightTop     : dx0 =  w; dy0 =  0; break;
-            case TransformAnchor::LeftBottom   : dx0 =  0; dy0 =  h; break;
-            case TransformAnchor::RightBottom  : dx0 =  w; dy0 =  h; break;
-            case TransformAnchor::LeftCenter   : dx0 =  0; dy0 = h2; break;
-            case TransformAnchor::RightCenter  : dx0 =  w; dy0 = h2; break;
-            case TransformAnchor::TopCenter    : dx0 = w2; dy0 =  0; break;
-            case TransformAnchor::BottomCenter : dx0 = w2; dy0 =  h; break;
-        }
-        switch(_posAnchor)
-        {
-            case TransformAnchor::Center       : dx1 = w2; dy1 = h2; break;
-            case TransformAnchor::RightTop     : dx1 =  w; dy1 =  0; break;
-            case TransformAnchor::LeftBottom   : dx1 =  0; dy1 =  h; break;
-            case TransformAnchor::RightBottom  : dx1 =  w; dy1 =  h; break;
-            case TransformAnchor::LeftCenter   : dx1 =  0; dy1 = h2; break;
-            case TransformAnchor::RightCenter  : dx1 =  w; dy1 = h2; break;
-            case TransformAnchor::TopCenter    : dx1 = w2; dy1 =  0; break;
-            case TransformAnchor::BottomCenter : dx1 = w2; dy1 =  h; break;
-        }
-    #else
         double dx0 = 0, dy0 = 0, dx1 = 0, dy1 = 0;
         anchorPoint(_transformAnchor, rect.size(), dx0, dy0);
         anchorPoint(_posAnchor      , rect.size(), dx1, dy1);
-    #endif
         bool mustSceneTransformed = false;
         bool dirtySceneTransformed = false;
         if(must(KRPTSceneItem::Must::NoSceneScale))
@@ -1113,14 +1091,8 @@ void KRPTSceneItem::transform(const QRectF &rect, double angle, double scale, QT
         {
             _data->transforms[7].reset();
             _data->transforms[7].translate(dx0 - dx1, dy0 - dy1);
-        #if 0
-            _data->transforms[7] = !mustSceneTransformed ? 
-                _data->transforms[3] * _data->transforms[7] :
-                _data->transforms[3] * _data->transforms[6] * _data->transforms[7];
-        #else
             _data->transforms[7] = _data->transforms[3] * _data->transforms[7];
             if(mustSceneTransformed)_data->transforms[7] *= _data->transforms[6];
-        #endif
             _data->transforms[7].translate(-dx0, -dy0);
         }
     }

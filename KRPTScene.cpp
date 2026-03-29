@@ -51,9 +51,9 @@ void KRPTSceneRoot::paintForeground(QPainter &painter, uint32_t stage) noexcept
 //########################################################################################################################
 
 KRPTScene::KRPTScene(KRPTSceneView *view) noexcept
-    : _view(view) , _item(new KRPTSceneRoot(this, nullptr)), _mousePressedItem(nullptr)
+    : _view(view) , _item(new KRPTSceneRoot(this, nullptr)), _deviceScale(1), _mousePressedItem(nullptr)
 {
-    view->setScene(this);
+//    view->setScene(this);
 }
 
 KRPTScene::~KRPTScene() noexcept
@@ -198,6 +198,13 @@ void KRPTScene::setScale(double scale) noexcept
     _item->setScale(scale);
 }
 
+void KRPTScene::setDeviceScale(double scale) noexcept
+{
+    if(qFuzzyCompare(_deviceScale, scale))return;
+    _deviceScale = scale;
+    deviceScaleEvent(scale);
+}
+
 void KRPTScene::setBorderColor(const QColor &color) noexcept
 {
     _item->setBorderColor(color);
@@ -335,7 +342,7 @@ void KRPTScene::whellEvent(SceneMouseEvent *e) noexcept
     {
         item->whellImpl(SceneMouseEvent::get(item->mapFromScene(mousePos), e->btns(), 
             mousePos, e->keyModifers(), e->delta()).get());
-    #if 1
+    #if 0
         if(e->keyModifers()[SceneMouseEvent::KeyModifer::Ctrl])
         {
 //            QPointF p = mousePos;
@@ -372,6 +379,10 @@ void KRPTScene::whellEvent(SceneMouseEvent *e) noexcept
     }
 #endif
     update();
+}
+
+void KRPTScene::deviceScaleEvent(double scale) noexcept
+{
 }
 
 void KRPTScene::paintEvent(QPainter &painter) noexcept

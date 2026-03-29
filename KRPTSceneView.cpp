@@ -7,6 +7,7 @@
 #include <QGraphicsView>
 #include <QSurfaceFormat>
 #include <QOpenGLWidget>
+#include <QApplication>
 
 //########################################################################################################################
 //#
@@ -17,7 +18,6 @@ class KRPTSceneViewPort : public QOpenGLWidget
 protected:
 //    void initializeGL() override {}
 };
-
 
 //########################################################################################################################
 //#
@@ -161,6 +161,8 @@ void KRPTSceneView::setGeometry(int ax, int ay, int aw, int ah) noexcept
 void KRPTSceneView::setScene(KRPTScene *scene) noexcept
 {
     _scene = scene;
+    double deviceScale = QApplication::primaryScreen()->devicePixelRatio();
+    _scene->setDeviceScale(deviceScale);
 }
 
 void KRPTSceneView::setTranslateEvents(bool translate) noexcept
@@ -265,7 +267,6 @@ SceneMouseEvent::Ptr KRPTSceneView::createMouseSceneEvent(QSinglePointEvent *e) 
     if(e->modifiers() & Qt::KeyboardModifier::ControlModifier)keyModifers += SceneMouseEvent::KeyModifer::Ctrl ;
     if(e->modifiers() & Qt::KeyboardModifier::ShiftModifier  )keyModifers += SceneMouseEvent::KeyModifer::Shift;
     if(e->modifiers() & Qt::KeyboardModifier::AltModifier    )keyModifers += SceneMouseEvent::KeyModifer::Alt  ;
-
     return SceneMouseEvent::get(e->position(), btns, QPointF(), keyModifers);
 }
 

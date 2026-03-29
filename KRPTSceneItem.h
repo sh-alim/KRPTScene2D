@@ -138,8 +138,13 @@ public:
     template<typename T, typename ... Args> inline auto addChild(Args&& ... arg)                                   noexcept
     {
         static_assert(std::is_base_of_v<KRPTSceneItem, T>, "is not scene item");
+    #if 0
         auto item = new T(_scene, this, std::forward<Args>(arg) ...);
         addChildImpl(item, this);
+    #else
+        auto item = new T(_scene, nullptr, std::forward<Args>(arg) ...);
+        addChildImpl(item, this);
+    #endif
         return item;
     }
     bool delChild(KRPTSceneItem *item)                                                                             noexcept;

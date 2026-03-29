@@ -72,9 +72,10 @@ public:
     void               setWidth           (double width)                           noexcept;
     void               setHeight          (double height)                          noexcept;
     void               setScale           (double scale)                           noexcept;
+    void               setDeviceScale     (double scale)                           noexcept;
 
-    void               setBorderColor    (const QColor &color)                     noexcept;
-    void               setBackgroundColor(const QColor &color)                     noexcept;
+    void               setBorderColor     (const QColor &color)                    noexcept;
+    void               setBackgroundColor (const QColor &color)                    noexcept;
 
 public:
     KRPTSceneItem::Ptr itemFromPos        (const QPointF &pos, CompFn comp)        noexcept;
@@ -83,12 +84,14 @@ public:
 public:
     virtual void       update             ()                                       noexcept;
 public:
-    void               transformEvent     (SceneTransformEvent *e)                 noexcept;
-    void               mousePressEvent    (SceneMouseEvent     *e)                 noexcept;
-    void               mouseReleaseEvent  (SceneMouseEvent     *e)                 noexcept;
-    void               mouseMoveEvent     (SceneMouseEvent     *e)                 noexcept;
-    void               whellEvent         (SceneMouseEvent     *e)                 noexcept;
-    void               paintEvent         (QPainter &painter     )                 noexcept;
+    virtual void       transformEvent     (SceneTransformEvent *e)                 noexcept;
+    virtual void       mousePressEvent    (SceneMouseEvent     *e)                 noexcept;
+    virtual void       mouseReleaseEvent  (SceneMouseEvent     *e)                 noexcept;
+    virtual void       mouseMoveEvent     (SceneMouseEvent     *e)                 noexcept;
+    virtual void       whellEvent         (SceneMouseEvent     *e)                 noexcept;
+    virtual void       deviceScaleEvent   (double scale)                           noexcept;
+    virtual void       paintEvent         (QPainter &painter     )                 noexcept;
+
 protected:
     KRPTSceneItem::Ptr itemFromPosImpl    (const QPointF &pos, CompFn comp, 
                                            KRPTSceneItem *item)                    noexcept;
@@ -100,6 +103,7 @@ protected:
 private:
     KRPTSceneView      * _view               ;
     KRPTSceneItem::Ptr   _item               ;
+    double               _deviceScale        ;
     KRPTSceneItem::Ptr   _mousePressedItem   ;
     QPointF              _mousePressedItemPos;
     QPointF              _lastMousePos       ;

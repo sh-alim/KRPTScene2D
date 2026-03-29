@@ -44,6 +44,9 @@ MainProcess::MainProcess(QWidget *parent)
 
     _view = new KRPTSceneView(this);
     _scene = new KRPTScene(_view);
+    _view->setScene(_scene);
+
+
     _scene->setBackgroundColor(QColor(30, 50, 50));
 
     _view->setTranslateEvents(true);
