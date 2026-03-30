@@ -141,7 +141,7 @@ public:
     template<typename T, typename ... Args> inline auto addChild(Args&& ... arg)                                   noexcept
     {
         static_assert(std::is_base_of_v<KRPTSceneItem, T>, "is not scene item");
-    #if 0
+    #if 1
         auto item = new T(_scene, this, std::forward<Args>(arg) ...);
         addChildImpl(item, this);
     #else
@@ -298,6 +298,7 @@ protected:
 protected:
     virtual void         update              ()                                                                    noexcept;
     virtual CItemsList & filterChildItems    ()                                                                    noexcept;
+    virtual void         setParentImpl       (KRPTSceneItem::Ptr parent)                                           noexcept;
     virtual void         addChildImpl        (KRPTSceneItem::Ptr item, KRPTSceneItem::Ptr parent)                  noexcept;
     virtual bool         delChildImpl        (KRPTSceneItem::Ptr item, KRPTSceneItem::Ptr parent)                  noexcept;
     virtual bool         setGeometryImpl     (const QRectF &geometry)                                              noexcept;

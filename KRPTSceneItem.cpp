@@ -511,21 +511,7 @@ uint32_t KRPTSceneItem::tag() const noexcept
 
 void KRPTSceneItem::setParent(KRPTSceneItem::Ptr parent) noexcept
 {
-    if(!parent || parent == _parent)return;
-    if(_parent)
-    {
-        _parent->delChild(this);
-        _parent->_dirty += Dirty::VisibleChildItems;
-    }
-    _parent = parent;
-    _dirty += Dirty::All;
-    _data->cache.clear();
-    KRPTSceneItem *item = this;
-    while(item)
-    {
-        _data->cache.emplace_back(item, item->_parent);
-        item = item->_parent;
-    }
+    setParentImpl(parent);
 }
 
 void KRPTSceneItem::setVisible(bool visible) noexcept
@@ -877,10 +863,30 @@ const KRPTSceneItem::ItemsList &KRPTSceneItem::filterChildItems() noexcept
     return _childItems;
 }
 
+void KRPTSceneItem::setParentImpl(KRPTSceneItem::Ptr parent) noexcept
+{
+    if(!parent || parent == _parent)return;
+    if(_parent)
+    {
+        _parent->delChild(this);
+        _parent->_dirty += Dirty::VisibleChildItems;
+    }
+    _parent = parent;
+    _dirty += Dirty::All;
+    _data->cache.clear();
+    KRPTSceneItem *item = this;
+    while(item)
+    {
+        _data->cache.emplace_back(item, item->_parent);
+        item = item->_parent;
+    }
+}
+
 void KRPTSceneItem::addChildImpl(KRPTSceneItem::Ptr item, KRPTSceneItem::Ptr parent) noexcept
 {
     if(!item)return;
-    item->setParent(parent);
+    item->_parent = nullptr;
+    item->setParentImpl(parent);
     ItemsList::iterator it = parent->_childItems.emplace(parent->_childItems.end(), item);
     parent->_index.emplace(item, it);
     if(!eventLocked())addChildEvent(item);
