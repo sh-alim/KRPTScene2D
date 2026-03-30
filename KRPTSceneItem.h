@@ -131,7 +131,10 @@ public:
     using ItemsList  = std::list<KRPTSceneItem::Ptr>;
     using CItemsList = const ItemsList;
     using IndexMap   = std::unordered_map<KRPTSceneItem*, ItemsList::iterator>;
-public:
+protected:
+    KRPTSceneItem()                     = delete;
+    KRPTSceneItem(const KRPTSceneItem&) = delete;
+    KRPTSceneItem(KRPTSceneItem&&)      = delete;
     KRPTSceneItem(KRPTScene *scene, KRPTSceneItem *parent)                                                         noexcept;
     virtual ~KRPTSceneItem()                                                                                       noexcept;
 public:
