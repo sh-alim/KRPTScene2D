@@ -10,26 +10,30 @@
 
 static const std::vector<std::pair<KRPTSceneItem::Must, QString>> must =
 {
-    {KRPTSceneItem::Must::NoPaint               , "NoPaint"              },
-    {KRPTSceneItem::Must::NoClipChilds          , "NoClipChilds"         },
-    {KRPTSceneItem::Must::NoClipPainter         , "NoClipPainter"        },
-    {KRPTSceneItem::Must::NoSceneScale          , "NoSceneScale"         },
-    {KRPTSceneItem::Must::NoSceneRotate         , "NoSceneRotate"        },
-    {KRPTSceneItem::Must::NoMouseEventTranslate , "NoMouseEventTranslate"},
-    {KRPTSceneItem::Must::NoCheckChildVisibled  , "NoCheckChildVisibled" },
-    {KRPTSceneItem::Must::MousePressEvent       , "MousePressEvent"      },
-    {KRPTSceneItem::Must::MouseReleaseEvent     , "MouseReleaseEvent"    },
-    {KRPTSceneItem::Must::MouseMoveEvent        , "MouseMoveEvent"       },
-    {KRPTSceneItem::Must::WhellEvent            , "WhellEvent"           },
-    {KRPTSceneItem::Must::TransformEvent        , "TransformEvent"       },
-    {KRPTSceneItem::Must::ChildTransformEvent   , "SceneTransformEvent"  },
-    {KRPTSceneItem::Must::SceneTransformEvent   , "SceneTransformEvent"  },
-    {KRPTSceneItem::Must::SceneScaleEvent       , "SceneScaleEvent"      },
-    {KRPTSceneItem::Must::SceneRotateEvent      , "SceneRotateEvent"     },
-    {KRPTSceneItem::Must::Anim                  , "Anim"                 },
-    {KRPTSceneItem::Must::AccuracyCheckContains , "AccuracyCheckContains"},
-    {KRPTSceneItem::Must::AccuracyClip          , "AccuracyClip"         },
-    {KRPTSceneItem::Must::MouseMoveble          , "MouseMoveble"         }
+    {KRPTSceneItem::Must::NoPaint               , "NoPaint"               },
+    {KRPTSceneItem::Must::NoClipChilds          , "NoClipChilds"          },
+    {KRPTSceneItem::Must::NoClipPainter         , "NoClipPainter"         },
+    {KRPTSceneItem::Must::NoSceneScale          , "NoSceneScale"          },
+    {KRPTSceneItem::Must::NoSceneRotate         , "NoSceneRotate"         },
+    {KRPTSceneItem::Must::NoMouseEventTranslate , "NoMouseEventTranslate" },
+    {KRPTSceneItem::Must::NoCheckChildVisibled  , "NoCheckChildVisibled"  },
+    {KRPTSceneItem::Must::MousePressEvent       , "MousePressEvent"       },
+    {KRPTSceneItem::Must::MouseReleaseEvent     , "MouseReleaseEvent"     },
+    {KRPTSceneItem::Must::MouseMoveEvent        , "MouseMoveEvent"        },
+    {KRPTSceneItem::Must::WhellEvent            , "WhellEvent"            },
+    {KRPTSceneItem::Must::TransformEvent        , "TransformEvent"        },
+    {KRPTSceneItem::Must::ChildTransformEvent   , "SceneTransformEvent"   },
+
+    {KRPTSceneItem::Must::TransformToParentEvent, "TransformToParentEvent"},
+    {KRPTSceneItem::Must::TransformToSceneEvent , "TransformToSceneEvent" },
+
+    {KRPTSceneItem::Must::SceneTransformEvent   , "SceneTransformEvent"   },
+    {KRPTSceneItem::Must::SceneScaleEvent       , "SceneScaleEvent"       },
+    {KRPTSceneItem::Must::SceneRotateEvent      , "SceneRotateEvent"      },
+    {KRPTSceneItem::Must::Anim                  , "Anim"                  },
+    {KRPTSceneItem::Must::AccuracyCheckContains , "AccuracyCheckContains" },
+    {KRPTSceneItem::Must::AccuracyClip          , "AccuracyClip"          },
+    {KRPTSceneItem::Must::MouseMoveble          , "MouseMoveble"          }
 };
 
 //########################################################################################################################

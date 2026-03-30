@@ -922,14 +922,8 @@ bool KRPTSceneItem::setGeometryImpl(const QRectF &geometry) noexcept
     if(isResized)_dirty.up(Dirty::TransformSize, Dirty::BBox, Dirty::Outline);
     if(_parent)_parent->_dirty.up(Dirty::VisibleChildItems);
     ++_data->genTransform;
-    if(must(Must::TransformEvent) || (_parent && _parent->must(Must::ChildTransformEvent)))
-    {
-        SceneTransformEvent::Ptr e = SceneTransformEvent::get(geometry, oldGeometry, 
-            _angle, _angle, _scale, _scale, isMoved, isResized, false, false);
-        if(must(Must::TransformEvent))transformImpl(e.get());
-        if(_parent && _parent->must(Must::ChildTransformEvent) && !eventLocked())
-            _parent->childTransformEvent(this, e.get());
-    }
+    sendTransformEvent(geometry, oldGeometry, _angle, _angle, _scale, _scale, 
+                       isMoved, isResized, false, false);
     update();
     return true;
 }
@@ -946,9 +940,8 @@ bool KRPTSceneItem::setAngleImpl(double angle) noexcept
     ++_data->genTransform;
     ++_data->genAngle;
     _angle = angle;
-    SceneTransformEvent::Ptr e = SceneTransformEvent::get(_geometry, _geometry, 
-        _angle, oldAngle, _scale, _scale, false, false, true, false);
-    if(must(Must::TransformEvent))transformImpl(e.get());
+    sendTransformEvent(_geometry, _geometry, _angle, oldAngle, _scale, _scale, 
+                       false, false, true, false);
     update();
     return true;
 }
@@ -965,9 +958,8 @@ bool KRPTSceneItem::setScaleImpl(double scale) noexcept
     ++_data->genTransform;
     ++_data->genScale;
     _scale = scale;
-    SceneTransformEvent::Ptr e = SceneTransformEvent::get(_geometry, _geometry, 
-    _angle, _angle, _scale, oldScale, false, false, false, true);
-    if(must(Must::TransformEvent))transformImpl(e.get());
+    sendTransformEvent(_geometry, _geometry, _angle, _angle, _scale, oldScale, 
+                       false, false, false, true);
     update();
     return true;
 }
@@ -991,22 +983,50 @@ void KRPTSceneItem::outlineImpl() noexcept
 
 void KRPTSceneItem::mousePressImpl(SceneMouseEvent *e) noexcept
 {
-    if(!eventLocked())mousePressEvent(e);
+    if(!eventLocked())
+    {
+        mousePressEvent(e);
+        if(_parent && must(Must::MousePressToParentEvent))
+            _parent->childMousePressEvent(this, e);
+        if(_scene && must(Must::MousePressToSceneEvent))
+            _scene->childMousePressEvent(this, e);
+    }
 }
 
 void KRPTSceneItem::mouseReleaseImpl(SceneMouseEvent *e) noexcept
 {
-    if(!eventLocked())mouseReleaseEvent(e);
+    if(!eventLocked())
+    {
+        mouseReleaseEvent(e);
+        if(_parent && must(Must::MouseReleaseToParentEvent))
+            _parent->childMouseReleaseEvent(this, e);
+        if(_scene && must(Must::MouseReleaseToSceneEvent))
+            _scene->childMouseReleaseEvent(this, e);
+    }
 }
 
 void KRPTSceneItem::mouseMoveImpl(SceneMouseEvent *e) noexcept
 {
-    if(!eventLocked())mouseMoveEvent(e);
+    if(!eventLocked())
+    {
+        mouseMoveEvent(e);
+        if(_parent && must(Must::MouseMoveToParentEvent))
+            _parent->childMouseMoveEvent(this, e);
+        if(_scene && must(Must::MouseMoveToSceneEvent))
+            _scene->childMouseMoveEvent(this, e);
+    }
 }
 
 void KRPTSceneItem::whellImpl(SceneMouseEvent *e) noexcept
 {
-    if(!eventLocked())whellEvent(e);
+    if(!eventLocked())
+    {
+        whellEvent(e);
+        if(_parent && must(Must::WhellToParentEvent))
+            _parent->childWhellEvent(this, e);
+        if(_scene && must(Must::WhellToSceneEvent))
+            _scene->childWhellEvent(this, e);
+    }
 }
 
 void KRPTSceneItem::animImpl(uint32_t id, const std::vector<double> &value, 
@@ -1384,5 +1404,22 @@ void KRPTSceneItem::anchorPoint(TransformAnchor anchor, const QSizeF &size, doub
         case TransformAnchor::RightCenter  : dx =  w; dy = h2; break;
         case TransformAnchor::TopCenter    : dx = w2; dy =  0; break;
         case TransformAnchor::BottomCenter : dx = w2; dy =  h; break;
+    }
+}
+
+void KRPTSceneItem::sendTransformEvent(const QRectF &geometry, const QRectF &oldGeometry, 
+        double angle, double oldAngle, double scale, double oldScale,
+        bool moved, bool resized, bool rotated, bool scaled) noexcept
+{
+    if(must(Must::TransformEvent) || must(Must::TransformToSceneEvent) ||
+      (must(Must::TransformToParentEvent) && _parent && _parent->must(Must::ChildTransformEvent)))
+    {
+        SceneTransformEvent::Ptr e = SceneTransformEvent::get(geometry, oldGeometry, 
+            _angle, _angle, _scale, _scale, moved, resized, rotated, scaled);
+        if(must(Must::TransformEvent))transformImpl(e.get());
+        if(must(Must::TransformToParentEvent) && _parent && _parent->must(Must::ChildTransformEvent) && 
+           !eventLocked())_parent->childTransformEvent(this, e.get());
+        if(must(Must::TransformToSceneEvent) && !eventLocked())
+            _scene->childTransformEvent(this, e.get());
     }
 }

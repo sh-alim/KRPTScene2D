@@ -244,10 +244,6 @@ void KRPTScene::update() noexcept
 //*
 //************************************************************************************************************************
 
-void KRPTScene::transformEvent(SceneTransformEvent *e) noexcept
-{
-}
-
 void KRPTScene::mousePressEvent(SceneMouseEvent *e) noexcept
 {
     QPointF mousePos = e->pos();
@@ -257,29 +253,16 @@ void KRPTScene::mousePressEvent(SceneMouseEvent *e) noexcept
     });
     if(item)
     {
-    #if 0
-        item->mousePressImpl(SceneMouseEvent::get(item->mapFromScene(mousePos), e->btns(), mousePos).get());
-        _mousePressedItem = item;
-
-//        QPointF p = item->mapFromScene(mousePos);
-//        item->mousePressImpl(SceneMouseEvent::get(p, e->btns()).get());
-//        _mousePressedItemPos = item->pos() - item->mapToParent(p);
-
-    #else
         QPointF p = item->mapFromScene(mousePos);
         item->mousePressImpl(SceneMouseEvent::get(item->mapFromScene(mousePos), e->btns(), 
             mousePos, e->keyModifers(), e->delta()).get());
         _mousePressedItem = item;
         _mousePressedItemPos = item->pos() - item->mapToParent(p);
-
-//        qDebug() << p;
-    #endif
     }else
     {
         _mousePressedItem = nullptr;
     }
     _lastMousePos = mousePos;
-    update();
 }
 
 void KRPTScene::mouseReleaseEvent(SceneMouseEvent *e) noexcept
@@ -295,7 +278,6 @@ void KRPTScene::mouseReleaseEvent(SceneMouseEvent *e) noexcept
         }
 //        _mousePressedItem = nullptr;
     }
-//    update();
 }
 
 void KRPTScene::mouseMoveEvent(SceneMouseEvent *e) noexcept
@@ -318,7 +300,6 @@ void KRPTScene::mouseMoveEvent(SceneMouseEvent *e) noexcept
             }
         }
     }
-//    update();
 }
 
 void KRPTScene::whellEvent(SceneMouseEvent *e) noexcept
@@ -378,7 +359,6 @@ void KRPTScene::whellEvent(SceneMouseEvent *e) noexcept
     #endif
     }
 #endif
-    update();
 }
 
 void KRPTScene::deviceScaleEvent(double scale) noexcept

@@ -62,11 +62,11 @@ public:
           _scale(scale), _oldScale(oldScale), _moved(moved), _resized(resized), 
           _rotated(rotated), _scaled(scaled){}
     static SceneTransformEvent::Ptr get(const QRectF &geometry, const QRectF &oldGeometry, 
-        double angle, double _oldAngle, double _scale, double _oldScale,
+        double angle, double oldAngle, double scale, double oldScale,
         bool moved, bool resized, bool rotated, bool scaled)
     {
-        return std::make_unique<SceneTransformEvent>(geometry, oldGeometry, angle, _oldAngle, 
-            _scale, _oldScale, moved, resized, rotated, scaled);
+        return std::make_unique<SceneTransformEvent>(geometry, oldGeometry, angle, oldAngle, 
+            scale, oldScale, moved, resized, rotated, scaled);
     }
     QRectF geometry   () const noexcept {return _geometry   ;}
     QRectF oldGeometry() const noexcept {return _oldGeometry;}
