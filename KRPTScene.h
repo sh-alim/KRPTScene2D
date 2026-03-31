@@ -110,11 +110,22 @@ protected:
                                               uint32_t level = 0)                     noexcept;
     void               paintImpl             (QPainter &painter, KRPTSceneItem *item, 
                                               uint32_t stage = 0)                     noexcept;
+
+    void               mouseOverCheck()                                       noexcept;
+
+//    void mouseOverCheck(KRPTSceneItem::Ptr oldItem, KRPTSceneItem::Ptr newItem, KRPTSceneItem::State state) noexcept;
+    void mouseOverUpdate(KRPTSceneItem::Ptr item) noexcept;
+
+
 private:
     KRPTSceneView      * _view               ;
     KRPTSceneItem::Ptr   _item               ;
     double               _deviceScale        ;
+    QPointF              _mousePressPos      ;
     KRPTSceneItem::Ptr   _mousePressedItem   ;
     QPointF              _mousePressedItemPos;
-    QPointF              _lastMousePos       ;
+
+    KRPTSceneItem::Ptr   _mouseOverItem = nullptr;
+    QPointF              _mousePos      ;
+
 };

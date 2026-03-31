@@ -21,8 +21,9 @@ public:
     static_assert(std::is_enum_v<T>, "T must be enum");
     using TFlag = std::underlying_type_t<T>;
 
-    KRPTFlag() noexcept = default;
-    KRPTFlag(T f) noexcept : _flag(static_cast<TFlag>(f)) {}
+    KRPTFlag()            noexcept = default;
+    KRPTFlag(T other)     noexcept : _flag(static_cast<TFlag>(other)) {}
+    KRPTFlag(TFlag other) noexcept : _flag(other)                     {}
 
     TFlag flag() const noexcept {return _flag;}
 
@@ -37,6 +38,10 @@ public:
         if constexpr (sizeof...(args) == 0)return false;
         TFlag mask = combine(args...);
         return (_flag & mask) == mask;
+    }
+    KRPTFlag diff(KRPTFlag other) const noexcept
+    {
+        return KRPTFlag(static_cast<TFlag>(_flag ^ other._flag));
     }
     template<typename... Args> bool operator()(Args... args) const noexcept 
     {

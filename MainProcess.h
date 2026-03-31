@@ -9,15 +9,15 @@
 //########################################################################################################################
 
 #include <QtWidgets/QMainWindow>
-//#include "KRPTSceneWidget.h"
+#include <QSlider>
+#include <QPushButton>
+#include <QButtonGroup>
 
 #include "KRPTScene.h"
 #include "KRPTSceneView.h"
 #include "KRPTSceneRectItem.h"
 
-#include <QSlider>
-#include <QPushButton>
-#include <QButtonGroup>
+#include "KRPTSceneBtnItem.h"
 
 //########################################################################################################################
 //#
@@ -43,5 +43,10 @@ private:
     std::vector<QSlider*> _sliders;
 
     std::vector<QPushButton*> _mustBtns;
+
+    KRPTSceneRectItem::Ptr _root;
+    KRPTSceneRectItem::Ptr _i0;
+    QPointF              _mousePos      ;
+
 
 };

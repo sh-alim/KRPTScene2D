@@ -53,7 +53,6 @@ void KRPTSceneRoot::paintForeground(QPainter &painter, uint32_t stage) noexcept
 KRPTScene::KRPTScene(KRPTSceneView *view) noexcept
     : _view(view) , _item(new KRPTSceneRoot(this, nullptr)), _deviceScale(1), _mousePressedItem(nullptr)
 {
-//    view->setScene(this);
 }
 
 KRPTScene::~KRPTScene() noexcept
@@ -256,13 +255,38 @@ void KRPTScene::mousePressEvent(SceneMouseEvent *e) noexcept
         QPointF p = item->mapFromScene(mousePos);
         item->mousePressImpl(SceneMouseEvent::get(item->mapFromScene(mousePos), e->btns(), 
             mousePos, e->keyModifers(), e->delta()).get());
+
+    #if 1
+        if(_mousePressedItem && _mousePressedItem != item)
+        {
+            KRPTSceneItem::FState oldState = _mousePressedItem->_state;
+            _mousePressedItem->_state -= KRPTSceneItem::State::MousePressed;
+            _mousePressedItem->stateChangeImpl(_mousePressedItem->_state, oldState);
+        }
         _mousePressedItem = item;
+        if(_mousePressedItem)
+        {
+            KRPTSceneItem::FState oldState = _mousePressedItem->_state;
+            _mousePressedItem->_state += KRPTSceneItem::State::MousePressed;
+            _mousePressedItem->stateChangeImpl(_mousePressedItem->_state, oldState);
+        }
         _mousePressedItemPos = item->pos() - item->mapToParent(p);
+    #endif
+    #if 1
+//        qDebug() << p;
+    #endif
+
     }else
     {
+        if(_mousePressedItem)
+        {
+            KRPTSceneItem::FState oldState = _mousePressedItem->_state;
+            _mouseOverItem->_state += KRPTSceneItem::State::MousePressed;
+            _mouseOverItem->stateChangeImpl(_mousePressedItem->_state, oldState);
+        }
         _mousePressedItem = nullptr;
     }
-    _lastMousePos = mousePos;
+    _mousePressPos = mousePos;
 }
 
 void KRPTScene::mouseReleaseEvent(SceneMouseEvent *e) noexcept
@@ -270,33 +294,121 @@ void KRPTScene::mouseReleaseEvent(SceneMouseEvent *e) noexcept
     QPointF mousePos = e->pos();
     if(_mousePressedItem)
     {
-        if(_mousePressedItem->must(KRPTSceneItem::Must::MouseReleaseEvent))
+        _mousePressedItem->mouseReleaseImpl(SceneMouseEvent::get(_mousePressedItem->mapFromScene(mousePos), 
+            e->btns(), mousePos, e->keyModifers(), e->delta()).get());
+        if(_mousePressedItem)
         {
-            _mousePressedItem->mouseReleaseImpl(
-                SceneMouseEvent::get(_mousePressedItem->mapFromScene(mousePos), e->btns(), 
-                    mousePos, e->keyModifers(), e->delta()).get());
+            KRPTSceneItem::FState oldState = _mousePressedItem->_state;
+            _mouseOverItem->_state -= KRPTSceneItem::State::MousePressed;
+            _mouseOverItem->stateChangeImpl(_mousePressedItem->_state, oldState);
         }
-//        _mousePressedItem = nullptr;
+        _mousePressedItem = nullptr;
     }
 }
 
+
+//void KRPTScene::mouseOverCheck(KRPTSceneItem::Ptr oldItem, KRPTSceneItem::Ptr newItem, KRPTSceneItem::State state) noexcept
+void KRPTScene::mouseOverUpdate(KRPTSceneItem::Ptr item) noexcept
+{
+    if(item == _mouseOverItem)return;
+    if(_mouseOverItem)
+    {
+        KRPTSceneItem::FState oldState = _mouseOverItem->_state;
+        _mouseOverItem->_state -= KRPTSceneItem::State::MouseOver;
+        _mouseOverItem->stateChangeImpl(_mouseOverItem->_state, oldState);
+
+        KRPTSceneItem::Ptr parent = _mouseOverItem->_parent;
+        while(parent && parent != _item)
+        {
+            KRPTSceneItem::FState oldState = parent->_state;
+            parent->_state -= KRPTSceneItem::State::ChildMouseOver;
+            parent->stateChangeImpl(parent->_state, oldState);
+            parent = parent->_parent;
+        }
+
+    }
+    _mouseOverItem = item;
+    if(_mouseOverItem)
+    {
+        KRPTSceneItem::FState oldState = _mouseOverItem->_state;
+        _mouseOverItem->_state += KRPTSceneItem::State::MouseOver;
+        _mouseOverItem->stateChangeImpl(_mouseOverItem->_state, oldState);
+
+
+        KRPTSceneItem::Ptr parent = _mouseOverItem->_parent;
+        while(parent && parent != _item)
+        {
+            if(!parent->_state[KRPTSceneItem::State::ChildMouseOver])
+            {
+                KRPTSceneItem::FState oldState = parent->_state;
+                parent->_state += KRPTSceneItem::State::ChildMouseOver;
+                parent->stateChangeImpl(parent->_state, oldState);
+            }
+            parent = parent->_parent;
+        }
+    }
+
+    if(_mouseOverItem)
+    {
+        QPointF p = _mouseOverItem->mapFromScene(_mousePos);
+//        qDebug() << "====" << p;
+    }
+
+}
+
+void KRPTScene::mouseOverCheck() noexcept
+{
+    if(!_mouseOverItem)return;
+    auto item = itemFromPos(_mousePos, [](KRPTSceneItem *item)
+    {
+        return item->must(KRPTSceneItem::Must::MousePressEvent);
+    });
+    if(item != _mouseOverItem)
+    {
+        mouseOverUpdate(item);
+    }
+}
+
+
 void KRPTScene::mouseMoveEvent(SceneMouseEvent *e) noexcept
 {
-    QPointF mousePos = e->pos();
+    _mousePos = e->pos();
+    if(e->btns() == SceneMouseEvent::Btn::No)
+    {
+        auto item = itemFromPos(_mousePos, [](KRPTSceneItem *item)
+        {
+            return item->must(KRPTSceneItem::Must::MousePressEvent);
+        });
+    #if 0
+        if(_mouseOverItem && _mouseOverItem != item)
+        {
+            KRPTSceneItem::FState oldState = _mouseOverItem->_state;
+            _mouseOverItem->_state -= KRPTSceneItem::State::MouseOver;
+            _mouseOverItem->stateChangeImpl(_mouseOverItem->_state, oldState);
+        }
+        _mouseOverItem = item;
+        if(_mouseOverItem)
+        {
+            KRPTSceneItem::FState oldState = _mouseOverItem->_state;
+            _mouseOverItem->_state += KRPTSceneItem::State::MouseOver;
+            _mouseOverItem->stateChangeImpl(_mouseOverItem->_state, oldState);
+        }
+    #else
+//        mouseOverCheck(_mouseOverItem, item, KRPTSceneItem::State::MouseOver);
+        mouseOverUpdate(item);
+    #endif
+        return;
+    }
     if(_mousePressedItem)
     {
-        if(_mousePressedItem->must(KRPTSceneItem::Must::MouseMoveEvent))
-        {
-            _mousePressedItem->mouseMoveImpl(
-                SceneMouseEvent::get(_mousePressedItem->mapFromScene(mousePos), e->btns(), 
-                    mousePos, e->keyModifers(), e->delta()).get());
-        }
+        _mousePressedItem->mouseMoveImpl(SceneMouseEvent::get(_mousePressedItem->mapFromScene(_mousePos), 
+            e->btns(), _mousePos, e->keyModifers(), e->delta()).get());
         if(e->btns()[SceneMouseEvent::Btn::Left])
         {
             if(_mousePressedItem->must(KRPTSceneItem::Must::MouseMoveble))
             {
                 _mousePressedItem->setPos(_mousePressedItem->mapToParent(
-                    _mousePressedItem->mapFromScene(mousePos)) + _mousePressedItemPos);
+                    _mousePressedItem->mapFromScene(_mousePos)) + _mousePressedItemPos);
             }
         }
     }
@@ -305,38 +417,28 @@ void KRPTScene::mouseMoveEvent(SceneMouseEvent *e) noexcept
 void KRPTScene::whellEvent(SceneMouseEvent *e) noexcept
 {
     QPointF mousePos = e->pos();
-#if 0
-    if(_mousePressedItem)
-    {
-        if(_mousePressedItem->must(KRPTSceneItem::Must::WhellEvent))
-        {
-            _mousePressedItem->whellImpl(
-                SceneMouseEvent::get(_mousePressedItem->mapFromScene(mousePos), e->btns(), e->delta()).get());
-        }
-    }
-#else
-    auto item = itemFromPos(mousePos, [](KRPTSceneItem *item)
-    {
-        return item->must(KRPTSceneItem::Must::WhellEvent);
-    });
+    KRPTSceneItem *item = _mouseOverItem;
     if(item)
     {
         item->whellImpl(SceneMouseEvent::get(item->mapFromScene(mousePos), e->btns(), 
             mousePos, e->keyModifers(), e->delta()).get());
+
     #if 0
         if(e->keyModifers()[SceneMouseEvent::KeyModifer::Ctrl])
         {
 //            QPointF p = mousePos;
 //            KRPTSceneItem::TransSrc trn = KRPTSceneItem::TransSrc::Scene;
-
 //            QPointF p = item->mapFromScene(mousePos);
 //            KRPTSceneItem::TransSrc trn = KRPTSceneItem::TransSrc::Self;
-
             QPointF p = item->parent()->mapFromScene(mousePos);
             KRPTSceneItem::TransSrc trn = KRPTSceneItem::TransSrc::Parent;
-
-            item->setAngle((e->delta().y() > 0 ? item->angle() + 5 : item->angle() -5), mousePos, KRPTSceneItem::TransSrc::Scene);
+//            item->setAngle((e->delta().y() > 0 ? item->angle() + 5 : item->angle() -5), mousePos, KRPTSceneItem::TransSrc::Scene);
 //            item->rotate((e->delta().y() > 0 ? 5 : -5));
+
+            if(item->_parent && item->_parent != _item)
+//                item->_parent->setScale((e->delta().x() > 0 ? item->_parent->scale() * 1.1 : item->_parent->scale() * 0.9), p, trn);
+                item->_parent->setAngle((e->delta().y() > 0 ? item->_parent->angle() + 5 : item->_parent->angle() -5));
+
         }else
         if(e->keyModifers()[SceneMouseEvent::KeyModifer::Alt])
         {
@@ -348,9 +450,11 @@ void KRPTScene::whellEvent(SceneMouseEvent *e) noexcept
 
             QPointF p = item->parent()->mapFromScene(mousePos);
             KRPTSceneItem::TransSrc trn = KRPTSceneItem::TransSrc::Parent;
+//            item->setScale((e->delta().x() > 0 ? item->scale() * 1.1 : item->scale() * 0.9), p, trn);
 
-
-            item->setScale((e->delta().x() > 0 ? item->scale() * 1.1 : item->scale() * 0.9), p, trn);
+            if(item->_parent && item->_parent != _item)
+//                item->_parent->setScale((e->delta().x() > 0 ? item->_parent->scale() * 1.1 : item->_parent->scale() * 0.9), p, trn);
+                item->_parent->setScale((e->delta().x() > 0 ? item->_parent->scale() * 1.1 : item->_parent->scale() * 0.9));
 
         }else
         {
@@ -358,7 +462,6 @@ void KRPTScene::whellEvent(SceneMouseEvent *e) noexcept
         }
     #endif
     }
-#endif
 }
 
 void KRPTScene::deviceScaleEvent(double scale) noexcept
@@ -454,7 +557,7 @@ void KRPTScene::paintImpl(QPainter &painter, KRPTSceneItem *item, uint32_t stage
     }
     if(!childs.empty() && item->needChildPaint())
     {
-        KRPTSceneItem::ItemsList ch; 
+        KRPTSceneItem::List ch; 
         uint32_t st = 0;
         for(auto &child : childs)
         {
@@ -464,7 +567,7 @@ void KRPTScene::paintImpl(QPainter &painter, KRPTSceneItem *item, uint32_t stage
         }
         while(!ch.empty())
         {
-            KRPTSceneItem::ItemsList tch;
+            KRPTSceneItem::List tch;
             ++st;
             for(auto &child : ch)
             {

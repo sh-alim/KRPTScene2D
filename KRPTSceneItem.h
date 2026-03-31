@@ -63,6 +63,11 @@ protected:
         VisibledInView          = 0x01,
         NeedPaint               = 0x02,
         NeedChildPaint          = 0x04,
+
+        MousePressed            = 0x08,
+        MouseOver               = 0x10,
+        ChildMouseOver          = 0x20,
+
         All                     = 0xFF
     };
     enum AnimDst : uint8_t
@@ -89,7 +94,7 @@ public:
         MouseMoveble              = 0x00000200,
         NoMouseEventTranslate     = 0x00000400,
         MousePressEvent           = 0x00000800,
-        MouseReleaseEvent         = 0x00001000,
+//        MouseReleaseEvent         = 0x00001000,
         MouseMoveEvent            = 0x00002000,
         WhellEvent                = 0x00004000,
         TransformEvent            = 0x00008000,
@@ -127,10 +132,13 @@ public:
         BottomCenter
     };
 public:
-    using Ptr        = KRPTSceneItem*;
-    using ItemsList  = std::list<KRPTSceneItem::Ptr>;
-    using CItemsList = const ItemsList;
-    using IndexMap   = std::unordered_map<KRPTSceneItem*, ItemsList::iterator>;
+    using Ptr    = KRPTSceneItem*;
+    using FDirty = KRPTFlag<Dirty>;
+    using FMust  = KRPTFlag<Must>;
+    using FState = KRPTFlag<State>;
+    using List   = std::list<KRPTSceneItem::Ptr>;
+    using CList  = const List;
+    using Index  = std::unordered_map<KRPTSceneItem*, List::iterator>;
 protected:
     KRPTSceneItem()                     = delete;
     KRPTSceneItem(const KRPTSceneItem&) = delete;
@@ -166,8 +174,8 @@ public:
     KRPTFlag<Must>       must                  ()                                                              const noexcept;
     KRPTScene          * scene                 ()                                                              const noexcept;
     KRPTSceneItem::Ptr   parent                ()                                                              const noexcept;
-    const ItemsList    & childItems            ()                                                              const noexcept;
-    const ItemsList    & visibleChildItems     ()                                                                    noexcept;
+    const List         & childItems            ()                                                              const noexcept;
+    const List         & visibleChildItems     ()                                                                    noexcept;
     bool                 visible               ()                                                              const noexcept;
     const QRectF       & geometry              ()                                                              const noexcept;
     const QRectF       & rect                  ()                                                              const noexcept;
@@ -296,7 +304,7 @@ protected:
     virtual void         sceneRotateEvent      (double angle, double oldAngle)                                       noexcept {};
 protected:
     virtual void         update                ()                                                                    noexcept;
-    virtual CItemsList & filterChildItems      ()                                                                    noexcept;
+    virtual CList      & filterChildItems      ()                                                                    noexcept;
     virtual void         setParentImpl         (KRPTSceneItem::Ptr parent)                                           noexcept;
     virtual void         addChildImpl          (KRPTSceneItem::Ptr item, KRPTSceneItem::Ptr parent)                  noexcept;
     virtual bool         delChildImpl          (KRPTSceneItem::Ptr item, KRPTSceneItem::Ptr parent)                  noexcept;
@@ -306,6 +314,7 @@ protected:
     virtual bool         setOpaqImpl           (double opaq)                                                         noexcept;
     virtual void         transformImpl         (SceneTransformEvent *e)                                              noexcept;
     virtual void         outlineImpl           ()                                                                    noexcept;
+    virtual bool         stateChangeImpl       (const FState &newState, const FState &oldState)                      noexcept;
     virtual void         mousePressImpl        (SceneMouseEvent *e)                                                  noexcept;
     virtual void         mouseReleaseImpl      (SceneMouseEvent *e)                                                  noexcept;
     virtual void         mouseMoveImpl         (SceneMouseEvent *e)                                                  noexcept;
@@ -345,19 +354,19 @@ protected:
 private:
     void                 anchorPoint           (TransformAnchor anchor, const QSizeF &size, 
                                                 double &dx, double &dy)                                        const noexcept;
-    void                 sendTransformEvent   (const QRectF &geometry, const QRectF &oldGeometry, 
-                                               double angle, double oldAngle, double scale, double oldScale,
-                                               bool moved, bool resized, bool rotated, bool scaled)                  noexcept;
+    void                 sendTransformEvent    (const QRectF &geometry, const QRectF &oldGeometry, 
+                                                double angle, double oldAngle, double scale, double oldScale,
+                                                bool moved, bool resized, bool rotated, bool scaled)                 noexcept;
 protected:
     KRPTSceneItemData *_data;
-    KRPTFlag<Dirty>    _dirty            ;
-    KRPTFlag<Must>     _must             ;
-    KRPTFlag<State>    _state            ;
+    FDirty             _dirty            ;
+    FMust              _must             ;
+    FState             _state            ;
     KRPTScene         *_scene            ;
     KRPTSceneItem     *_parent           ;
-    ItemsList          _childItems       ;
-    ItemsList          _visibleChildItems;
-    IndexMap           _index            ;
+    List               _childItems       ;
+    List               _visibleChildItems;
+    Index              _index            ;
     uint32_t           _updateLocked     ;
     uint32_t           _eventLocked      ;
     bool               _visible          ;

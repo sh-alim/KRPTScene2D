@@ -18,7 +18,7 @@ static const std::vector<std::pair<KRPTSceneItem::Must, QString>> must =
     {KRPTSceneItem::Must::NoMouseEventTranslate , "NoMouseEventTranslate" },
     {KRPTSceneItem::Must::NoCheckChildVisibled  , "NoCheckChildVisibled"  },
     {KRPTSceneItem::Must::MousePressEvent       , "MousePressEvent"       },
-    {KRPTSceneItem::Must::MouseReleaseEvent     , "MouseReleaseEvent"     },
+//    {KRPTSceneItem::Must::MouseReleaseEvent     , "MouseReleaseEvent"     },
     {KRPTSceneItem::Must::MouseMoveEvent        , "MouseMoveEvent"        },
     {KRPTSceneItem::Must::WhellEvent            , "WhellEvent"            },
     {KRPTSceneItem::Must::TransformEvent        , "TransformEvent"        },
@@ -50,6 +50,8 @@ MainProcess::MainProcess(QWidget *parent)
     _scene = new KRPTScene(_view);
     _view->setScene(_scene);
 
+//    _view->setHwAccel(false);
+
 
     _scene->setBackgroundColor(QColor(30, 50, 50));
 
@@ -57,7 +59,7 @@ MainProcess::MainProcess(QWidget *parent)
 
     setGeometry(300, 50, 1600, 1000);
 
-    auto _root = _scene->addItem<KRPTSceneRectItem>();
+    _root = _scene->addItem<KRPTSceneRectItem>();
     _root->setGeometry(QRectF(10, 10, 1000, 800));
 
     _root->addMust
@@ -78,11 +80,11 @@ MainProcess::MainProcess(QWidget *parent)
             KRPTSceneItem::Must::WhellEvent
     );
 
-    auto child = _root->addChild<KRPTSceneRectItem>();
-    child->setGeometry(QRectF(50, 50, 150, 150));
-    child->setBackgroundColor(QColor(0, 255, 0));
+    _i0 = _root->addChild<KRPTSceneRectItem>();
+    _i0->setGeometry(QRectF(50, 50, 150, 150));
+    _i0->setBackgroundColor(QColor(0, 255, 0));
 
-    child->addMust
+    _i0->addMust
     (
 //            KRPTSceneItem::Must::NoClipChilds,
             KRPTSceneItem::Must::NoClipPainter,
@@ -115,7 +117,7 @@ MainProcess::MainProcess(QWidget *parent)
 //        child->setPosAnchor(KRPTSceneItem::TransformAnchor::BottomCenter);
 
 
-    child->setTag(1);
+    _i0->setTag(1);
 
     _sliders.resize(6);
     int x = 10, y = 10;
@@ -217,6 +219,8 @@ void MainProcess::resizeEvent(QResizeEvent *value)
 
 void MainProcess::mousePressEvent(QMouseEvent *e)
 {
+    _mousePos = e->position();
+
     _selectedItem = _scene->itemFromPos(e->position(), [](KRPTSceneItem *item)
     {
 //        return item->must(KRPTSceneItem::Must::MousePressEvent);
@@ -225,8 +229,8 @@ void MainProcess::mousePressEvent(QMouseEvent *e)
     if(!_selectedItem)return;
 
     QPointF p = _selectedItem->mapFromScene(e->position());
-    QPointF p1 = _selectedItem->mapToParent(_selectedItem->posAnchorPoint());
-    qDebug() << p1 << _selectedItem->pos();
+//    QPointF p1 = _selectedItem->mapToParent(_selectedItem->posAnchorPoint());
+    qDebug() << "[0]" << p;
 
     if(e->buttons() & Qt::MouseButton::LeftButton)
     {
@@ -274,14 +278,16 @@ void MainProcess::mousePressEvent(QMouseEvent *e)
 
         if(!(e->modifiers() & Qt::Modifier::CTRL))
         {
-        auto child = item->addChild<KRPTSceneRectItem>();
+//        auto child = item->addChild<KRPTSceneRectItem>();
+        auto child = item->addChild<KRPTSceneBtnItem>();
+
         child->setBackgroundColor(QColor(0, 255, 0));
         child->addMust
         (
 //            KRPTSceneItem::Must::NoClipChilds,
             KRPTSceneItem::Must::NoClipPainter,
-            KRPTSceneItem::Must::NoSceneRotate,
-            KRPTSceneItem::Must::NoSceneScale,
+//            KRPTSceneItem::Must::NoSceneRotate,
+//            KRPTSceneItem::Must::NoSceneScale,
 //            KRPTSceneItem::Must::AccuracyClip,
             KRPTSceneItem::Must::Anim,
 //            KRPTSceneItem::Must::AccuracyClip,
@@ -364,6 +370,17 @@ void MainProcess::mouseMoveEvent(QMouseEvent *e)
 
 void MainProcess::wheelEvent(QWheelEvent *e)
 {
+#if 1
+    auto item = _i0;
+
+//    item->setScale((e->angleDelta().y() > 0 )? item->scale() + 0.01 : item->scale() - 0.01);
+    item->setAngle((e->angleDelta().y() > 0 )? item->angle() + 0.5 : item->angle() - 0.5);
+    if(_selectedItem)
+    {
+//    QPointF p = _selectedItem->mapFromScene(e->position());
+//    qDebug() << "[1]" << p;// << e->position() << _mousePos;
+    }
+#endif
 }
 
 //************************************************************************************************************************

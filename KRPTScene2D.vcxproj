@@ -86,7 +86,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <LanguageStandard_C>stdc11</LanguageStandard_C>
-      <OpenMPSupport>true</OpenMPSupport>
+      <OpenMPSupport>false</OpenMPSupport>
       <AdditionalIncludeDirectories>D:\projects\libs\qt\6.8.0\win\include\QtGui\6.8.0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
@@ -123,6 +123,7 @@
     <ClCompile Include="KRPTScene.cpp" />
     <ClCompile Include="KRPTSceneAnim.cpp" />
     <ClCompile Include="KRPTSceneEllipseItem.cpp" />
+    <ClCompile Include="KRPTSceneBtnItem.cpp" />
     <ClCompile Include="KRPTSceneItem.cpp" />
     <ClCompile Include="KRPTSceneRectItem.cpp" />
     <ClCompile Include="KRPTSceneView.cpp" />
@@ -140,6 +141,7 @@
     <ClInclude Include="KRPTSceneAnim.h" />
     <ClInclude Include="KRPTSceneEllipseItem.h" />
     <ClInclude Include="KRPTSceneEvent.h" />
+    <ClInclude Include="KRPTSceneBtnItem.h" />
     <ClInclude Include="KRPTSceneItem.h" />
     <ClInclude Include="KRPTSceneRectItem.h" />
     <ClInclude Include="KRPTSceneView.h" />

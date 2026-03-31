@@ -16,7 +16,9 @@
 class KRPTSceneViewPort : public QOpenGLWidget 
 {
 protected:
-//    void initializeGL() override {}
+#if 0
+    void initializeGL() override {}
+#endif
 };
 
 //########################################################################################################################
@@ -37,7 +39,10 @@ private:
     void wheelEvent       (QWheelEvent  *e) override;
     void paintEvent       (QPaintEvent  *e) override;
 private:
-    KRPTSceneView *_owner;
+    KRPTSceneView *_owner        ;
+    bool           _mouseTracking;
+    bool           _autoFill     ; 
+    bool           _hwAccel      ; 
 };
 
 //************************************************************************************************************************
@@ -45,12 +50,8 @@ private:
 //************************************************************************************************************************
 
 KRPTSceneViewPriv::KRPTSceneViewPriv(QWidget *parent, KRPTSceneView *owner) noexcept
-    : QGraphicsView(parent), _owner(owner)
+    : QGraphicsView(parent), _owner(owner), _mouseTracking(false), _autoFill(true), _hwAccel(false)
 {
-    setAttribute(Qt::WA_NoSystemBackground);
-    setAttribute(Qt::WA_TranslucentBackground);
-    setAutoFillBackground(false);
-    setMouseTracking(false);
     setCacheMode(QGraphicsView::CacheNone);
     setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
 }
@@ -65,13 +66,13 @@ KRPTSceneViewPriv::~KRPTSceneViewPriv() noexcept
 
 void KRPTSceneViewPriv::resizeEvent(QResizeEvent *e)
 {
-    QGraphicsView::resizeEvent(e);
+//    QGraphicsView::resizeEvent(e);
     _owner->resizeEventImpl(e);
 }
 
 void KRPTSceneViewPriv::mousePressEvent(QMouseEvent *e)
 {
-    QGraphicsView::mousePressEvent(e);
+//    QGraphicsView::mousePressEvent(e);
     _owner->mousePressEventImpl(e);
     if(_owner->_translateEvents && parentWidget())
         QCoreApplication::sendEvent(parentWidget(), e);
@@ -79,7 +80,7 @@ void KRPTSceneViewPriv::mousePressEvent(QMouseEvent *e)
 
 void KRPTSceneViewPriv::mouseReleaseEvent(QMouseEvent *e)
 {
-    QGraphicsView::mouseReleaseEvent(e);
+//    QGraphicsView::mouseReleaseEvent(e);
     _owner->mouseReleaseEventImpl(e);
     if(_owner->_translateEvents && parentWidget())
         QCoreApplication::sendEvent(parentWidget(), e);
@@ -87,7 +88,7 @@ void KRPTSceneViewPriv::mouseReleaseEvent(QMouseEvent *e)
 
 void KRPTSceneViewPriv::mouseMoveEvent(QMouseEvent *e)
 {
-    QGraphicsView::mouseMoveEvent(e);
+//    QGraphicsView::mouseMoveEvent(e);
     _owner->mouseMoveEventImpl(e);
     if(_owner->_translateEvents && parentWidget())
         QCoreApplication::sendEvent(parentWidget(), e);
@@ -95,7 +96,7 @@ void KRPTSceneViewPriv::mouseMoveEvent(QMouseEvent *e)
 
 void KRPTSceneViewPriv::wheelEvent(QWheelEvent *e)
 {
-    QGraphicsView::wheelEvent(e);
+//    QGraphicsView::wheelEvent(e);
     _owner->wheelEventImpl(e);
     if(_owner->_translateEvents && parentWidget())
         QCoreApplication::sendEvent(parentWidget(), e);
@@ -112,17 +113,11 @@ void KRPTSceneViewPriv::paintEvent(QPaintEvent *e)
 //########################################################################################################################
 
 KRPTSceneView::KRPTSceneView(QWidget *parent, KRPTScene *scene) noexcept
-    : QObject(parent), _scene(scene), _translateEvents(false)
+    : QObject(parent), _scene(scene), _p(new KRPTSceneViewPriv(parent, this)), _translateEvents(false)
 {
-    _p = new KRPTSceneViewPriv(parent, this);
-#if 1
-    QSurfaceFormat fmt;
-    fmt.setSamples     (8);
-    fmt.setSwapInterval(0);
-    auto w = new KRPTSceneViewPort();
-    w->setFormat(fmt);
-    _p->setViewport(w);
-#endif
+    setHwAccel      (true);
+    setAutoFill     (false);
+    setMouseTracking(true);
 }
 
 KRPTSceneView::~KRPTSceneView() noexcept
@@ -163,6 +158,46 @@ void KRPTSceneView::setScene(KRPTScene *scene) noexcept
     _scene = scene;
     double deviceScale = QApplication::primaryScreen()->devicePixelRatio();
     _scene->setDeviceScale(deviceScale);
+}
+
+void KRPTSceneView::setAutoFill(bool autoFill) noexcept
+{
+    if(!_p->viewport() || _p->_autoFill == autoFill)return;
+    _p->_autoFill = autoFill;
+    _p->viewport()->setAttribute(Qt::WA_NoSystemBackground   , !autoFill);
+    _p->viewport()->setAttribute(Qt::WA_TranslucentBackground, !autoFill);
+    if(_p->_hwAccel)
+        _p->viewport()->setAutoFillBackground(autoFill);
+}
+
+void KRPTSceneView::setMouseTracking(bool tracking) noexcept
+{
+    if(!_p->viewport() || _p->_mouseTracking == tracking)return;
+    _p->_mouseTracking = tracking;
+    _p->viewport()->setMouseTracking(tracking);
+}
+
+void KRPTSceneView::setHwAccel(bool accel, uint8_t amples) noexcept
+{
+    if(_p->_hwAccel == accel)return;
+    _p->_hwAccel = accel;
+    QWidget *vieport = nullptr;
+    if(!accel)vieport = new QWidget(); else
+    {
+        QSurfaceFormat fmt;
+        fmt.setSamples(amples);
+        fmt.setSwapInterval(0);
+        auto w = new KRPTSceneViewPort();
+        w->setFormat(fmt);
+        vieport = w;
+    }
+    _p->setViewport(vieport);
+    bool mouseTracking =  _p->_mouseTracking;
+    bool autoFill      =  _p->_autoFill     ; 
+    _p->_mouseTracking = !_p->_mouseTracking;
+    _p->_autoFill      = !_p->_autoFill     ; 
+    setAutoFill     (autoFill);
+    setMouseTracking(mouseTracking);
 }
 
 void KRPTSceneView::setTranslateEvents(bool translate) noexcept

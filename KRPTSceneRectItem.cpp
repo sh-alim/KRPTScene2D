@@ -18,10 +18,6 @@ KRPTSceneRectItem::~KRPTSceneRectItem() noexcept
 {
 }
 
-void KRPTSceneRectItem::setColor() noexcept
-{
-}
-
 //************************************************************************************************************************
 //*
 //************************************************************************************************************************
@@ -43,7 +39,6 @@ void KRPTSceneRectItem::paintForeground(QPainter &painter, uint32_t stage) noexc
     pen.setCosmetic(true);
     painter.setPen(pen);
     painter.drawRect(_rect);
-
 #if 0
     painter.save();
     if(_parent)
@@ -55,8 +50,4 @@ void KRPTSceneRectItem::paintForeground(QPainter &painter, uint32_t stage) noexc
     }
     painter.restore();
 #endif
-
-//    QPolygonF p = mapToParent(bBox()); 
-//    painter.drawPolygon(bBox());
-//    painter.drawPath(outline());
 }

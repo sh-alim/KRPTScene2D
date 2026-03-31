@@ -34,6 +34,9 @@ public:
     void        setGeometry           (const QRect &geometry)                noexcept;
     void        setGeometry           (int ax, int ay, int aw, int ah)       noexcept;
     void        setScene              (KRPTScene *scene)                     noexcept;
+    void        setAutoFill           (bool autoFill)                        noexcept;
+    void        setMouseTracking      (bool tracking) noexcept;
+    void        setHwAccel            (bool accel, uint8_t amples = 8)       noexcept;
     void        setTranslateEvents    (bool translate)                       noexcept;
 public:
     virtual void update               ()                                     noexcept;
@@ -57,5 +60,5 @@ private:
 private:
     KRPTSceneViewPriv *_p              ;
     KRPTScene         *_scene          ;
-    bool               _translateEvents; 
+    bool               _translateEvents;
 };
