@@ -24,7 +24,7 @@ private:
 KRPTSceneRoot::KRPTSceneRoot(KRPTScene *scene, KRPTSceneItem *parent) noexcept
     : KRPTSceneItem(scene, parent)
 {
-    addMust(KRPTSceneItem::Must::NoClipPainter);
+    upMust(KRPTSceneItem::Must::NoClipPainter);
 }
 
 void KRPTSceneRoot::paintBackground(QPainter &painter, uint32_t stage) noexcept

@@ -64,7 +64,7 @@ MainProcess::MainProcess(QWidget *parent)
 
     _root->setTag(++_tag);
 
-    _root->addMust
+    _root->upMust
     (
         KRPTSceneItem::Must::NoClipPainter,
 //            KRPTSceneItem::Must::NoClipChilds,
@@ -86,7 +86,7 @@ MainProcess::MainProcess(QWidget *parent)
     _i0->setGeometry(QRectF(50, 50, 150, 150));
     _i0->setBackgroundColor(QColor(0, 255, 0));
 
-    _i0->addMust
+    _i0->upMust
     (
 //            KRPTSceneItem::Must::NoClipChilds,
             KRPTSceneItem::Must::NoClipPainter,
@@ -174,6 +174,8 @@ MainProcess::MainProcess(QWidget *parent)
             if(!_selectedItem)return;
             if(checked)_selectedItem->upMust(must[i].first);
             else _selectedItem->downMust(must[i].first);
+
+            _scene->update();
         });
     }
 
@@ -223,12 +225,18 @@ void MainProcess::mousePressEvent(QMouseEvent *e)
 {
     _mousePos = e->position();
 
+    if(_selectedItem)
+        _selectedItem->setBorderColor(QColor(255, 255, 255));
+
     _selectedItem = _scene->itemFromPos(e->position(), [](KRPTSceneItem *item)
     {
 //        return item->must(KRPTSceneItem::Must::MousePressEvent);
         return true;
     });
     if(!_selectedItem)return;
+
+    _selectedItem->setBorderColor(QColor(0, 255, 0));
+
 
     QPointF p = _selectedItem->mapFromScene(e->position());
 //    QPointF p1 = _selectedItem->mapToParent(_selectedItem->posAnchorPoint());
@@ -284,7 +292,8 @@ void MainProcess::mousePressEvent(QMouseEvent *e)
         auto child = item->addChild<KRPTSceneBtnItem>();
 
         child->setBackgroundColor(QColor(0, 255, 0));
-        child->addMust
+
+        child->upMust
         (
 //            KRPTSceneItem::Must::NoClipChilds,
             KRPTSceneItem::Must::NoClipPainter,
@@ -324,11 +333,11 @@ void MainProcess::mousePressEvent(QMouseEvent *e)
 
         int x = 0;
         int y = 0;
-        for(int i = 0; i < 500000; ++i)
+        for(int i = 0; i < 100000; ++i)
         {
             auto child = item->addChild<KRPTSceneRectItem>();
             child->setBackgroundColor(QColor(0, 255, 0));
-            child->addMust
+            child->upMust
             (
 //            KRPTSceneItem::Must::NoClipChilds,
                 KRPTSceneItem::Must::NoClipPainter,

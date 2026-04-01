@@ -155,17 +155,17 @@ public:
     {
         return _must.any(std::forward<Args>(args)...);
     }
-    template<typename ... Args> inline void addMust(Args&& ... args)                                                 noexcept
-    {
-        _must.up(std::forward<Args>(args)...);
-    }
     template<typename ... Args> inline void upMust(Args&& ... args)                                                  noexcept
     {
+        FMust old = _must;
         _must.up(std::forward<Args>(args)...);
+        if(_must != old)mustChangeImpl(_must, old);
     }
     template<typename ... Args> inline void downMust(Args&& ... args)                                                noexcept
     {
+        FMust old = _must;
         _must.down(std::forward<Args>(args)...);
+        if(_must != old)mustChangeImpl(_must, old);
     }
 public:
     KRPTFlag<Must>       must                  ()                                                              const noexcept;
@@ -305,6 +305,7 @@ protected:
 protected:
     virtual void         update                ()                                                                    noexcept;
     virtual CList      & filterChildItems      ()                                                                    noexcept;
+    virtual void         mustChangeImpl       (const FMust &cur, const FMust &old)                                   noexcept;
     virtual void         setParentImpl         (KRPTSceneItem::Ptr parent)                                           noexcept;
     virtual void         addChildImpl          (KRPTSceneItem::Ptr item, KRPTSceneItem::Ptr parent)                  noexcept;
     virtual bool         delChildImpl          (KRPTSceneItem::Ptr item, KRPTSceneItem::Ptr parent)                  noexcept;
@@ -314,7 +315,7 @@ protected:
     virtual bool         setOpaqImpl           (double opaq)                                                         noexcept;
     virtual void         transformImpl         (SceneTransformEvent *e)                                              noexcept;
     virtual void         outlineImpl           ()                                                                    noexcept;
-    virtual bool         stateChangeImpl       (const FState &newState, const FState &oldState)                      noexcept;
+    virtual bool         stateChangeImpl       (const FState &cur, const FState &old)                                noexcept;
     virtual void         mousePressImpl        (SceneMouseEvent *e)                                                  noexcept;
     virtual void         mouseReleaseImpl      (SceneMouseEvent *e)                                                  noexcept;
     virtual void         mouseMoveImpl         (SceneMouseEvent *e)                                                  noexcept;

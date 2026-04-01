@@ -12,10 +12,10 @@
 KRPTSceneBtnItem::KRPTSceneBtnItem(KRPTScene *scene, KRPTSceneItem *parent) noexcept
     : KRPTSceneItem(scene, parent)
 {
-    addMust(
+    upMust(
         KRPTSceneItem::Must::NoClipChilds,
         KRPTSceneItem::Must::NoClipPainter,
-        KRPTSceneItem::Must::NoCheckChildVisibled,
+//        KRPTSceneItem::Must::NoCheckChildVisibled,
         KRPTSceneItem::Must::Anim,
 
 //            KRPTSceneItem::Must::AccuracyCheckContains,

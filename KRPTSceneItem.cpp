@@ -66,7 +66,7 @@ public:
     using ParentIndex = std::unordered_map<KRPTSceneItem::Ptr, uint32_t>;
 public:
     KRPTSceneItemData(KRPTSceneItem *owner)
-        : owner(owner), genTransform(0), genScale(0), genAngle(0), sceneScale(1), sceneAngle(0) {}
+        : owner(owner), genTransform(0), genScale(0), genAngle(0), genMust(0), sceneScale(1), sceneAngle(0) {}
    ~KRPTSceneItemData() noexcept
    {
        for(auto &anim : anims)
@@ -80,8 +80,9 @@ public:
     struct Cache
     {
         Cache(KRPTSceneItem *item, KRPTSceneItem *parent) 
-            : item(item), parent(parent), scale(1), angle(0), genTransform(0), genParentTransform(0), 
-              genVisibleChildItems(0), genScale(0), genAngle(0), visible(false), dirty(true), visibleDirty(false){}
+            : item(item), parent(parent), scale(1), angle(0), genTransform(0), genParentTransform(0),
+              genParentMust(0), genVisibleChildItems(0), genScale(0), genAngle(0), visible(false), 
+              dirty(true), visibleDirty(false){}
         KRPTSceneItem          *item                ;
         KRPTSceneItem          *parent              ;
         QTransform              transform           ;
@@ -89,6 +90,7 @@ public:
         double                  angle               ;
         uint32_t                genTransform        ;
         uint32_t                genParentTransform  ;
+        uint32_t                genParentMust       ;
         uint32_t                genVisibleChildItems;
         uint32_t                genScale            ;
         uint32_t                genAngle            ;  
@@ -193,6 +195,7 @@ private:
     uint32_t                  genTransform;
     uint32_t                  genScale    ;
     uint32_t                  genAngle    ;
+    uint32_t                  genMust     ;
     double                    sceneScale  ;
     double                    sceneAngle  ;
     Anim::Map                 anims       ;
@@ -884,6 +887,17 @@ const KRPTSceneItem::List& KRPTSceneItem::filterChildItems() noexcept
     return _childItems;
 }
 
+void KRPTSceneItem::mustChangeImpl(const FMust &cur, const FMust &old) noexcept
+{
+    FMust diff = cur.diff(old);
+    if(diff.any(KRPTSceneItem::Must::NoClipChilds))
+    {
+        _dirty += Dirty::VisibleChildItems;
+        ++_data->genTransform;
+        ++_data->genMust;
+    }
+}
+
 void KRPTSceneItem::setParentImpl(KRPTSceneItem::Ptr parent) noexcept
 {
     if(!parent || parent == _parent)return;
@@ -1011,13 +1025,11 @@ void KRPTSceneItem::outlineImpl() noexcept
     _outline.addRect(_rect);
 }
 
-bool KRPTSceneItem::stateChangeImpl(const FState &newState, const FState &oldState) noexcept
+bool KRPTSceneItem::stateChangeImpl(const FState &cur, const FState &old) noexcept
 {
-    if(newState == oldState)return false;
-    FState diff = newState.diff(oldState);
-
+    if(cur == old)return false;
+    FState diff = cur.diff(old);
 #if 0
-
 #if 0
     _borderColor = QColor(255, 255, 255);
 
@@ -1046,9 +1058,8 @@ bool KRPTSceneItem::stateChangeImpl(const FState &newState, const FState &oldSta
     }
 #endif
 #endif
-
     if(must(KRPTSceneItem::Must::StateChangeEvent))
-        stateChangeEvent(newState, oldState);
+        stateChangeEvent(cur, old);
     return true;
 }
 
@@ -1255,6 +1266,11 @@ bool KRPTSceneItem::updateCache(bool visible) noexcept
         {
             dirty = true;
             cache.genTransform = cache.item->_data->genTransform;
+        }
+        if(!dirty && cache.parent && cache.genParentMust != cache.parent->_data->genMust)
+        {
+            dirty = true;
+            cache.genParentMust = cache.parent->_data->genMust;
         }
         if(dirty)
         {

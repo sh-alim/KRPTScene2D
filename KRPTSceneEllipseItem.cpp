@@ -12,7 +12,7 @@
 KRPTSceneEllipseItem::KRPTSceneEllipseItem(KRPTScene *scene, KRPTSceneItem *parent) noexcept
     : KRPTSceneItem(scene, parent)
 {
-    addMust(
+    upMust(
         KRPTSceneItem::Must::AccuracyClip,
         KRPTSceneItem::Must::AccuracyCheckContains
     );
