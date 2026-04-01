@@ -121,4 +121,8 @@ private:
     QPointF              _mousePressedItemPos;
     KRPTSceneItem::Ptr   _mouseOverItem      ;
     QPointF              _mousePos           ;
+
+    QElapsedTimer _debugTimer; 
+
+    bool    _printDebug = true;
 };

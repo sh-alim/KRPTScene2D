@@ -1015,6 +1015,38 @@ bool KRPTSceneItem::stateChangeImpl(const FState &newState, const FState &oldSta
 {
     if(newState == oldState)return false;
     FState diff = newState.diff(oldState);
+
+#if 0
+
+#if 0
+    _borderColor = QColor(255, 255, 255);
+
+//    if(diff[State::MouseOver])
+    {
+        if(newState[State::MouseOver])
+            _borderColor = QColor(0, 255, 0);
+        update();
+    }
+
+//    if(diff[State::ChildMouseOver])
+    {
+        if(newState[State::ChildMouseOver])
+            _borderColor = QColor(0, 0, 255);
+        update();
+    }
+#else
+    if(diff[State::MousePressed])
+    {
+        if(newState[State::MousePressed])
+            _borderColor = QColor(0, 255, 0);
+        else
+            _borderColor = QColor(255, 255, 255);
+
+        update();
+    }
+#endif
+#endif
+
     if(must(KRPTSceneItem::Must::StateChangeEvent))
         stateChangeEvent(newState, oldState);
     return true;

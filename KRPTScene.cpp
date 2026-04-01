@@ -11,25 +11,20 @@
 
 class KRPTSceneRoot : public KRPTSceneItem
 {
+friend class KRPTScene;
 public:
     KRPTSceneRoot(KRPTScene *scene, KRPTSceneItem *parent)  noexcept;
 protected:
     void paintBackground(QPainter &painter, uint32_t stage) noexcept override;
     void paintForeground(QPainter &painter, uint32_t stage) noexcept override;
+private:
+    QString _debugString;
 };
 
 KRPTSceneRoot::KRPTSceneRoot(KRPTScene *scene, KRPTSceneItem *parent) noexcept
     : KRPTSceneItem(scene, parent)
 {
-    addMust(
-//        KRPTSceneItem::Must::NoPaint
-//        KRPTSceneItem::Must::TransformEvent,
-//        KRPTSceneItem::Must::NoClipChilds
-        KRPTSceneItem::Must::NoClipPainter
-//        KRPTSceneItem::Must::NoCheckChildVisibled,
-//        KRPTSceneItem::Must::Anim
-    );
-
+    addMust(KRPTSceneItem::Must::NoClipPainter);
 }
 
 void KRPTSceneRoot::paintBackground(QPainter &painter, uint32_t stage) noexcept
@@ -42,6 +37,9 @@ void KRPTSceneRoot::paintForeground(QPainter &painter, uint32_t stage) noexcept
     painter.setRenderHint(QPainter::Antialiasing, false);
     QPen pen(_borderColor, 1);
     pen.setCosmetic(true);
+
+    painter.drawText(10, 40, _debugString);
+
     painter.setPen(pen);
     painter.drawRect(_rect.adjusted(0.5, 0.5, -1.5, -1.5));
 }
@@ -256,27 +254,26 @@ void KRPTScene::mousePressEvent(SceneMouseEvent *e) noexcept
         QPointF p = item->mapFromScene(mousePos);
         item->mousePressImpl(SceneMouseEvent::get(item->mapFromScene(mousePos), e->btns(), 
             mousePos, e->keyModifers(), e->delta()).get());
-
-    #if 1
         if(_mousePressedItem && _mousePressedItem != item)
         {
-            KRPTSceneItem::FState oldState = _mousePressedItem->_state;
-            _mousePressedItem->_state -= KRPTSceneItem::State::MousePressed;
-            _mousePressedItem->stateChangeImpl(_mousePressedItem->_state, oldState);
+            if(_mousePressedItem->_state[KRPTSceneItem::State::MousePressed])
+            {
+                KRPTSceneItem::FState oldState = _mousePressedItem->_state;
+                _mousePressedItem->_state -= KRPTSceneItem::State::MousePressed;
+                _mousePressedItem->stateChangeImpl(_mousePressedItem->_state, oldState);
+            }
         }
         _mousePressedItem = item;
         if(_mousePressedItem)
         {
-            KRPTSceneItem::FState oldState = _mousePressedItem->_state;
-            _mousePressedItem->_state += KRPTSceneItem::State::MousePressed;
-            _mousePressedItem->stateChangeImpl(_mousePressedItem->_state, oldState);
+            if(!_mousePressedItem->_state[KRPTSceneItem::State::MousePressed])
+            {
+                KRPTSceneItem::FState oldState = _mousePressedItem->_state;
+                _mousePressedItem->_state += KRPTSceneItem::State::MousePressed;
+                _mousePressedItem->stateChangeImpl(_mousePressedItem->_state, oldState);
+            }
         }
         _mousePressedItemPos = item->pos() - item->mapToParent(p);
-    #endif
-    #if 1
-//        qDebug() << p;
-    #endif
-
     }else
     {
         if(_mousePressedItem)
@@ -338,7 +335,6 @@ void KRPTScene::whellEvent(SceneMouseEvent *e) noexcept
     {
         item->whellImpl(SceneMouseEvent::get(item->mapFromScene(mousePos), e->btns(), 
             mousePos, e->keyModifers(), e->delta()).get());
-
     #if 0
         if(e->keyModifers()[SceneMouseEvent::KeyModifer::Ctrl])
         {
@@ -386,9 +382,16 @@ void KRPTScene::deviceScaleEvent(double scale) noexcept
 
 void KRPTScene::paintEvent(QPainter &painter) noexcept
 {
-    QElapsedTimer t; t.start();
+    if(_printDebug)_debugTimer.start();
+
     paintImpl(painter, _item);
 //    qDebug().noquote() << "elapsed : " << t.elapsed();
+
+    if(_printDebug)
+    {
+        auto item = static_cast<KRPTSceneRoot*>(_item);
+        item->_debugString = QString("%1").arg(_debugTimer.elapsed(), 5);
+    }
 }
 
 //************************************************************************************************************************
