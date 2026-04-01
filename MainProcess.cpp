@@ -174,7 +174,6 @@ MainProcess::MainProcess(QWidget *parent)
             if(!_selectedItem)return;
             if(checked)_selectedItem->upMust(must[i].first);
             else _selectedItem->downMust(must[i].first);
-
             _scene->update();
         });
     }
@@ -240,7 +239,7 @@ void MainProcess::mousePressEvent(QMouseEvent *e)
 
     QPointF p = _selectedItem->mapFromScene(e->position());
 //    QPointF p1 = _selectedItem->mapToParent(_selectedItem->posAnchorPoint());
-    qDebug() << "[0]" << p;
+//    qDebug() << "[0]" << p;
 
     if(e->buttons() & Qt::MouseButton::LeftButton)
     {

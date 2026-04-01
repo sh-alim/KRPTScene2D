@@ -470,7 +470,7 @@ void KRPTScene::paintImpl(QPainter &painter, KRPTSceneItem *item, uint32_t stage
     if(!childs.empty() && !item->must(KRPTSceneItem::Must::NoClipChilds, KRPTSceneItem::Must::NoClipPainter))
     {
         if(!item->must(KRPTSceneItem::Must::AccuracyClip))
-            painter.setClipRect(item->_rect.adjusted(0, 0, 0.5, 0.5), Qt::ClipOperation::IntersectClip);
+            painter.setClipRect(item->_rect.adjusted(0, 0, 0, 0), Qt::ClipOperation::IntersectClip);
         else painter.setClipPath(item->outline(), Qt::ClipOperation::IntersectClip);
     }
     if(!childs.empty() && item->needChildPaint())
