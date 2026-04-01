@@ -17,8 +17,8 @@ static const std::vector<std::pair<KRPTSceneItem::Must, QString>> must =
     {KRPTSceneItem::Must::NoSceneRotate         , "NoSceneRotate"         },
     {KRPTSceneItem::Must::NoMouseEventTranslate , "NoMouseEventTranslate" },
     {KRPTSceneItem::Must::NoCheckChildVisibled  , "NoCheckChildVisibled"  },
+    {KRPTSceneItem::Must::MouseTracking         , "MouseTracking"         },
     {KRPTSceneItem::Must::MousePressEvent       , "MousePressEvent"       },
-//    {KRPTSceneItem::Must::MouseReleaseEvent     , "MouseReleaseEvent"     },
     {KRPTSceneItem::Must::MouseMoveEvent        , "MouseMoveEvent"        },
     {KRPTSceneItem::Must::WhellEvent            , "WhellEvent"            },
     {KRPTSceneItem::Must::TransformEvent        , "TransformEvent"        },
@@ -61,6 +61,8 @@ MainProcess::MainProcess(QWidget *parent)
 
     _root = _scene->addItem<KRPTSceneRectItem>();
     _root->setGeometry(QRectF(10, 10, 1000, 800));
+
+    _root->setTag(++_tag);
 
     _root->addMust
     (
@@ -117,7 +119,7 @@ MainProcess::MainProcess(QWidget *parent)
 //        child->setPosAnchor(KRPTSceneItem::TransformAnchor::BottomCenter);
 
 
-    _i0->setTag(1);
+    _i0->setTag(++_tag);
 
     _sliders.resize(6);
     int x = 10, y = 10;
@@ -301,7 +303,7 @@ void MainProcess::mousePressEvent(QMouseEvent *e)
         child->setSize(50, 50);
         child->setPos(p);
 
-        child->setTag(100);
+        child->setTag(++_tag);
 
 //        child->setGeometry(p, QSizeF(50, 50));
  

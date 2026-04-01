@@ -47,6 +47,6 @@ private:
     KRPTSceneRectItem::Ptr _root;
     KRPTSceneRectItem::Ptr _i0;
     QPointF              _mousePos      ;
-
+    uint32_t    _tag = 0;
 
 };

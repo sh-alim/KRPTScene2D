@@ -93,30 +93,27 @@ public:
         AccuracyClip              = 0x00000100,
         MouseMoveble              = 0x00000200,
         NoMouseEventTranslate     = 0x00000400,
-        MousePressEvent           = 0x00000800,
-//        MouseReleaseEvent         = 0x00001000,
-        MouseMoveEvent            = 0x00002000,
-        WhellEvent                = 0x00004000,
-        TransformEvent            = 0x00008000,
-        ChildTransformEvent       = 0x00010000,
-        SceneTransformEvent       = 0x00020000,
-        SceneScaleEvent           = 0x00040000,
-        SceneRotateEvent          = 0x00080000,
-        TransformToParentEvent    = 0x00100000,
-        TransformToSceneEvent     = 0x00200000,
-        MousePressToParentEvent   = 0x00400000,
-        MousePressToSceneEvent    = 0x00800000,
-        MouseReleaseToParentEvent = 0x01000000,
-        MouseReleaseToSceneEvent  = 0x02000000,
-        MouseMoveToParentEvent    = 0x04000000,
-        MouseMoveToSceneEvent     = 0x08000000,
-        WhellToParentEvent        = 0x10000000,
-        WhellToSceneEvent         = 0x20000000,
-    #if 0
-        Event                   = 0x40000000,
-        Event                   = 0x80000000,
-    #endif
-        All                     = 0xFFFFFFFF
+        MouseTracking             = 0x00000800,
+        StateChangeEvent          = 0x00001000,
+        MousePressEvent           = 0x00002000,
+        MouseMoveEvent            = 0x00004000,
+        WhellEvent                = 0x00008000,
+        TransformEvent            = 0x00010000,
+        ChildTransformEvent       = 0x00020000,
+        SceneTransformEvent       = 0x00040000,
+        SceneScaleEvent           = 0x00080000,
+        SceneRotateEvent          = 0x00100000,
+        TransformToParentEvent    = 0x00200000,
+        TransformToSceneEvent     = 0x00400000,
+        MousePressToParentEvent   = 0x00800000,
+        MousePressToSceneEvent    = 0x01000000,
+        MouseReleaseToParentEvent = 0x02000000,
+        MouseReleaseToSceneEvent  = 0x04000000,
+        MouseMoveToParentEvent    = 0x08000000,
+        MouseMoveToSceneEvent     = 0x10000000,
+        WhellToParentEvent        = 0x20000000,
+        WhellToSceneEvent         = 0x40000000,
+        All                       = 0xFFFFFFFF
     };
     enum class TransSrc : uint8_t{Self, Parent, Scene};
     enum class TransformAnchor
@@ -138,7 +135,7 @@ public:
     using FState = KRPTFlag<State>;
     using List   = std::list<KRPTSceneItem::Ptr>;
     using CList  = const List;
-    using Index  = std::unordered_map<KRPTSceneItem*, List::iterator>;
+    using Index  = std::unordered_map<KRPTSceneItem::Ptr, List::iterator>;
 protected:
     KRPTSceneItem()                     = delete;
     KRPTSceneItem(const KRPTSceneItem&) = delete;
@@ -208,8 +205,8 @@ public:
     bool                 eventLocked           ()                                                              const noexcept;
     uint32_t             tag                   ()                                                              const noexcept;
 
-    QColor               borderColor           ()                                                              const noexcept {return _borderColor       ;}
-    QColor               backgroundColor       ()                                                              const noexcept {return _backgroundColor   ;}
+    const QColor       & borderColor           ()                                                              const noexcept {return _borderColor    ;}
+    const QColor       & backgroundColor       ()                                                              const noexcept {return _backgroundColor;}
 
     void                 setParent             (KRPTSceneItem::Ptr parent)                                           noexcept;
     void                 setVisible            (bool visible)                                                        noexcept;
@@ -283,6 +280,8 @@ public:
     QPointF              mapFromItem           (KRPTSceneItem::Ptr item, const QPointF &point)                       noexcept;
     QPolygonF            mapFromItem           (KRPTSceneItem::Ptr item, const QRectF &rect)                         noexcept;
     QPolygonF            mapFromItem           (KRPTSceneItem::Ptr item, const QPolygonF &polygon)                   noexcept;
+    bool                 isParent              (KRPTSceneItem::Ptr item)                                       const noexcept;
+    KRPTSceneItem::Ptr   commonParent          (KRPTSceneItem::Ptr item)                                       const noexcept;
     bool                 needPaint             ()                                                              const noexcept;
     bool                 canBeUpdated          ()                                                              const noexcept;
     bool                 needChildPaint        ()                                                              const noexcept;
@@ -290,6 +289,7 @@ protected:
     virtual void         addChildEvent         (KRPTSceneItem::Ptr item)                                             noexcept {};
     virtual void         delChildEvent         (KRPTSceneItem::Ptr item)                                             noexcept {};
     virtual void         transformEvent        (SceneTransformEvent *e)                                              noexcept {};
+    virtual void         stateChangeEvent      (const FState &newState, const FState &oldState)                      noexcept {};
     virtual void         mousePressEvent       (SceneMouseEvent *e)                                                  noexcept {};
     virtual void         mouseReleaseEvent     (SceneMouseEvent *e)                                                  noexcept {};
     virtual void         mouseMoveEvent        (SceneMouseEvent *e)                                                  noexcept {};
