@@ -17,15 +17,18 @@
 class KRPTSceneBtnItem : public KRPTSceneItem
 {
 public:
-    KRPTSceneBtnItem(KRPTScene *scene, KRPTSceneItem *parent) noexcept;
-    ~KRPTSceneBtnItem()                                       noexcept;
+    KRPTSceneBtnItem(KRPTScene *scene, KRPTSceneItem *parent)            noexcept;
+    ~KRPTSceneBtnItem()                                                  noexcept;
 protected:
-    void mousePressEvent  (SceneMouseEvent *e) noexcept override;
-    void mouseReleaseEvent(SceneMouseEvent *e) noexcept override;
+    void mousePressEvent  (SceneMouseEvent *e)                           noexcept override;
+    void mouseReleaseEvent(SceneMouseEvent *e)                           noexcept override;
+    void mouseEnterEvent  (bool enter)                                   noexcept override;
 protected:
-    void outlineImpl     ()                                  noexcept override;
-    void paintBackground (QPainter &painter, uint32_t stage) noexcept override;
-    void paintForeground (QPainter &painter, uint32_t stage) noexcept override;
+    void outlineImpl     ()                                              noexcept override;
+    void animImpl        (uint32_t id, const std::vector<double> &value, 
+                          uint32_t time, bool completed, int loop)       noexcept override;
+    void paintBackground (QPainter &painter, uint32_t stage)             noexcept override;
+    void paintForeground (QPainter &painter, uint32_t stage)             noexcept override;
 private:
 //    QColor _
 };

@@ -1041,37 +1041,11 @@ bool KRPTSceneItem::stateChangeImpl(const FState &cur, const FState &old) noexce
 {
     if(cur == old)return false;
     FState diff = cur.diff(old);
-#if 0
-#if 0
-    _borderColor = QColor(255, 255, 255);
-
-//    if(diff[State::MouseOver])
+    if(must(Must::StateChangeEvent))stateChangeEvent(cur, old);
+    if(diff[State::MouseOver])
     {
-        if(newState[State::MouseOver])
-            _borderColor = QColor(0, 255, 0);
-        update();
+        if(must(Must::MouseEnterEvent))mouseEnterEvent(_state[State::MouseOver]);
     }
-
-//    if(diff[State::ChildMouseOver])
-    {
-        if(newState[State::ChildMouseOver])
-            _borderColor = QColor(0, 0, 255);
-        update();
-    }
-#else
-    if(diff[State::MousePressed])
-    {
-        if(newState[State::MousePressed])
-            _borderColor = QColor(0, 255, 0);
-        else
-            _borderColor = QColor(255, 255, 255);
-
-        update();
-    }
-#endif
-#endif
-    if(must(KRPTSceneItem::Must::StateChangeEvent))
-        stateChangeEvent(cur, old);
     return true;
 }
 

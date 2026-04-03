@@ -97,22 +97,23 @@ public:
         StateChangeEvent          = 0x00001000,
         MousePressEvent           = 0x00002000,
         MouseMoveEvent            = 0x00004000,
-        WhellEvent                = 0x00008000,
-        TransformEvent            = 0x00010000,
-        ChildTransformEvent       = 0x00020000,
-        SceneTransformEvent       = 0x00040000,
-        SceneScaleEvent           = 0x00080000,
-        SceneRotateEvent          = 0x00100000,
-        TransformToParentEvent    = 0x00200000,
-        TransformToSceneEvent     = 0x00400000,
-        MousePressToParentEvent   = 0x00800000,
-        MousePressToSceneEvent    = 0x01000000,
-        MouseReleaseToParentEvent = 0x02000000,
-        MouseReleaseToSceneEvent  = 0x04000000,
-        MouseMoveToParentEvent    = 0x08000000,
-        MouseMoveToSceneEvent     = 0x10000000,
-        WhellToParentEvent        = 0x20000000,
-        WhellToSceneEvent         = 0x40000000,
+        MouseEnterEvent           = 0x00008000,
+        WhellEvent                = 0x00010000,
+        TransformEvent            = 0x00020000,
+        ChildTransformEvent       = 0x00040000,
+        SceneTransformEvent       = 0x00080000,
+        SceneScaleEvent           = 0x00100000,
+        SceneRotateEvent          = 0x00200000,
+        TransformToParentEvent    = 0x00400000,
+        TransformToSceneEvent     = 0x00800000,
+        MousePressToParentEvent   = 0x01000000,
+        MousePressToSceneEvent    = 0x02000000,
+        MouseReleaseToParentEvent = 0x04000000,
+        MouseReleaseToSceneEvent  = 0x08000000,
+        MouseMoveToParentEvent    = 0x10000000,
+        MouseMoveToSceneEvent     = 0x20000000,
+        WhellToParentEvent        = 0x40000000,
+        WhellToSceneEvent         = 0x80000000,
         All                       = 0xFFFFFFFF
     };
     enum class TransSrc : uint8_t{Self, Parent, Scene};
@@ -301,6 +302,7 @@ protected:
     virtual void         mousePressEvent       (SceneMouseEvent *e)                                                  noexcept {};
     virtual void         mouseReleaseEvent     (SceneMouseEvent *e)                                                  noexcept {};
     virtual void         mouseMoveEvent        (SceneMouseEvent *e)                                                  noexcept {};
+    virtual void         mouseEnterEvent       (bool enter)                                                          noexcept {};
     virtual void         whellEvent            (SceneMouseEvent *e)                                                  noexcept {};
     virtual void         childTransformEvent   (KRPTSceneItem::Ptr item, SceneTransformEvent *e)                     noexcept {};
     virtual void         childMousePressEvent  (KRPTSceneItem::Ptr item, SceneMouseEvent *e)                         noexcept {};

@@ -20,6 +20,7 @@ static const std::vector<std::pair<KRPTSceneItem::Must, QString>> must =
     {KRPTSceneItem::Must::MouseTracking         , "MouseTracking"         },
     {KRPTSceneItem::Must::MousePressEvent       , "MousePressEvent"       },
     {KRPTSceneItem::Must::MouseMoveEvent        , "MouseMoveEvent"        },
+    {KRPTSceneItem::Must::MouseEnterEvent       , "MouseEnterEvent"       },
     {KRPTSceneItem::Must::WhellEvent            , "WhellEvent"            },
     {KRPTSceneItem::Must::TransformEvent        , "TransformEvent"        },
     {KRPTSceneItem::Must::ChildTransformEvent   , "SceneTransformEvent"   },
