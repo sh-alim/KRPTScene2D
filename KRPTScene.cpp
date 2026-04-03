@@ -37,11 +37,10 @@ void KRPTSceneRoot::paintForeground(QPainter &painter, uint32_t stage) noexcept
     painter.setRenderHint(QPainter::Antialiasing, false);
     QPen pen(_borderColor, 1);
     pen.setCosmetic(true);
-
-    painter.drawText(10, 40, _debugString);
-
     painter.setPen(pen);
     painter.drawRect(_rect.adjusted(0.5, 0.5, -1.5, -1.5));
+
+    painter.drawText(10, 40, _debugString);
 }
 
 //########################################################################################################################

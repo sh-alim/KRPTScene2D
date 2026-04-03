@@ -150,6 +150,14 @@ public:
         addChildImpl(item, this);
         return item;
     }
+    template<typename T, typename ... Args> inline auto insertChild(KRPTSceneItem::Ptr before, Args&& ... arg)       noexcept
+    {
+        static_assert(std::is_base_of_v<KRPTSceneItem, T>, "is not scene item");
+        auto item = new T(_scene, this, std::forward<Args>(arg) ...);
+        insertChildImpl(item, this, before);
+        return item;
+    }
+
     bool delChild(KRPTSceneItem *item)                                                                               noexcept;
     template<typename ... Args> inline bool must(Args&& ... args)                                              const noexcept
     {
@@ -305,9 +313,11 @@ protected:
 protected:
     virtual void         update                ()                                                                    noexcept;
     virtual CList      & filterChildItems      ()                                                                    noexcept;
-    virtual void         mustChangeImpl       (const FMust &cur, const FMust &old)                                   noexcept;
+    virtual void         mustChangeImpl        (const FMust &cur, const FMust &old)                                  noexcept;
     virtual void         setParentImpl         (KRPTSceneItem::Ptr parent)                                           noexcept;
     virtual void         addChildImpl          (KRPTSceneItem::Ptr item, KRPTSceneItem::Ptr parent)                  noexcept;
+    virtual void         insertChildImpl       (KRPTSceneItem::Ptr item, KRPTSceneItem::Ptr parent, 
+                                                KRPTSceneItem::Ptr before)                                           noexcept;
     virtual bool         delChildImpl          (KRPTSceneItem::Ptr item, KRPTSceneItem::Ptr parent)                  noexcept;
     virtual bool         setGeometryImpl       (const QRectF &geometry)                                              noexcept;
     virtual bool         setAngleImpl          (double angle)                                                        noexcept;

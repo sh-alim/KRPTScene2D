@@ -922,10 +922,22 @@ void KRPTSceneItem::setParentImpl(KRPTSceneItem::Ptr parent) noexcept
 
 void KRPTSceneItem::addChildImpl(KRPTSceneItem::Ptr item, KRPTSceneItem::Ptr parent) noexcept
 {
+    insertChildImpl(item, parent, nullptr);
+}
+
+void KRPTSceneItem::insertChildImpl(KRPTSceneItem::Ptr item, KRPTSceneItem::Ptr parent, KRPTSceneItem::Ptr before) noexcept
+{
     if(!item)return;
     item->_parent = nullptr;
     item->setParentImpl(parent);
-    List::iterator it = parent->_childItems.emplace(parent->_childItems.end(), item);
+    List::iterator bef = parent->_childItems.end();
+    if(before)
+    {
+        auto findIndex = parent->_index.find(before);
+        if(findIndex != parent->_index.end())
+            bef = findIndex->second;
+    }
+    List::iterator it = parent->_childItems.emplace(bef, item);
     parent->_index.emplace(item, it);
     if(!eventLocked())addChildEvent(item);
     _dirty += Dirty::VisibleChildItems;
@@ -962,8 +974,8 @@ bool KRPTSceneItem::setGeometryImpl(const QRectF &geometry) noexcept
     ++_data->genTransform;
     sendTransformEvent(geometry, oldGeometry, _angle, _angle, _scale, _scale, 
                        isMoved, isResized, false, false);
-    if(_state.any(State::MouseOver, State::ChildMouseOver))
-        _scene->mouseOverCheck();
+//    if(_state.any(State::MouseOver, State::ChildMouseOver))
+//        _scene->mouseOverCheck();
     update();
     return true;
 }

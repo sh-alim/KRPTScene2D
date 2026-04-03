@@ -38,6 +38,12 @@ public:
     {
         return _item->addChild<T>(std::forward<Args>(arg) ...);
     }
+
+    template<typename T, typename ... Args>
+    auto insertItem(KRPTSceneItem::Ptr before, Args&& ... arg)                                                      noexcept 
+    {
+        return _item->insertChild<T>(before, std::forward<Args>(arg) ...);
+    }
     template<typename T, typename ... Args> 
     auto createRootItem(Args&& ... arg)                                               noexcept
     {
@@ -112,7 +118,7 @@ protected:
                                               uint32_t stage = 0)                     noexcept;
     void               mouseOverCheck        ()                                       noexcept;
     void               mouseOverUpdate       (KRPTSceneItem::Ptr item)                noexcept;
-private:
+protected:
     KRPTSceneView      * _view               ;
     KRPTSceneItem::Ptr   _item               ;
     double               _deviceScale        ;
@@ -123,6 +129,5 @@ private:
     QPointF              _mousePos           ;
 
     QElapsedTimer _debugTimer; 
-
     bool    _printDebug = true;
 };
