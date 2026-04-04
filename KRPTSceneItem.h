@@ -66,7 +66,8 @@ protected:
 
         MousePressed            = 0x08,
         MouseOver               = 0x10,
-        ChildMouseOver          = 0x20,
+        Checked                 = 0x20,
+        ChildMouseOver          = 0x40,
 
         All                     = 0xFF
     };
@@ -85,35 +86,39 @@ public:
         NoPaint                   = 0x00000001,
         NoClipChilds              = 0x00000002,
         NoClipPainter             = 0x00000004,
-        NoSceneScale              = 0x00000008,
-        NoSceneRotate             = 0x00000010,
-        NoCheckChildVisibled      = 0x00000020,
+        NoCheckChildVisibled      = 0x00000008,
+        NoSceneScale              = 0x00000010,
+        NoSceneRotate             = 0x00000020,
+
         Anim                      = 0x00000040,
         AccuracyCheckContains     = 0x00000080,
         AccuracyClip              = 0x00000100,
-        MouseMoveble              = 0x00000200,
-        NoMouseEventTranslate     = 0x00000400,
-        MouseTracking             = 0x00000800,
-        StateChangeEvent          = 0x00001000,
-        MousePressEvent           = 0x00002000,
-        MouseMoveEvent            = 0x00004000,
-        MouseEnterEvent           = 0x00008000,
-        WhellEvent                = 0x00010000,
-        TransformEvent            = 0x00020000,
-        ChildTransformEvent       = 0x00040000,
-        SceneTransformEvent       = 0x00080000,
-        SceneScaleEvent           = 0x00100000,
-        SceneRotateEvent          = 0x00200000,
-        TransformToParentEvent    = 0x00400000,
-        TransformToSceneEvent     = 0x00800000,
-        MousePressToParentEvent   = 0x01000000,
-        MousePressToSceneEvent    = 0x02000000,
-        MouseReleaseToParentEvent = 0x04000000,
-        MouseReleaseToSceneEvent  = 0x08000000,
-        MouseMoveToParentEvent    = 0x10000000,
-        MouseMoveToSceneEvent     = 0x20000000,
-        WhellToParentEvent        = 0x40000000,
-        WhellToSceneEvent         = 0x80000000,
+
+        NoMouseEventTranslate     = 0x00000200,
+        MouseTracking             = 0x00000400,
+        StateChangeEvent          = 0x00000800,
+        MousePressEvent           = 0x00001000,
+        MouseMoveEvent            = 0x00002000,
+        MouseEnterEvent           = 0x00004000,
+        WhellEvent                = 0x00008000,
+        TransformEvent            = 0x00010000,
+
+        SceneTransformEvent       = 0x00020000,
+        SceneScaleEvent           = 0x00040000,
+        SceneRotateEvent          = 0x00080000,
+        TransformToParentEvent    = 0x00100000,
+        TransformToSceneEvent     = 0x00200000,
+        MousePressToParentEvent   = 0x00400000,
+        MousePressToSceneEvent    = 0x00800000,
+        MouseMoveToParentEvent    = 0x01000000,
+        MouseMoveToSceneEvent     = 0x02000000,
+        WhellToParentEvent        = 0x04000000,
+        WhellToSceneEvent         = 0x08000000,
+
+        MouseMoved                = 0x10000000,
+        Checked                   = 0x20000000,
+
+
         All                       = 0xFFFFFFFF
     };
     enum class TransSrc : uint8_t{Self, Parent, Scene};

@@ -317,7 +317,7 @@ void KRPTScene::mouseMoveEvent(SceneMouseEvent *e) noexcept
             e->btns(), _mousePos, e->keyModifers(), e->delta()).get());
         if(e->btns()[SceneMouseEvent::Btn::Left])
         {
-            if(_mousePressedItem->must(KRPTSceneItem::Must::MouseMoveble))
+            if(_mousePressedItem->must(KRPTSceneItem::Must::MouseMoved))
             {
                 _mousePressedItem->setPos(_mousePressedItem->mapToParent(
                     _mousePressedItem->mapFromScene(_mousePos)) + _mousePressedItemPos);

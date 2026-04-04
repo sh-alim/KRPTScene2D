@@ -23,7 +23,6 @@ static const std::vector<std::pair<KRPTSceneItem::Must, QString>> must =
     {KRPTSceneItem::Must::MouseEnterEvent       , "MouseEnterEvent"       },
     {KRPTSceneItem::Must::WhellEvent            , "WhellEvent"            },
     {KRPTSceneItem::Must::TransformEvent        , "TransformEvent"        },
-    {KRPTSceneItem::Must::ChildTransformEvent   , "SceneTransformEvent"   },
 
     {KRPTSceneItem::Must::TransformToParentEvent, "TransformToParentEvent"},
     {KRPTSceneItem::Must::TransformToSceneEvent , "TransformToSceneEvent" },
@@ -34,7 +33,7 @@ static const std::vector<std::pair<KRPTSceneItem::Must, QString>> must =
     {KRPTSceneItem::Must::Anim                  , "Anim"                  },
     {KRPTSceneItem::Must::AccuracyCheckContains , "AccuracyCheckContains" },
     {KRPTSceneItem::Must::AccuracyClip          , "AccuracyClip"          },
-    {KRPTSceneItem::Must::MouseMoveble          , "MouseMoveble"          }
+    {KRPTSceneItem::Must::MouseMoved            , "MouseMoved"          }
 };
 
 //########################################################################################################################
@@ -77,7 +76,7 @@ MainProcess::MainProcess(QWidget *parent)
             KRPTSceneItem::Must::Anim,
 //            KRPTSceneItem::Must::AccuracyClip,
 //            KRPTSceneItem::Must::AccuracyCheckContains,
-            KRPTSceneItem::Must::MouseMoveble,
+            KRPTSceneItem::Must::MouseMoved,
             KRPTSceneItem::Must::MousePressEvent,
             KRPTSceneItem::Must::MouseMoveEvent,
             KRPTSceneItem::Must::WhellEvent
@@ -100,7 +99,7 @@ MainProcess::MainProcess(QWidget *parent)
             KRPTSceneItem::Must::Anim,
 //            KRPTSceneItem::Must::AccuracyClip,
 //            KRPTSceneItem::Must::AccuracyCheckContains,
-            KRPTSceneItem::Must::MouseMoveble,
+            KRPTSceneItem::Must::MouseMoved,
             KRPTSceneItem::Must::MousePressEvent,
             KRPTSceneItem::Must::MouseMoveEvent,
             KRPTSceneItem::Must::WhellEvent
@@ -275,7 +274,9 @@ void MainProcess::mousePressEvent(QMouseEvent *e)
 
         for(int i = 0; i < _mustBtns.size(); ++i)
         {
+            _mustBtns[i]->blockSignals(true);
             _mustBtns[i]->setChecked(_selectedItem->must(must[i].first));
+            _mustBtns[i]->blockSignals(false);
         }
         _scene->update();
     }else
@@ -300,10 +301,14 @@ void MainProcess::mousePressEvent(QMouseEvent *e)
 //            KRPTSceneItem::Must::NoSceneRotate,
 //            KRPTSceneItem::Must::NoSceneScale,
 //            KRPTSceneItem::Must::AccuracyClip,
+
+//            KRPTSceneItem::Must::SceneTransformEvent,
+//            KRPTSceneItem::Must::SceneScaleEvent,
+
             KRPTSceneItem::Must::Anim,
 //            KRPTSceneItem::Must::AccuracyClip,
 //            KRPTSceneItem::Must::AccuracyCheckContains,
-            KRPTSceneItem::Must::MouseMoveble,
+            KRPTSceneItem::Must::MouseMoved,
             KRPTSceneItem::Must::MousePressEvent,
             KRPTSceneItem::Must::MouseMoveEvent,
             KRPTSceneItem::Must::WhellEvent
@@ -347,7 +352,7 @@ void MainProcess::mousePressEvent(QMouseEvent *e)
                 KRPTSceneItem::Must::Anim,
 //            KRPTSceneItem::Must::AccuracyClip,
 //            KRPTSceneItem::Must::AccuracyCheckContains,
-                KRPTSceneItem::Must::MouseMoveble,
+                KRPTSceneItem::Must::MouseMoved,
                 KRPTSceneItem::Must::MousePressEvent,
                 KRPTSceneItem::Must::MouseMoveEvent,
                 KRPTSceneItem::Must::WhellEvent

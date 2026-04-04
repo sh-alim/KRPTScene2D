@@ -29,6 +29,15 @@ protected:
                           uint32_t time, bool completed, int loop)       noexcept override;
     void paintBackground (QPainter &painter, uint32_t stage)             noexcept override;
     void paintForeground (QPainter &painter, uint32_t stage)             noexcept override;
+
+    void sceneTransformEvent(const QTransform &transform) noexcept 
+    {
+//        this->transform();
+//        mapToScene(QPointF());
+//        qDebug() << "====";
+    };
+
+
 private:
 //    QColor _
 };
