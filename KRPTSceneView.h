@@ -39,21 +39,22 @@ public:
     void        setHwAccel            (bool accel, uint8_t amples = 8)       noexcept;
     void        setTranslateEvents    (bool translate)                       noexcept;
 public:
-    virtual void update               ()                                     noexcept;
+    virtual void update                     ()                               noexcept;
 public:
-    virtual void resizeEvent          (QResizeEvent *e);
-    virtual void mousePressEvent      (QMouseEvent  *e);
-    virtual void mouseReleaseEvent    (QMouseEvent  *e);
-    virtual void mouseMoveEvent       (QMouseEvent  *e);
-    virtual void wheelEvent           (QWheelEvent  *e);
-    virtual void paintEvent           (QPainter     &p);
+    virtual void resizeEvent              (QResizeEvent *e);
+    virtual void mousePressEvent          (QMouseEvent  *e);
+    virtual void mouseReleaseEvent        (QMouseEvent  *e);
+    virtual void mouseMoveEvent           (QMouseEvent  *e);
+    virtual void wheelEvent               (QWheelEvent  *e);
+    virtual void paintEvent               (QPainter     &p);
 private:
-    virtual void resizeEventImpl      (QResizeEvent *e)                      noexcept;
-    virtual void mousePressEventImpl  (QMouseEvent  *e)                      noexcept;
-    virtual void mouseReleaseEventImpl(QMouseEvent  *e)                      noexcept;
-    virtual void mouseMoveEventImpl   (QMouseEvent  *e)                      noexcept;
-    virtual void wheelEventImpl       (QWheelEvent  *e)                      noexcept;
-    virtual void paintEventImpl       (QPaintEvent  *e)                      noexcept;
+    virtual void resizeEventImpl          (QResizeEvent *e)                  noexcept;
+    virtual void mousePressEventImpl      (QMouseEvent  *e)                  noexcept;
+    virtual void mouseDoubleClickEventImpl(QMouseEvent  *e)                  noexcept;
+    virtual void mouseReleaseEventImpl    (QMouseEvent  *e)                  noexcept;
+    virtual void mouseMoveEventImpl       (QMouseEvent  *e)                  noexcept;
+    virtual void wheelEventImpl           (QWheelEvent  *e)                  noexcept;
+    virtual void paintEventImpl           (QPaintEvent  *e)                  noexcept;
 private:
     SceneMouseEvent::Ptr createMouseSceneEvent(QSinglePointEvent *e)         noexcept;
     SceneMouseEvent::Ptr createWheelSceneEvent(QWheelEvent       *e)         noexcept;

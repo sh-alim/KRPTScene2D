@@ -20,6 +20,8 @@ public:
     KRPTSceneBtnItem(KRPTScene *scene, KRPTSceneItem *parent)            noexcept;
     ~KRPTSceneBtnItem()                                                  noexcept;
 protected:
+    void stateChangeEvent(const FState &newState, const FState &oldState) noexcept override;
+
     void mousePressEvent  (SceneMouseEvent *e)                           noexcept override;
     void mouseReleaseEvent(SceneMouseEvent *e)                           noexcept override;
     void mouseEnterEvent  (bool enter)                                   noexcept override;
@@ -30,14 +32,17 @@ protected:
     void paintBackground (QPainter &painter, uint32_t stage)             noexcept override;
     void paintForeground (QPainter &painter, uint32_t stage)             noexcept override;
 
+
+#if 0
     void sceneTransformEvent(const QTransform &transform) noexcept 
     {
 //        this->transform();
 //        mapToScene(QPointF());
 //        qDebug() << "====";
     };
-
+#endif
 
 private:
-//    QColor _
+    double _colorKof = 0;
+    QColor _c1;
 };

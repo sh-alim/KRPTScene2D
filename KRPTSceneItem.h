@@ -24,10 +24,10 @@
 //#
 //########################################################################################################################
 
-class KRPTScene          ;
-class SceneMouseEvent    ;
-class SceneTransformEvent;
-class KRPTSceneItemData  ;
+class KRPTScene           ;
+class SceneMouseEvent     ;
+class SceneTransformEvent ;
+class KRPTSceneItemData   ;
 
 //########################################################################################################################
 //#
@@ -37,6 +37,7 @@ class KRPTSceneItem
 {
 friend class KRPTScene        ;
 friend class KRPTSceneItemData;
+friend class KRPTSceneColors  ;
 protected:
     enum class Dirty : uint16_t
     {
@@ -73,53 +74,50 @@ protected:
     };
     enum AnimDst : uint8_t
     {
-        Geometry = 0,
-        Angle    = 1,
-        Scale    = 2,
-        Opaq     = 3,
-        User     = 4
+        Geometry                = 0,
+        Angle                   = 1,
+        Scale                   = 2,
+        Opaq                    = 3,
+        Color                   = 4,
+        User                    = 5
     };
 public:
     enum class Must : uint32_t
     {
-        No                        = 0x00000000,
-        NoPaint                   = 0x00000001,
-        NoClipChilds              = 0x00000002,
-        NoClipPainter             = 0x00000004,
-        NoCheckChildVisibled      = 0x00000008,
-        NoSceneScale              = 0x00000010,
-        NoSceneRotate             = 0x00000020,
+        No                      = 0x00000000,
+        NoPaint                 = 0x00000001,
+        NoClipChilds            = 0x00000002,
+        NoClipPainter           = 0x00000004,
+        NoCheckChildVisibled    = 0x00000008,
+        NoSceneScale            = 0x00000010,
+        NoSceneRotate           = 0x00000020,
+        Anim                    = 0x00000040,
+        AccuracyCheckContains   = 0x00000080,
+        AccuracyClip            = 0x00000100,
+        NoMouseEventTranslate   = 0x00000200,
+        MouseTracking           = 0x00000400,
+        StateChangeEvent        = 0x00000800,
+        MousePressEvent         = 0x00001000,
+        MouseMoveEvent          = 0x00002000,
+        MouseEnterEvent         = 0x00004000,
+        WhellEvent              = 0x00008000,
+        TransformEvent          = 0x00010000,
+        SceneTransformEvent     = 0x00020000,
+        SceneScaleEvent         = 0x00040000,
+        SceneRotateEvent        = 0x00080000,
+        TransformToParentEvent  = 0x00100000,
+        TransformToSceneEvent   = 0x00200000,
+        MousePressToParentEvent = 0x00400000,
+        MousePressToSceneEvent  = 0x00800000,
+        MouseMoveToParentEvent  = 0x01000000,
+        MouseMoveToSceneEvent   = 0x02000000,
+        WhellToParentEvent      = 0x04000000,
+        WhellToSceneEvent       = 0x08000000,
 
-        Anim                      = 0x00000040,
-        AccuracyCheckContains     = 0x00000080,
-        AccuracyClip              = 0x00000100,
+        MouseMoved              = 0x10000000,
+        Checked                 = 0x20000000,
 
-        NoMouseEventTranslate     = 0x00000200,
-        MouseTracking             = 0x00000400,
-        StateChangeEvent          = 0x00000800,
-        MousePressEvent           = 0x00001000,
-        MouseMoveEvent            = 0x00002000,
-        MouseEnterEvent           = 0x00004000,
-        WhellEvent                = 0x00008000,
-        TransformEvent            = 0x00010000,
-
-        SceneTransformEvent       = 0x00020000,
-        SceneScaleEvent           = 0x00040000,
-        SceneRotateEvent          = 0x00080000,
-        TransformToParentEvent    = 0x00100000,
-        TransformToSceneEvent     = 0x00200000,
-        MousePressToParentEvent   = 0x00400000,
-        MousePressToSceneEvent    = 0x00800000,
-        MouseMoveToParentEvent    = 0x01000000,
-        MouseMoveToSceneEvent     = 0x02000000,
-        WhellToParentEvent        = 0x04000000,
-        WhellToSceneEvent         = 0x08000000,
-
-        MouseMoved                = 0x10000000,
-        Checked                   = 0x20000000,
-
-
-        All                       = 0xFFFFFFFF
+        All                     = 0xFFFFFFFF
     };
     enum class TransSrc : uint8_t{Self, Parent, Scene};
     enum class TransformAnchor
@@ -376,35 +374,45 @@ private:
                                                 double angle, double oldAngle, double scale, double oldScale,
                                                 bool moved, bool resized, bool rotated, bool scaled)                 noexcept;
 protected:
-    KRPTSceneItemData *_data;
-    FDirty             _dirty            ;
-    FMust              _must             ;
-    FState             _state            ;
-    KRPTScene         *_scene            ;
-    KRPTSceneItem     *_parent           ;
-    List               _childItems       ;
-    List               _visibleChildItems;
-    Index              _index            ;
-    uint32_t           _updateLocked     ;
-    uint32_t           _eventLocked      ;
-    bool               _visible          ;
-    QRectF             _geometry         ;
-    QRectF             _rect             ;
-    double             _angle            ;
-    double             _scale            ;
-    double             _opaq             ;
-    TransformAnchor    _transformAnchor  ;
-    TransformAnchor    _posAnchor        ;
-    QTransform         _transform        ;
-    QTransform         _transformInv     ;
-    QTransform         _sceneTransform   ;
-    QTransform         _sceneTransformInv;
-    QPainterPath       _outline          ;
-    uint32_t           _paintStageCount  ;
-    QRectF             _bBox             ;
-    QRectF             _bBoxMapToParent  ;
-    QColor             _borderColor      ;
-    QColor             _backgroundColor  ;
-    uint32_t           _tag              ;
+    KRPTSceneItemData   *_data             ;
+    KRPTSceneColors     *_colors           ;
+    FDirty               _dirty            ;
+    FMust                _must             ;
+    FState               _state            ;
+    KRPTScene           *_scene            ;
+    KRPTSceneItem       *_parent           ;
+    List                 _childItems       ;
+    List                 _visibleChildItems;
+    Index                _index            ;
+    uint32_t             _updateLocked     ;
+    uint32_t             _eventLocked      ;
+    bool                 _visible          ;
+    QRectF               _geometry         ;
+    QRectF               _rect             ;
+    double               _angle            ;
+    double               _scale            ;
+    double               _opaq             ;
+    TransformAnchor      _transformAnchor  ;
+    TransformAnchor      _posAnchor        ;
+    QTransform           _transform        ;
+    QTransform           _transformInv     ;
+    QTransform           _sceneTransform   ;
+    QTransform           _sceneTransformInv;
+    QPainterPath         _outline          ;
+    uint32_t             _paintStageCount  ;
+    QRectF               _bBox             ;
+    QRectF               _bBoxMapToParent  ;
+    QColor               _borderColor      ;
+    QColor               _backgroundColor  ;
+    uint32_t             _tag              ;
+
+public:
+
+    QColor color(uint32_t id) noexcept;
+    void   setColor(uint32_t id, const QColor &color, FState state = State::No) noexcept;
+
+
+private:
+
 };
 

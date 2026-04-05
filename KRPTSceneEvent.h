@@ -25,25 +25,28 @@ public:
 public:
     SceneMouseEvent(const QPointF &pos, Btns btns, const QPointF &scenePos, 
         KeyModifers keyModifers, const QPointF &delta)
-        : _pos(pos), _btns(btns), _scenePos(scenePos), _keyModifers(keyModifers), _delta(delta) {}
+        : _pos(pos), _btns(btns), _scenePos(scenePos), _keyModifers(keyModifers), _delta(delta), _doubleClick(false) {}
 
     static SceneMouseEvent::Ptr get(const QPointF &pos, Btns btns, const QPointF &scenePos, 
         KeyModifers keyModifers, const QPointF &delta = QPointF())
     {
         return std::make_unique<SceneMouseEvent>(pos, btns, scenePos, keyModifers, delta);
     }
-    Btns        btns       ()                     const noexcept {return _btns       ;}
-    KeyModifers keyModifers()                     const noexcept {return _keyModifers;}
-    QPointF     pos        ()                     const noexcept {return _pos        ;}
-    QPointF     scenePos   ()                     const noexcept {return _scenePos   ;}
-    QPointF     delta      ()                     const noexcept {return _delta      ;}
-    void        setDelta   (const QPointF &delta)       noexcept {_delta = delta     ;}
+    Btns        btns          ()                     const noexcept {return _btns              ;}
+    KeyModifers keyModifers   ()                     const noexcept {return _keyModifers       ;}
+    QPointF     pos           ()                     const noexcept {return _pos               ;}
+    QPointF     scenePos      ()                     const noexcept {return _scenePos          ;}
+    QPointF     delta         ()                     const noexcept {return _delta             ;}
+    bool        doubleClick   ()                     const noexcept {return _doubleClick       ;}
+    void        setDelta      (const QPointF &delta)       noexcept {_delta = delta            ;}
+    void        setDoubleClick(bool doubleClick)           noexcept {_doubleClick = doubleClick;}
 private:
     Btns        _btns       ;
     KeyModifers _keyModifers;
     QPointF     _pos        ;
     QPointF     _scenePos   ;
     QPointF     _delta      ;
+    bool        _doubleClick;
 };
 
 //########################################################################################################################

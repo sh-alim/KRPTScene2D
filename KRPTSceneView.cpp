@@ -32,12 +32,13 @@ public:
     KRPTSceneViewPriv(QWidget *parent, KRPTSceneView *owner) noexcept;
     ~KRPTSceneViewPriv()               noexcept;
 private:
-    void resizeEvent      (QResizeEvent *e) override;
-    void mousePressEvent  (QMouseEvent  *e) override;
-    void mouseReleaseEvent(QMouseEvent  *e) override;
-    void mouseMoveEvent   (QMouseEvent  *e) override;
-    void wheelEvent       (QWheelEvent  *e) override;
-    void paintEvent       (QPaintEvent  *e) override;
+    void resizeEvent          (QResizeEvent *e) override;
+    void mousePressEvent      (QMouseEvent  *e) override;
+    void mouseDoubleClickEvent(QMouseEvent  *e) override;
+    void mouseReleaseEvent    (QMouseEvent  *e) override;
+    void mouseMoveEvent       (QMouseEvent  *e) override;
+    void wheelEvent           (QWheelEvent  *e) override;
+    void paintEvent           (QPaintEvent  *e) override;
 private:
     KRPTSceneView *_owner        ;
     bool           _mouseTracking;
@@ -74,6 +75,13 @@ void KRPTSceneViewPriv::mousePressEvent(QMouseEvent *e)
 {
 //    QGraphicsView::mousePressEvent(e);
     _owner->mousePressEventImpl(e);
+    if(_owner->_translateEvents && parentWidget())
+        QCoreApplication::sendEvent(parentWidget(), e);
+}
+
+void KRPTSceneViewPriv::mouseDoubleClickEvent(QMouseEvent *e)
+{
+    _owner->mouseDoubleClickEventImpl(e);
     if(_owner->_translateEvents && parentWidget())
         QCoreApplication::sendEvent(parentWidget(), e);
 }
@@ -254,6 +262,15 @@ void KRPTSceneView::mousePressEventImpl(QMouseEvent *e) noexcept
     auto event = createMouseSceneEvent(e);
     _scene->mousePressEvent(event.get());
     mousePressEvent(e);
+}
+
+void KRPTSceneView::mouseDoubleClickEventImpl(QMouseEvent *e) noexcept
+{
+    if(!_scene)return;
+    auto event = createMouseSceneEvent(e);
+    event->setDoubleClick(true);
+    _scene->mousePressEvent(event.get());
+    mouseMoveEvent(e);
 }
 
 void KRPTSceneView::mouseReleaseEventImpl(QMouseEvent *e) noexcept

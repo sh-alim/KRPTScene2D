@@ -306,10 +306,10 @@ void KRPTScene::mouseReleaseEvent(SceneMouseEvent *e) noexcept
 void KRPTScene::mouseMoveEvent(SceneMouseEvent *e) noexcept
 {
     _mousePos = e->pos();
-    if(e->btns() == SceneMouseEvent::Btn::No)
+//    if(e->btns() == SceneMouseEvent::Btn::No)
     {
-        mouseOverCheck();
-        return;
+        mouseOverCheck(e);
+//        return;
     }
     if(_mousePressedItem)
     {
@@ -507,16 +507,16 @@ void KRPTScene::paintImpl(QPainter &painter, KRPTSceneItem *item, uint32_t stage
 //*
 //************************************************************************************************************************
 
-void KRPTScene::mouseOverCheck() noexcept
+void KRPTScene::mouseOverCheck(SceneMouseEvent *e) noexcept
 {
     auto item = itemFromPos(_mousePos, [](KRPTSceneItem *item)
     {
         return item->must(KRPTSceneItem::Must::MouseTracking);
     });
-    if(item != _mouseOverItem)mouseOverUpdate(item);
+    if(item != _mouseOverItem)mouseOverUpdate(item, e);
 }
 
-void KRPTScene::mouseOverUpdate(KRPTSceneItem::Ptr item) noexcept
+void KRPTScene::mouseOverUpdate(KRPTSceneItem::Ptr item, SceneMouseEvent *e) noexcept
 {
     if(item == _mouseOverItem)return;
     KRPTSceneItem::FState oldState;
@@ -526,6 +526,7 @@ void KRPTScene::mouseOverUpdate(KRPTSceneItem::Ptr item) noexcept
         {
             oldState = _mouseOverItem->_state;
             _mouseOverItem->_state -= KRPTSceneItem::State::MouseOver;
+            _mouseOverItem->_state -= KRPTSceneItem::State::MousePressed;
             _mouseOverItem->stateChangeImpl(_mouseOverItem->_state, oldState);
         }
         KRPTSceneItem::Ptr commonParent = _mouseOverItem->commonParent(item);
@@ -551,6 +552,8 @@ void KRPTScene::mouseOverUpdate(KRPTSceneItem::Ptr item) noexcept
             oldState = _mouseOverItem->_state;
             _mouseOverItem->_state += KRPTSceneItem::State::MouseOver;
             _mouseOverItem->_state -= KRPTSceneItem::State::ChildMouseOver;
+            if(e && e->btns() != SceneMouseEvent::Btn::No)
+                _mouseOverItem->_state += KRPTSceneItem::State::MousePressed;
             _mouseOverItem->stateChangeImpl(_mouseOverItem->_state, oldState);
         }
         KRPTSceneItem::Ptr parent = _mouseOverItem->_parent;

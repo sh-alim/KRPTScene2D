@@ -107,7 +107,6 @@ public:
     virtual void       whellEvent            (SceneMouseEvent *e)                     noexcept;
     virtual void       deviceScaleEvent      (double scale)                           noexcept;
     virtual void       paintEvent            (QPainter &painte)                       noexcept;
-
 protected:
     KRPTSceneItem::Ptr itemFromPosImpl       (const QPointF &pos, CompFn comp, 
                                               KRPTSceneItem *item)                    noexcept;
@@ -116,8 +115,9 @@ protected:
                                               uint32_t level = 0)                     noexcept;
     void               paintImpl             (QPainter &painter, KRPTSceneItem *item, 
                                               uint32_t stage = 0)                     noexcept;
-    void               mouseOverCheck        ()                                       noexcept;
-    void               mouseOverUpdate       (KRPTSceneItem::Ptr item)                noexcept;
+    void               mouseOverCheck        (SceneMouseEvent *e = nullptr)           noexcept;
+    void               mouseOverUpdate       (KRPTSceneItem::Ptr item, 
+                                              SceneMouseEvent *e = nullptr)           noexcept;
 protected:
     KRPTSceneView      * _view               ;
     KRPTSceneItem::Ptr   _item               ;

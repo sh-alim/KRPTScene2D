@@ -122,6 +122,7 @@
     <QtRcc Include="MainProcess.qrc" />
     <ClCompile Include="KRPTScene.cpp" />
     <ClCompile Include="KRPTSceneAnim.cpp" />
+    <ClCompile Include="KRPTSceneColor.cpp" />
     <ClCompile Include="KRPTSceneEllipseItem.cpp" />
     <ClCompile Include="KRPTSceneBtnItem.cpp" />
     <ClCompile Include="KRPTSceneItem.cpp" />
@@ -139,6 +140,7 @@
     <ClInclude Include="KRPTFlag.h" />
     <ClInclude Include="KRPTScene.h" />
     <ClInclude Include="KRPTSceneAnim.h" />
+    <ClInclude Include="KRPTSceneColor.h" />
     <ClInclude Include="KRPTSceneEllipseItem.h" />
     <ClInclude Include="KRPTSceneEvent.h" />
     <ClInclude Include="KRPTSceneBtnItem.h" />
