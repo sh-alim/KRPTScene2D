@@ -65,8 +65,8 @@ public:
     const QTransform & transform             ()                                 const noexcept;
     const QTransform & sceneTransform        ()                                 const noexcept;
     KRPTSceneItem::Ptr mousePressedItem      ()                                 const noexcept;
-    QColor             borderColor           ()                                 const noexcept;
     QColor             backgroundColor       ()                                 const noexcept;
+    QColor             borderColor           ()                                 const noexcept;
 
     void               setGeometry           (const QRectF &geometry)                 noexcept;
     void               setPos                (const QPointF &pos)                     noexcept;
@@ -79,9 +79,8 @@ public:
     void               setHeight             (double height)                          noexcept;
     void               setScale              (double scale)                           noexcept;
     void               setDeviceScale        (double scale)                           noexcept;
-
-    void               setBorderColor        (const QColor &color)                    noexcept;
     void               setBackgroundColor    (const QColor &color)                    noexcept;
+    void               setBorderColor        (const QColor &color)                    noexcept;
 
 public:
     KRPTSceneItem::Ptr itemFromPos           (const QPointF &pos, CompFn comp)        noexcept;

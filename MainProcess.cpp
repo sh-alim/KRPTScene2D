@@ -52,8 +52,8 @@ MainProcess::MainProcess(QWidget *parent)
 
 //    _view->setHwAccel(false);
 
-
     _scene->setBackgroundColor(QColor(30, 50, 50));
+    _scene->setBorderColor(QColor(0, 255, 0));
 
     _view->setTranslateEvents(true);
 
@@ -84,7 +84,7 @@ MainProcess::MainProcess(QWidget *parent)
 
     _i0 = _root->addChild<KRPTSceneRectItem>();
     _i0->setGeometry(QRectF(50, 50, 150, 150));
-    _i0->setBackgroundColor(QColor(0, 255, 0));
+//    _i0->setBackgroundColor(QColor(0, 255, 0));
 
     _i0->upMust
     (
@@ -224,8 +224,8 @@ void MainProcess::mousePressEvent(QMouseEvent *e)
 {
     _mousePos = e->position();
 
-    if(_selectedItem)
-        _selectedItem->setBorderColor(QColor(255, 255, 255));
+//    if(_selectedItem)
+//        _selectedItem->setBorderColor(QColor(255, 255, 255));
 
     _selectedItem = _scene->itemFromPos(e->position(), [](KRPTSceneItem *item)
     {
@@ -234,7 +234,7 @@ void MainProcess::mousePressEvent(QMouseEvent *e)
     });
     if(!_selectedItem)return;
 
-    _selectedItem->setBorderColor(QColor(0, 255, 0));
+//    _selectedItem->setBorderColor(QColor(0, 255, 0));
 
 
     QPointF p = _selectedItem->mapFromScene(e->position());
@@ -292,7 +292,7 @@ void MainProcess::mousePressEvent(QMouseEvent *e)
 //        auto child = item->addChild<KRPTSceneRectItem>();
         auto child = item->addChild<KRPTSceneBtnItem>();
 
-        child->setBackgroundColor(QColor(0, 255, 0));
+//        child->setBackgroundColor(QColor(0, 255, 0));
 
         child->upMust
         (
@@ -341,7 +341,7 @@ void MainProcess::mousePressEvent(QMouseEvent *e)
         for(int i = 0; i < 100000; ++i)
         {
             auto child = item->addChild<KRPTSceneRectItem>();
-            child->setBackgroundColor(QColor(0, 255, 0));
+//            child->setBackgroundColor(QColor(0, 255, 0));
             child->upMust
             (
 //            KRPTSceneItem::Must::NoClipChilds,

@@ -29,13 +29,13 @@ KRPTSceneRoot::KRPTSceneRoot(KRPTScene *scene, KRPTSceneItem *parent) noexcept
 
 void KRPTSceneRoot::paintBackground(QPainter &painter, uint32_t stage) noexcept
 {
-    painter.fillRect(_rect, _backgroundColor);
+    painter.fillRect(_rect, color(0));
 }
 
 void KRPTSceneRoot::paintForeground(QPainter &painter, uint32_t stage) noexcept
 {
     painter.setRenderHint(QPainter::Antialiasing, false);
-    QPen pen(_borderColor, 1);
+    QPen pen(color(1), 1);
     pen.setCosmetic(true);
     painter.setPen(pen);
     painter.drawRect(_rect.adjusted(0.5, 0.5, -1.5, -1.5));
@@ -127,14 +127,14 @@ KRPTSceneItem::Ptr KRPTScene::mousePressedItem() const noexcept
     return _mousePressedItem;
 }
 
-QColor KRPTScene::borderColor() const noexcept 
-{
-    return _item->_borderColor;
-}
-
 QColor KRPTScene::backgroundColor() const noexcept 
 {
-    return _item->_backgroundColor;
+    return _item->color(0);
+}
+
+QColor KRPTScene::borderColor() const noexcept 
+{
+    return _item->color(1);
 }
 
 void KRPTScene::setGeometry(const QRectF &geometry) noexcept
@@ -202,14 +202,14 @@ void KRPTScene::setDeviceScale(double scale) noexcept
     deviceScaleEvent(scale);
 }
 
-void KRPTScene::setBorderColor(const QColor &color) noexcept
-{
-    _item->setBorderColor(color);
-}
-
 void KRPTScene::setBackgroundColor(const QColor &color) noexcept
 {
-    _item->setBackgroundColor(color);
+    _item->setColor(0, color);
+}
+
+void KRPTScene::setBorderColor(const QColor &color) noexcept
+{
+    _item->setColor(1, color);
 }
 
 //************************************************************************************************************************

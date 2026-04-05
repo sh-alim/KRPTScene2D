@@ -189,6 +189,80 @@ private:
         }else owner->animImpl(id, anim->current, time, false, currentLoop);
     }
 private:
+    class Colors
+    {
+    public:
+        using FlagT = std::underlying_type_t<KRPTSceneItem::State>;
+        Colors() noexcept : _interp(1)
+        {
+            KRPTSceneItem::FState mask(KRPTSceneItem::State::MousePressed | KRPTSceneItem::State::MouseOver |
+                                       KRPTSceneItem::State::Checked      | KRPTSceneItem::State::ChildMouseOver);
+            _mask = mask.flag();
+        }
+        FlagT mask(KRPTSceneItem::FState state) const noexcept {return state.flag() & _mask;}
+        void set(uint32_t id, const QColor &color, KRPTSceneItem::FState state) noexcept
+        {
+            auto it0 = _colors.find(id);
+            if(it0 == _colors.end())it0 = _colors.emplace(id, Color(color)).first;
+            if(state == KRPTSceneItem::State::No)it0->second.color = color;
+            FlagT flag = mask(state);
+            auto it1 = it0->second.colors.find(flag);
+            if(it1 == it0->second.colors.end())
+                it1 = it0->second.colors.emplace(flag, color).first;
+        }
+        const QColor& get(uint32_t id, KRPTSceneItem::FState state) noexcept
+        {
+            auto it0 = _colors.find(id);
+            if(it0 == _colors.end())return _defColor;
+            QColor &c0 = it0->second.startColor;
+            QColor &c1 = it0->second.color;
+            FlagT flag = mask(state);
+            auto it1 = it0->second.colors.find(flag);
+            if(it1 != it0->second.colors.end())c1 = it1->second; else
+            {
+                it1 = it0->second.colors.find((FlagT)KRPTSceneItem::State::No);
+                if(it1 != it0->second.colors.end())c1 = it1->second;
+            }
+            if(qFuzzyCompare(_interp, 1))return c1;
+            c1.setRedF  (c0.redF  () + (c1.redF  () - c0.redF  ()) * _interp);
+            c1.setGreenF(c0.greenF() + (c1.greenF() - c0.greenF()) * _interp);
+            c1.setBlueF (c0.blueF () + (c1.blueF () - c0.blueF ()) * _interp);
+            return c1;
+        }
+        bool mustAnim(KRPTSceneItem::FState cur, KRPTSceneItem::FState old) const noexcept
+        {
+            bool ret = false;
+            FlagT fcur = mask(cur);
+            FlagT fold = mask(old);
+            if(_colors.empty() || fcur == fold)return ret;
+            for(auto &[key, color] : _colors)
+            {
+                auto it = color.colors.find(fcur);
+                if(it == color.colors.end())it = color.colors.find((FlagT)KRPTSceneItem::State::No);
+                if(it != color.colors.end() && it->second != color.color){ret = true; break;}
+            }
+            return ret;
+        }
+        void update(double interp, bool start) noexcept
+        {
+            if(start)for(auto &[key, color] : _colors)color.startColor = color.color;
+            _interp = interp;
+        }
+    private:
+        struct Color
+        {
+            Color(const QColor &color) : color(color), startColor(color) {}
+            std::unordered_map<FlagT, QColor> colors    ;
+            QColor                            color     ;
+            QColor                            startColor;
+        };
+    private:
+        std::unordered_map<uint32_t, Color> _colors  ;
+        FlagT                               _mask    ;
+        QColor                              _defColor;
+        double                              _interp  ;
+    };
+private:
     KRPTSceneItem::Ptr        owner       ;
     std::array<QTransform, 8> transforms  ;
     std::vector<Cache>        cache       ;
@@ -201,114 +275,8 @@ private:
     double                    sceneAngle  ;
     Anim::Map                 anims       ;
     KRPTSceneAnim::Event      animFunction;
+    Colors                    colors      ;
 };
-
-//########################################################################################################################
-//#
-//########################################################################################################################
-
-class KRPTSceneColors
-{
-friend class KRPTSceneItem;
-using FlagT = std::underlying_type_t<KRPTSceneItem::State>;
-public:
-    KRPTSceneColors() noexcept;
-public:
-    FlagT  mask  (KRPTSceneItem::FState state)                                   const noexcept 
-    {
-        return state.flag() & _mask;
-    }
-    void   set   (uint32_t id, const QColor &color, KRPTSceneItem::FState state)       noexcept;
-    QColor get   (uint32_t id, KRPTSceneItem::FState state)                            noexcept;
-private:
-    bool   findState(KRPTSceneItem::FState state)                                const noexcept;
-    void   update   (double interp, bool start)                                        noexcept;
-private:
-    struct Color
-    {
-        Color(const QColor &color) : color(color), startColor(color) {}
-        std::unordered_map<FlagT, QColor> colors    ;
-        QColor                            color     ;
-        QColor                            startColor;
-    };
-private:
-    std::unordered_map<uint32_t, Color> _colors  ;
-    std::unordered_set<FlagT>           _states  ;
-    FlagT                               _mask    ;
-    QColor                              _defColor;
-    double                              _interp  ;
-};
-
-//************************************************************************************************************************
-//*
-//************************************************************************************************************************
-
-KRPTSceneColors::KRPTSceneColors() noexcept
-    : _interp(1)
-{
-    KRPTSceneItem::FState mask(KRPTSceneItem::State::MousePressed | KRPTSceneItem::State::MouseOver |
-                               KRPTSceneItem::State::Checked      | KRPTSceneItem::State::ChildMouseOver);
-    _mask = mask.flag();
-}
-
-void KRPTSceneColors::set(uint32_t id, const QColor &color, KRPTSceneItem::FState state) noexcept
-{
-    auto it0 = _colors.find(id);
-    if(it0 == _colors.end())it0 = _colors.emplace(id, Color(color)).first;
-    if(state == KRPTSceneItem::State::No)it0->second.color = color;
-    FlagT flag = mask(state);
-    _states.emplace(flag);
-    auto it1 = it0->second.colors.find(flag);
-    if(it1 == it0->second.colors.end())
-        it1 = it0->second.colors.emplace(flag, color).first;
-}
-
-QColor KRPTSceneColors::get(uint32_t id, KRPTSceneItem::FState state) noexcept
-{
-    auto it0 = _colors.find(id);
-    if(it0 == _colors.end())return _defColor;
-    QColor &c0 = it0->second.startColor;
-    QColor &c1 = it0->second.color;
-    FlagT flag = mask(state);
-    auto it1 = it0->second.colors.find(flag);
-    if(it1 != it0->second.colors.end())c1 = it1->second; else
-    {
-        it1 = it0->second.colors.find((FlagT)KRPTSceneItem::State::No);
-        if(it1 != it0->second.colors.end())c1 = it1->second;
-    }
-    if(qFuzzyCompare(_interp, 1))return c1;
-    c1.setRedF  (c0.redF  () + (c1.redF  () - c0.redF  ()) * _interp);
-    c1.setGreenF(c0.greenF() + (c1.greenF() - c0.greenF()) * _interp);
-    c1.setBlueF (c0.blueF () + (c1.blueF () - c0.blueF ()) * _interp);
-    return c1;
-}
-
-bool KRPTSceneColors::findState(KRPTSceneItem::FState state) const noexcept
-{
-    return !_colors.empty() && _states.find(state.flag() & _mask) != _states.end();
-}
-
-
-void KRPTSceneColors::update(double interp, bool start) noexcept
-{
-    if(start)
-        for(auto &[key, color] : _colors)color.startColor = color.color;
-    _interp = interp;
-}
-
-//************************************************************************************************************************
-//*
-//************************************************************************************************************************
-
-QColor KRPTSceneItem::color(uint32_t id) noexcept
-{
-    return _colors->get(id, _state);
-}
-
-void KRPTSceneItem::setColor(uint32_t id, const QColor &color, KRPTSceneItem::FState state) noexcept
-{
-    _colors->set(id, color, state);
-}
 
 //########################################################################################################################
 //#
@@ -319,8 +287,7 @@ KRPTSceneItem::KRPTSceneItem(KRPTScene *scene, KRPTSceneItem *parent) noexcept
       _state(State::NeedPaint | State::VisibledInView | State::NeedChildPaint),
       _updateLocked(0), _eventLocked(0), _visible(true), _angle(0), _scale(1), _opaq(1), 
       _transformAnchor(TransformAnchor::Center), _posAnchor(TransformAnchor::LeftTop), 
-      _paintStageCount(1), _tag(0), _borderColor(255, 255, 255), _backgroundColor(30, 30, 30)
-    , _colors(new KRPTSceneColors())
+      _paintStageCount(1), _tag(0)
 {
 }
 
@@ -329,7 +296,6 @@ KRPTSceneItem::~KRPTSceneItem() noexcept
     for(auto &child : _childItems)
         delete child;
     delete _data;
-    delete _colors;
 }
 
 //************************************************************************************************************************
@@ -621,6 +587,11 @@ uint32_t KRPTSceneItem::tag() const noexcept
     return _tag;
 }
 
+const QColor& KRPTSceneItem::color(uint32_t id) noexcept
+{
+    return _data->colors.get(id, _state);
+}
+
 void KRPTSceneItem::setParent(KRPTSceneItem::Ptr parent) noexcept
 {
     setParentImpl(parent);
@@ -827,14 +798,9 @@ void KRPTSceneItem::setTag(uint32_t tag) noexcept
     _tag = tag;
 }
 
-void KRPTSceneItem::setBorderColor(const QColor &color) noexcept 
+void KRPTSceneItem::setColor(uint32_t id, const QColor &color, KRPTSceneItem::FState state) noexcept
 {
-    _borderColor = color;
-}
-
-void KRPTSceneItem::setBackgroundColor(const QColor &color) noexcept 
-{
-    _backgroundColor = color;
+    _data->colors.set(id, color, state);
 }
 
 void KRPTSceneItem::lockUpdate(bool lock) noexcept 
@@ -1156,7 +1122,7 @@ bool KRPTSceneItem::stateChangeImpl(const FState &cur, const FState &old) noexce
     {
         if(must(Must::MouseEnterEvent))mouseEnterEvent(_state[State::MouseOver]);
     }
-    if(must(Must::Anim) && _colors->mask(cur) != _colors->mask(old) && _colors->findState(_state))
+    if(must(Must::Anim) && _data->colors.mustAnim(cur, old))
     {
         startAnimImpl(AnimDst::Color, 0, 1, 200, QEasingCurve::Linear);
     }
@@ -1220,21 +1186,17 @@ void KRPTSceneItem::animImpl(uint32_t id, const std::vector<double> &value,
         case AnimDst::Angle    : setAngleImpl   (KRPTSceneAnim::valuesTo<double>(value)); break;
         case AnimDst::Scale    : setScaleImpl   (KRPTSceneAnim::valuesTo<double>(value)); break;
         case AnimDst::Opaq     : setOpaqImpl    (KRPTSceneAnim::valuesTo<double>(value)); break;
-        case AnimDst::Color    : _colors->update(value[0], time == 0)                   ; break;
+        case AnimDst::Color    : _data->colors.update(value[0], time == 0)              ; break;
     }
     update();
 }
 
 void KRPTSceneItem::paintBackground(QPainter &painter, uint32_t stage) noexcept
 {
-    painter.fillRect(_rect, _backgroundColor);
 }
 
 void KRPTSceneItem::paintForeground(QPainter &painter, uint32_t stage) noexcept
 {
-    QPen pen(_borderColor, 2);
-    painter.setPen(pen);
-    painter.drawRect(_rect);
 }
 
 //************************************************************************************************************************

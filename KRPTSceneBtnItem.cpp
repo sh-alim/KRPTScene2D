@@ -45,12 +45,11 @@ KRPTSceneBtnItem::KRPTSceneBtnItem(KRPTScene *scene, KRPTSceneItem *parent) noex
 #endif
     setColor(0, QColor(255,   0,   0));
     setColor(0, QColor(255,   255,   0), State::MouseOver);
-    setColor(0, QColor(0,   255,   255), State::MouseOver | State::MousePressed);
+//    setColor(0, QColor(0,   255,   255), State::MouseOver | State::MousePressed);
 
     setColor(1, QColor(  0, 255,   0));
-    setColor(1, QColor(255,  0, 255), State::MouseOver);
-
-    setColor(2, QColor(  0,   0, 255));
+//    setColor(1, QColor(255,  0, 255), State::MouseOver);
+//    setColor(2, QColor(  0,   0, 255));
 }
 
 KRPTSceneBtnItem::~KRPTSceneBtnItem() noexcept

@@ -216,9 +216,7 @@ public:
     const QPainterPath & outline               ()                                                                    noexcept;
     bool                 eventLocked           ()                                                              const noexcept;
     uint32_t             tag                   ()                                                              const noexcept;
-
-    const QColor       & borderColor           ()                                                              const noexcept {return _borderColor    ;}
-    const QColor       & backgroundColor       ()                                                              const noexcept {return _backgroundColor;}
+    const QColor       & color                 (uint32_t id)                                                         noexcept;
 
     void                 setParent             (KRPTSceneItem::Ptr parent)                                           noexcept;
     void                 setVisible            (bool visible)                                                        noexcept;
@@ -248,7 +246,6 @@ public:
                                                 uint32_t time = 0, QEasingCurve curve = QEasingCurve::OutExpo)       noexcept;
     void                 setAngle              (double angle, const QPointF &pt, TransSrc src, 
                                                 uint32_t time = 0, QEasingCurve curve = QEasingCurve::OutExpo)       noexcept;
-
     bool                 setScale              (double scale, 
                                                 uint32_t time = 0, QEasingCurve curve = QEasingCurve::OutExpo)       noexcept;
     void                 setScale              (double scale, const QPointF &pt, TransSrc src, 
@@ -270,8 +267,7 @@ public:
     void                 scale                 (double scale, const QPointF &pt, TransSrc src, 
                                                 uint32_t time, QEasingCurve curve)                                   noexcept;
     void                 setTag                (uint32_t tag)                                                        noexcept;
-    void                 setBorderColor        (const QColor &color)                                                 noexcept;
-    void                 setBackgroundColor    (const QColor &color)                                                 noexcept;
+    void                 setColor              (uint32_t id, const QColor &color, FState state = State::No)          noexcept;
     void                 lockUpdate            (bool lock)                                                           noexcept;
     void                 lockEvents            (bool lock)                                                           noexcept;
     QPointF              mapToParent           (const QPointF &point)                                                noexcept;
@@ -375,7 +371,6 @@ private:
                                                 bool moved, bool resized, bool rotated, bool scaled)                 noexcept;
 protected:
     KRPTSceneItemData   *_data             ;
-    KRPTSceneColors     *_colors           ;
     FDirty               _dirty            ;
     FMust                _must             ;
     FState               _state            ;
@@ -402,17 +397,6 @@ protected:
     uint32_t             _paintStageCount  ;
     QRectF               _bBox             ;
     QRectF               _bBoxMapToParent  ;
-    QColor               _borderColor      ;
-    QColor               _backgroundColor  ;
     uint32_t             _tag              ;
-
-public:
-
-    QColor color(uint32_t id) noexcept;
-    void   setColor(uint32_t id, const QColor &color, FState state = State::No) noexcept;
-
-
-private:
-
 };
 

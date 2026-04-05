@@ -12,6 +12,8 @@
 KRPTSceneRectItem::KRPTSceneRectItem(KRPTScene *scene, KRPTSceneItem *parent) noexcept
     : KRPTSceneItem(scene, parent)
 {
+    setColor(0, QColor( 50,  50,  50));
+    setColor(1, QColor(250, 250, 250));
 }
 
 KRPTSceneRectItem::~KRPTSceneRectItem() noexcept
@@ -29,13 +31,13 @@ void KRPTSceneRectItem::outlineImpl() noexcept
 
 void KRPTSceneRectItem::paintBackground(QPainter &painter, uint32_t stage) noexcept
 {
-//    painter.fillRect(_rect, _backgroundColor);
+    painter.fillRect(_rect, color(0));
 }
 
 void KRPTSceneRectItem::paintForeground(QPainter &painter, uint32_t stage) noexcept
 {
     painter.setRenderHint(QPainter::Antialiasing);
-    QPen pen(_borderColor, 1);
+    QPen pen(color(1), 1);
     pen.setCosmetic(true);
     painter.setPen(pen);
     painter.drawRect(_rect);

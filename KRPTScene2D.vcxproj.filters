@@ -52,9 +52,6 @@
     <ClCompile Include="KRPTSceneBtnItem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="KRPTSceneColor.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="MainProcess.h">
@@ -87,9 +84,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="KRPTSceneBtnItem.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="KRPTSceneColor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
