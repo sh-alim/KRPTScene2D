@@ -34,13 +34,13 @@ KRPTSceneBtnItem::KRPTSceneBtnItem(KRPTScene *scene, KRPTSceneItem *parent) noex
     );
 
 
-    setColor(0, QColor(  0,  50,   0, 200));
-    setColor(0, QColor(  0, 100,   0, 200), State::MouseOver);
-    setColor(0, QColor(  0, 100,   0, 200), State::MousePressed);
-    setColor(0, QColor(  0,  50,   0, 200), State::MouseOver | State::MousePressed);
-    setColor(0, QColor(  0, 180,   0, 200), State::Checked);
-    setColor(0, QColor(  0, 150,   0, 200), State::Checked | State::MouseOver);
-    setColor(0, QColor(  0,  50,   0, 200), State::Checked | State::MouseOver | State::MousePressed);
+    setColor(0, QColor(  0,  50,   0, 255));
+    setColor(0, QColor(  0, 100,   0, 255), State::MouseOver);
+    setColor(0, QColor(  0, 100,   0, 255), State::MousePressed);
+    setColor(0, QColor(  0,  50,   0, 255), State::MouseOver | State::MousePressed);
+    setColor(0, QColor(  0, 180,   0, 255), State::Checked);
+    setColor(0, QColor(  0, 150,   0, 255), State::Checked | State::MouseOver);
+    setColor(0, QColor(  0,  50,   0, 255), State::Checked | State::MouseOver | State::MousePressed);
     setColor(1, QColor(  0, 255,   0, 255));
     setColor(1, QColor(  0, 255,   0, 255), State::MouseOver);
     setColor(1, QColor(  0, 255,   0, 255), State::MouseOver | State::MousePressed);
@@ -105,5 +105,5 @@ void KRPTSceneBtnItem::paintForeground(QPainter &painter, uint32_t stage) noexce
     QPen pen(color(1), 1.5);
     pen.setCosmetic(true);
     painter.setPen(pen);
-    painter.drawRoundedRect(_rect, _radius, _radius);
+    painter.drawRoundedRect(_rect.adjusted(0.5, 0.5, -0.5, -0.5), _radius, _radius);
 }

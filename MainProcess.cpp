@@ -63,7 +63,7 @@ MainProcess::MainProcess(QWidget *parent)
 
     _view->setTranslateEvents(true);
 
-    setGeometry(300, 50, 1600, 1000);
+    setGeometry(300, 50, 1800, 1400);
 
     _root = _scene->addItem<KRPTSceneRectItem>();
     _root->setGeometry(QRectF(10, 10, 1000, 800));
@@ -88,7 +88,7 @@ MainProcess::MainProcess(QWidget *parent)
             KRPTSceneItem::Must::WhellEvent
     );
 
-    _i0 = _root->addChild<KRPTSceneRectItem>();
+    _i0 = _root->addChild<KRPTSceneCanvasItem>();
     _i0->setGeometry(QRectF(50, 50, 150, 150));
 //    _i0->setBackgroundColor(QColor(0, 255, 0));
 

@@ -39,7 +39,6 @@ void KRPTSceneRoot::paintForeground(QPainter &painter, uint32_t stage) noexcept
     pen.setCosmetic(true);
     painter.setPen(pen);
     painter.drawRect(_rect.adjusted(0.5, 0.5, -1.5, -1.5));
-
     painter.drawText(10, 40, _debugString);
 }
 
@@ -372,10 +371,7 @@ void KRPTScene::deviceScaleEvent(double scale) noexcept
 void KRPTScene::paintEvent(QPainter &painter) noexcept
 {
     if(_printDebug)_debugTimer.start();
-
     paintImpl(painter, _item);
-//    qDebug().noquote() << "elapsed : " << t.elapsed();
-
     if(_printDebug)
     {
         auto item = static_cast<KRPTSceneRoot*>(_item);
@@ -459,7 +455,7 @@ void KRPTScene::paintImpl(QPainter &painter, KRPTSceneItem *item, uint32_t stage
     if(!childs.empty() && !item->must(KRPTSceneItem::Must::NoClipChilds, KRPTSceneItem::Must::NoClipPainter))
     {
         if(!item->must(KRPTSceneItem::Must::AccuracyClip))
-            painter.setClipRect(item->_rect.adjusted(0, 0, 0, 0), Qt::ClipOperation::IntersectClip);
+            painter.setClipRect(item->_rect, Qt::ClipOperation::IntersectClip);
         else painter.setClipPath(item->outline(), Qt::ClipOperation::IntersectClip);
     }
     if(!childs.empty() && item->needChildPaint())
