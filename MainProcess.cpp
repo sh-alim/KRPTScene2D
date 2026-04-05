@@ -10,30 +10,36 @@
 
 static const std::vector<std::pair<KRPTSceneItem::Must, QString>> must =
 {
-    {KRPTSceneItem::Must::NoPaint               , "NoPaint"               },
-    {KRPTSceneItem::Must::NoClipChilds          , "NoClipChilds"          },
-    {KRPTSceneItem::Must::NoClipPainter         , "NoClipPainter"         },
-    {KRPTSceneItem::Must::NoSceneScale          , "NoSceneScale"          },
-    {KRPTSceneItem::Must::NoSceneRotate         , "NoSceneRotate"         },
-    {KRPTSceneItem::Must::NoMouseEventTranslate , "NoMouseEventTranslate" },
-    {KRPTSceneItem::Must::NoCheckChildVisibled  , "NoCheckChildVisibled"  },
-    {KRPTSceneItem::Must::MouseTracking         , "MouseTracking"         },
-    {KRPTSceneItem::Must::MousePressEvent       , "MousePressEvent"       },
-    {KRPTSceneItem::Must::MouseMoveEvent        , "MouseMoveEvent"        },
-    {KRPTSceneItem::Must::MouseEnterEvent       , "MouseEnterEvent"       },
-    {KRPTSceneItem::Must::WhellEvent            , "WhellEvent"            },
-    {KRPTSceneItem::Must::TransformEvent        , "TransformEvent"        },
-
-    {KRPTSceneItem::Must::TransformToParentEvent, "TransformToParentEvent"},
-    {KRPTSceneItem::Must::TransformToSceneEvent , "TransformToSceneEvent" },
-
-    {KRPTSceneItem::Must::SceneTransformEvent   , "SceneTransformEvent"   },
-    {KRPTSceneItem::Must::SceneScaleEvent       , "SceneScaleEvent"       },
-    {KRPTSceneItem::Must::SceneRotateEvent      , "SceneRotateEvent"      },
-    {KRPTSceneItem::Must::Anim                  , "Anim"                  },
-    {KRPTSceneItem::Must::AccuracyCheckContains , "AccuracyCheckContains" },
-    {KRPTSceneItem::Must::AccuracyClip          , "AccuracyClip"          },
-    {KRPTSceneItem::Must::MouseMoved            , "MouseMoved"          }
+    {KRPTSceneItem::Must::NoPaint                , "NoPaint"                },
+    {KRPTSceneItem::Must::NoClipChilds           , "NoClipChilds"           },
+    {KRPTSceneItem::Must::NoClipPainter          , "NoClipPainter"          },
+    {KRPTSceneItem::Must::NoCheckChildVisibled   , "NoCheckChildVisibled"   },
+    {KRPTSceneItem::Must::NoSceneScale           , "NoSceneScale"           },
+    {KRPTSceneItem::Must::NoSceneRotate          , "NoSceneRotate"          },
+    {KRPTSceneItem::Must::Anim                   , "Anim"                   },
+    {KRPTSceneItem::Must::AccuracyCheckContains  , "AccuracyCheckContains"  },
+    {KRPTSceneItem::Must::AccuracyClip           , "AccuracyClip"           },
+    {KRPTSceneItem::Must::NoMouseEventTranslate  , "NoMouseEventTranslate"  },
+    {KRPTSceneItem::Must::MouseTracking          , "MouseTracking"          },
+    {KRPTSceneItem::Must::StateChangeEvent       , "StateChangeEvent"       },
+    {KRPTSceneItem::Must::MousePressEvent        , "MousePressEvent"        },
+    {KRPTSceneItem::Must::MouseMoveEvent         , "MouseMoveEvent"         },
+    {KRPTSceneItem::Must::MouseEnterEvent        , "MouseEnterEvent"        },
+    {KRPTSceneItem::Must::WhellEvent             , "WhellEvent"             },
+    {KRPTSceneItem::Must::TransformEvent         , "TransformEvent"         },
+    {KRPTSceneItem::Must::SceneTransformEvent    , "SceneTransformEvent"    },
+    {KRPTSceneItem::Must::SceneScaleEvent        , "SceneScaleEvent"        },
+    {KRPTSceneItem::Must::SceneRotateEvent       , "SceneRotateEvent"       },
+    {KRPTSceneItem::Must::TransformToParentEvent , "TransformToParentEvent" },
+    {KRPTSceneItem::Must::TransformToSceneEvent  , "TransformToSceneEvent"  },
+    {KRPTSceneItem::Must::MousePressToParentEvent, "MousePressToParentEvent"},
+    {KRPTSceneItem::Must::MousePressToSceneEvent , "MousePressToSceneEvent" },
+    {KRPTSceneItem::Must::MouseMoveToParentEvent , "MouseMoveToParentEvent" },
+    {KRPTSceneItem::Must::MouseMoveToSceneEvent  , "MouseMoveToSceneEvent"  },
+    {KRPTSceneItem::Must::WhellToParentEvent     , "WhellToParentEvent"     },
+    {KRPTSceneItem::Must::WhellToSceneEvent      , "WhellToSceneEvent"      },
+    {KRPTSceneItem::Must::MouseMoved             , "MouseMoved"             },
+    {KRPTSceneItem::Must::Checked                , "Checked"                }
 };
 
 //########################################################################################################################
@@ -314,7 +320,7 @@ void MainProcess::mousePressEvent(QMouseEvent *e)
             KRPTSceneItem::Must::WhellEvent
         );
 
-        child->setSize(50, 50);
+        child->setSize(150, 50);
         child->setPos(p);
 
         child->setTag(++_tag);

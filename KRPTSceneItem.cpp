@@ -803,6 +803,13 @@ void KRPTSceneItem::setColor(uint32_t id, const QColor &color, KRPTSceneItem::FS
     _data->colors.set(id, color, state);
 }
 
+void KRPTSceneItem::setCheckable(bool checkable) noexcept
+{
+    KRPTSceneItem::FState oldState = _state;
+    if(checkable)upMust(Must::Checked);
+    else downMust(Must::Checked);
+}
+
 void KRPTSceneItem::lockUpdate(bool lock) noexcept 
 {
     _updateLocked += lock ? 1 : _updateLocked > 0 ? -1 : 0;
@@ -1124,7 +1131,7 @@ bool KRPTSceneItem::stateChangeImpl(const FState &cur, const FState &old) noexce
     }
     if(must(Must::Anim) && _data->colors.mustAnim(cur, old))
     {
-        startAnimImpl(AnimDst::Color, 0, 1, 200, QEasingCurve::Linear);
+        startAnimImpl(AnimDst::Color, 0, 1, 100, QEasingCurve::Linear);
     }
     return true;
 }

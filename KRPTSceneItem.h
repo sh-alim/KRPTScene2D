@@ -58,20 +58,6 @@ protected:
         Outline                 = 0x2000,
         All                     = 0xFFFF
     };
-    enum class State : uint8_t
-    {
-        No                      = 0x00,
-        VisibledInView          = 0x01,
-        NeedPaint               = 0x02,
-        NeedChildPaint          = 0x04,
-
-        MousePressed            = 0x08,
-        MouseOver               = 0x10,
-        Checked                 = 0x20,
-        ChildMouseOver          = 0x40,
-
-        All                     = 0xFF
-    };
     enum AnimDst : uint8_t
     {
         Geometry                = 0,
@@ -113,11 +99,21 @@ public:
         MouseMoveToSceneEvent   = 0x02000000,
         WhellToParentEvent      = 0x04000000,
         WhellToSceneEvent       = 0x08000000,
-
         MouseMoved              = 0x10000000,
         Checked                 = 0x20000000,
-
         All                     = 0xFFFFFFFF
+    };
+    enum class State : uint8_t
+    {
+        No                      = 0x00,
+        VisibledInView          = 0x01,
+        NeedPaint               = 0x02,
+        NeedChildPaint          = 0x04,
+        MousePressed            = 0x08,
+        MouseOver               = 0x10,
+        Checked                 = 0x20,
+        ChildMouseOver          = 0x40,
+        All                     = 0xFF
     };
     enum class TransSrc : uint8_t{Self, Parent, Scene};
     enum class TransformAnchor
@@ -268,6 +264,7 @@ public:
                                                 uint32_t time, QEasingCurve curve)                                   noexcept;
     void                 setTag                (uint32_t tag)                                                        noexcept;
     void                 setColor              (uint32_t id, const QColor &color, FState state = State::No)          noexcept;
+    void                 setCheckable          (bool checkable)                                                      noexcept;
     void                 lockUpdate            (bool lock)                                                           noexcept;
     void                 lockEvents            (bool lock)                                                           noexcept;
     QPointF              mapToParent           (const QPointF &point)                                                noexcept;
