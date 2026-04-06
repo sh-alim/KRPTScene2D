@@ -65,7 +65,9 @@ MainProcess::MainProcess(QWidget *parent)
 
     setGeometry(300, 50, 1800, 1400);
 
-    _root = _scene->addItem<KRPTSceneRectItem>();
+//    _root = _scene->addItem<KRPTSceneRectItem>();
+    _root = _scene->addItem<KRPTSceneCanvasItem>();
+        
     _root->setGeometry(QRectF(10, 10, 1000, 800));
 
     _root->setTag(++_tag);
@@ -88,7 +90,9 @@ MainProcess::MainProcess(QWidget *parent)
             KRPTSceneItem::Must::WhellEvent
     );
 
-    _i0 = _root->addChild<KRPTSceneCanvasItem>();
+#if 0
+//    _i0 = _root->addChild<KRPTSceneRectItem>();
+    _i0 = _scene->addItem<KRPTSceneRectItem>();
     _i0->setGeometry(QRectF(50, 50, 150, 150));
 //    _i0->setBackgroundColor(QColor(0, 255, 0));
 
@@ -126,7 +130,7 @@ MainProcess::MainProcess(QWidget *parent)
 
 
     _i0->setTag(++_tag);
-
+#endif
     _sliders.resize(6);
     int x = 10, y = 10;
     for(int i = 0; i < _sliders.size(); ++i)
@@ -224,6 +228,8 @@ MainProcess::~MainProcess()
 void MainProcess::resizeEvent(QResizeEvent *value)
 {
     _view->setGeometry(200, 10, width() - 210, height() - 20);
+
+    _root->setGeometry(50, 50, width() - 800, height() - 500);
 }
 
 void MainProcess::mousePressEvent(QMouseEvent *e)
@@ -337,7 +343,7 @@ void MainProcess::mousePressEvent(QMouseEvent *e)
 //        child->setPosAnchor(KRPTSceneItem::TransformAnchor::RightTop);
 //        child->setPosAnchor(KRPTSceneItem::TransformAnchor::LeftBottom);
 //        child->setPosAnchor(KRPTSceneItem::TransformAnchor::RightCenter);
-        child->setPosAnchor(KRPTSceneItem::TransformAnchor::LeftCenter);
+//        child->setPosAnchor(KRPTSceneItem::TransformAnchor::LeftCenter);
 //        child->setPosAnchor(KRPTSceneItem::TransformAnchor::BottomCenter);
         }else
         {
@@ -392,7 +398,7 @@ void MainProcess::mouseMoveEvent(QMouseEvent *e)
 
 void MainProcess::wheelEvent(QWheelEvent *e)
 {
-#if 1
+#if 0
     auto item = _i0;
 
 //    item->setScale((e->angleDelta().y() > 0 )? item->scale() + 0.01 : item->scale() - 0.01);
