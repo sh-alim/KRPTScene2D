@@ -74,20 +74,20 @@ MainProcess::MainProcess(QWidget *parent)
 
     _root->upMust
     (
-        KRPTSceneItem::Must::NoClipPainter,
+//        KRPTSceneItem::Must::NoClipPainter,
 //            KRPTSceneItem::Must::NoClipChilds,
 //        KRPTSceneItem::Must::NoCheckChildVisibled,
 
 //            KRPTSceneItem::Must::NoSceneRotate,
 //            KRPTSceneItem::Must::NoSceneScale,
 //            KRPTSceneItem::Must::AccuracyClip,
-            KRPTSceneItem::Must::Anim,
+//            KRPTSceneItem::Must::Anim,
 //            KRPTSceneItem::Must::AccuracyClip,
 //            KRPTSceneItem::Must::AccuracyCheckContains,
-            KRPTSceneItem::Must::MouseMoved,
-            KRPTSceneItem::Must::MousePressEvent,
-            KRPTSceneItem::Must::MouseMoveEvent,
-            KRPTSceneItem::Must::WhellEvent
+//            KRPTSceneItem::Must::MouseMoved,
+//            KRPTSceneItem::Must::MousePressEvent,
+//            KRPTSceneItem::Must::MouseMoveEvent,
+//            KRPTSceneItem::Must::WhellEvent
     );
 
 #if 0

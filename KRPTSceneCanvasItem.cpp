@@ -35,7 +35,8 @@ KRPTSceneCanvasItemClient::KRPTSceneCanvasItemClient(KRPTScene *scene, KRPTScene
     upMust
     (
         KRPTSceneItem::Must::NoClipPainter,
-        KRPTSceneItem::Must::NoClipChilds,
+        KRPTSceneItem::Must::NoClipChilds
+
 //        KRPTSceneItem::Must::NoCheckChildVisibled,
 
 //            KRPTSceneItem::Must::NoSceneScale,
@@ -46,7 +47,7 @@ KRPTSceneCanvasItemClient::KRPTSceneCanvasItemClient(KRPTScene *scene, KRPTScene
 //            KRPTSceneItem::Must::MouseMoved,
 //            KRPTSceneItem::Must::MousePressEvent,
 //            KRPTSceneItem::Must::MouseMoveEvent,
-            KRPTSceneItem::Must::WhellEvent
+//            KRPTSceneItem::Must::WhellEvent
     );
 #endif
 
@@ -98,15 +99,15 @@ KRPTSceneCanvasItem::KRPTSceneCanvasItem(KRPTScene *scene, KRPTSceneItem *parent
 //        KRPTSceneItem::Must::NoClipChilds,
 //        KRPTSceneItem::Must::NoCheckChildVisibled,
 
-            KRPTSceneItem::Must::TransformEvent
+            KRPTSceneItem::Must::TransformEvent,
 //            KRPTSceneItem::Must::AccuracyClip,
 //            KRPTSceneItem::Must::Anim,
 //            KRPTSceneItem::Must::AccuracyClip,
 //            KRPTSceneItem::Must::AccuracyCheckContains,
 //            KRPTSceneItem::Must::MouseMoved,
-//            KRPTSceneItem::Must::MousePressEvent,
-//            KRPTSceneItem::Must::MouseMoveEvent,
-//            KRPTSceneItem::Must::WhellEvent
+            KRPTSceneItem::Must::MousePressEvent,
+            KRPTSceneItem::Must::MouseMoveEvent,
+            KRPTSceneItem::Must::WhellEvent
     );
 #endif
     resetMinMax();
@@ -149,10 +150,9 @@ void KRPTSceneCanvasItem::outlineImpl() noexcept
 
 void KRPTSceneCanvasItem::transformImpl(SceneTransformEvent *e) noexcept
 {
-//    updateClent();
     KRPTSceneItem::transformImpl(e);
-
-    updateMinMax();
+//    updateMinMax();
+    updateClentRect();
 }
 
 void KRPTSceneCanvasItem::childTransformEvent(KRPTSceneItem::Ptr item, SceneTransformEvent *e)noexcept 
@@ -182,6 +182,20 @@ void KRPTSceneCanvasItem::addChildImpl(KRPTSceneItem::Ptr item, KRPTSceneItem::P
     updateMinMax(item);
 
 }
+
+void KRPTSceneCanvasItem::mousePressImpl(SceneMouseEvent *e) noexcept
+{
+    qDebug() << "=====>>>";
+}
+
+void KRPTSceneCanvasItem::mouseReleaseImpl(SceneMouseEvent *e) noexcept
+{
+}
+
+void KRPTSceneCanvasItem::mouseMoveImpl(SceneMouseEvent *e) noexcept
+{
+}
+
 
 //************************************************************************************************************************
 //*

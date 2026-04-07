@@ -21,16 +21,20 @@ public:
     KRPTSceneCanvasItem(KRPTScene *scene, KRPTSceneItem *parent) noexcept;
     ~KRPTSceneCanvasItem()                                       noexcept;
 protected:
-    void paintBackground (QPainter &painter, uint32_t stage) noexcept override;
-    void paintForeground (QPainter &painter, uint32_t stage) noexcept override;
+    void paintBackground (QPainter &painter, uint32_t stage)    noexcept override;
+    void paintForeground (QPainter &painter, uint32_t stage)    noexcept override;
 protected:
-    void outlineImpl     ()                                  noexcept override;
-    void transformImpl(SceneTransformEvent *e) noexcept override;
-    void childTransformEvent(KRPTSceneItem::Ptr item, SceneTransformEvent *e)  noexcept override;
+    void outlineImpl        ()                                  noexcept override;
+    void transformImpl      (SceneTransformEvent *e)            noexcept override;
+    void childTransformEvent(KRPTSceneItem::Ptr item, 
+                             SceneTransformEvent *e)            noexcept override;
+    void addChildImpl       (KRPTSceneItem::Ptr item, 
+                             KRPTSceneItem::Ptr parent)         noexcept override;
 
+    void mousePressImpl     (SceneMouseEvent *e)                noexcept override;
+    void mouseReleaseImpl   (SceneMouseEvent *e)                noexcept override;
+    void mouseMoveImpl      (SceneMouseEvent *e)                noexcept override;
 
-    void addChildImpl    (KRPTSceneItem::Ptr item, 
-                          KRPTSceneItem::Ptr parent)         noexcept override;
 private:
     void resetMinMax() noexcept;
     void updateMinMax(KRPTSceneItem::Ptr item = nullptr) noexcept;
