@@ -32,16 +32,22 @@ protected:
     void addChildImpl    (KRPTSceneItem::Ptr item, 
                           KRPTSceneItem::Ptr parent)         noexcept override;
 private:
-    void updateMinMaxItems() noexcept;
+    void resetMinMax() noexcept;
+    void updateMinMax(KRPTSceneItem::Ptr item = nullptr) noexcept;
+    void updateClentRect() noexcept;
 
-    void updateMinClientRect(KRPTSceneItem::Ptr item) noexcept;
-    void updateClent() noexcept;
-
+protected:
+    struct MinMax
+    {
+        KRPTSceneItem::Ptr item  = nullptr;
+        double             value = 0      ;
+    };
+    std::array<MinMax, 4> _minMax;
 protected:
     KRPTSceneCanvasItemClient *_client;
     QRectF                     _clientRect; 
 
 
 
-    std::array<KRPTSceneItem::Ptr, 4> _minMaxItems;
+    
 };
