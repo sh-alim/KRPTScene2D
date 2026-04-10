@@ -95,8 +95,8 @@ KRPTSceneCanvasItem::KRPTSceneCanvasItem(KRPTScene *scene, KRPTSceneItem *parent
 #if 1
     upMust
     (
-//        KRPTSceneItem::Must::NoClipPainter,
-//        KRPTSceneItem::Must::NoClipChilds,
+        KRPTSceneItem::Must::NoClipPainter,
+        KRPTSceneItem::Must::NoClipChilds,
 //        KRPTSceneItem::Must::NoCheckChildVisibled,
 
             KRPTSceneItem::Must::TransformEvent,
@@ -119,6 +119,15 @@ KRPTSceneCanvasItem::KRPTSceneCanvasItem(KRPTScene *scene, KRPTSceneItem *parent
 
 KRPTSceneCanvasItem::~KRPTSceneCanvasItem() noexcept
 {
+}
+
+//************************************************************************************************************************
+//*
+//************************************************************************************************************************
+
+QPointF KRPTSceneCanvasItem::mapToClient(const QPointF &point) noexcept
+{
+    return _client->mapFromParent(point);
 }
 
 //************************************************************************************************************************
@@ -152,7 +161,7 @@ void KRPTSceneCanvasItem::transformImpl(SceneTransformEvent *e) noexcept
 {
     KRPTSceneItem::transformImpl(e);
 //    updateMinMax();
-    updateClentRect();
+//    updateClentRect();
 }
 
 void KRPTSceneCanvasItem::childTransformEvent(KRPTSceneItem::Ptr item, SceneTransformEvent *e)noexcept 
@@ -185,7 +194,7 @@ void KRPTSceneCanvasItem::addChildImpl(KRPTSceneItem::Ptr item, KRPTSceneItem::P
 
 void KRPTSceneCanvasItem::mousePressImpl(SceneMouseEvent *e) noexcept
 {
-    qDebug() << "=====>>>";
+    _clientMousePressedPos = _client->pos() - e->pos();
 }
 
 void KRPTSceneCanvasItem::mouseReleaseImpl(SceneMouseEvent *e) noexcept
@@ -194,8 +203,14 @@ void KRPTSceneCanvasItem::mouseReleaseImpl(SceneMouseEvent *e) noexcept
 
 void KRPTSceneCanvasItem::mouseMoveImpl(SceneMouseEvent *e) noexcept
 {
-}
+    if(e->btns() == SceneMouseEvent::Btn::Left)
+    {
+        _client->setPos(e->pos() + _clientMousePressedPos);
 
+//        updateClentRect();
+//        updateMinMax();
+    }
+}
 
 //************************************************************************************************************************
 //*
@@ -212,6 +227,7 @@ void KRPTSceneCanvasItem::resetMinMax() noexcept
 
 void KRPTSceneCanvasItem::updateMinMax(KRPTSceneItem::Ptr item) noexcept
 {
+#if 1
     bool updateMinMax = !item;
     if(!updateMinMax)
         for(auto &item : _minMax)
@@ -266,10 +282,44 @@ void KRPTSceneCanvasItem::updateMinMax(KRPTSceneItem::Ptr item) noexcept
         }
     }
     if(updateClientRect)updateClentRect();
+#else
+
+    _p0 = QPointF(_minMax[0].value, _minMax[1].value);
+
+    resetMinMax();
+
+    bool b = false;
+
+    const auto &childs = _client->childItems();
+    for(auto &child : childs)
+    {
+        b = true;
+//        QRectF r = child->bBoxMapToParent().translated(_client->pos());
+        QRectF r = child->bBoxMapToParent();
+
+        if(r.x     () < _minMax[0].value){_minMax[0].value = r.x     (); _minMax[0].item = child;}
+        if(r.y     () < _minMax[1].value){_minMax[1].value = r.y     (); _minMax[1].item = child;}
+        if(r.right () > _minMax[2].value){_minMax[2].value = r.right (); _minMax[2].item = child;}
+        if(r.bottom() > _minMax[3].value){_minMax[3].value = r.bottom(); _minMax[3].item = child;}
+    }
+
+//    _minMax[2].value -= _minMax[0].value;
+//    _minMax[3].value -= _minMax[1].value;
+//    _minMax[0].value = 0;
+//    _minMax[1].value = 0;
+
+    if(b)
+    _p0 -= QPointF(_minMax[0].value, _minMax[1].value);
+    else _p0 = QPointF();
+
+    updateClentRect();
+
+#endif
 }
 
 void KRPTSceneCanvasItem::updateClentRect() noexcept
 {
+#if 1
     double dx0 = _minMax[2].value - width (); dx0 = dx0 > 0 ? dx0 : 0;
     double dy0 = _minMax[3].value - height(); dy0 = dy0 > 0 ? dy0 : 0;
     double dx1 = _minMax[0].value < 0 ? -_minMax[0].value : 0;
@@ -297,4 +347,61 @@ void KRPTSceneCanvasItem::updateClentRect() noexcept
     }
     lockEvents(false);
     lockUpdate(false);
+#else
+    _clientRect = _client->geometry();
+
+    QRectF r = _clientRect;
+
+#if 0
+    _clientRect.setCoords(
+        _minMax[0].value, 
+        _minMax[1].value, 
+        _minMax[2].value, 
+        _minMax[3].value
+        );
+#else
+//    _clientRect.setCoords(
+//        0, 
+//        0, 
+//        _minMax[2].value - _minMax[0].value, 
+//        _minMax[3].value - _minMax[1].value
+//        );
+
+    _clientRect.setWidth(_minMax[2].value - _minMax[0].value); 
+    _clientRect.setHeight(_minMax[3].value - _minMax[1].value);
+
+#endif
+
+//    if(qFuzzyCompare(_clientRect, r))return;
+    QPointF dp = r.topLeft() - _clientRect.topLeft();
+    lockUpdate(true);
+    lockEvents(true);
+
+//    _clientRect.translate(_p0);
+
+
+    _client->setGeometry(_clientRect);
+
+//    dp += QPointF(_minMax[0].value, _minMax[1].value);
+
+    qDebug() << _p0;
+
+#if 1
+//    if(!qFuzzyIsNull(dp))
+    {
+        const auto &childs = _client->childItems();
+        for(auto &child : childs)
+        {
+            child->lockUpdate(true);
+            child->lockEvents(true);
+//            child->translate(dp);
+            child->translate(-_minMax[0].value, -_minMax[1].value);
+            child->lockEvents(false);
+            child->lockUpdate(false);
+        }
+    }
+#endif
+    lockEvents(false);
+    lockUpdate(false);
+#endif
 }

@@ -18,7 +18,7 @@
 #include "KRPTSceneRectItem.h"
 
 #include "KRPTSceneBtnItem.h"
-#include "KRPTSceneCanvasItem.h"
+#include "KRPTSceneScrolledAreaItem.h"
 
 
 //########################################################################################################################

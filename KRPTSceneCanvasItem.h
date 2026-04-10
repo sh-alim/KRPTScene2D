@@ -20,6 +20,9 @@ friend class KRPTSceneCanvasItemClient;
 public:
     KRPTSceneCanvasItem(KRPTScene *scene, KRPTSceneItem *parent) noexcept;
     ~KRPTSceneCanvasItem()                                       noexcept;
+public:
+    QPointF mapToClient(const QPointF &point) noexcept;
+
 protected:
     void paintBackground (QPainter &painter, uint32_t stage)    noexcept override;
     void paintForeground (QPainter &painter, uint32_t stage)    noexcept override;
@@ -51,7 +54,9 @@ protected:
     KRPTSceneCanvasItemClient *_client;
     QRectF                     _clientRect; 
 
+    QPointF              _clientMousePressedPos      ;
 
 
+    QPointF              _p0;
     
 };

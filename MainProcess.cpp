@@ -66,7 +66,7 @@ MainProcess::MainProcess(QWidget *parent)
     setGeometry(300, 50, 1800, 1400);
 
 //    _root = _scene->addItem<KRPTSceneRectItem>();
-    _root = _scene->addItem<KRPTSceneCanvasItem>();
+    _root = _scene->addItem<KRPTSceneScrolledAreaItem>();
         
     _root->setGeometry(QRectF(10, 10, 1000, 800));
 
@@ -162,7 +162,15 @@ MainProcess::MainProcess(QWidget *parent)
             if(!_selectedItem)return;
             if(i == 0)_selectedItem->setScale(value / 100.0);
             if(i == 1)_selectedItem->setAngle(value / 2.0);
-            if(i == 2)_selectedItem->setWidth(value);
+            if(i == 2)
+            {
+                auto itm = dynamic_cast<KRPTSceneScrolledAreaItem*>(_selectedItem);
+                if(itm)
+                {
+                    itm->setAreaSize(QSizeF(value, itm->height()));
+                }else
+                _selectedItem->setWidth(value);
+            }
             if(i == 3)_selectedItem->setHeight(value);
             if(i == 4)_selectedItem->setX(value);
             if(i == 5)_selectedItem->setY(value);
@@ -229,7 +237,7 @@ void MainProcess::resizeEvent(QResizeEvent *value)
 {
     _view->setGeometry(200, 10, width() - 210, height() - 20);
 
-    _root->setGeometry(50, 50, width() - 800, height() - 500);
+    _root->setGeometry(150, 150, width() - 800, height() - 500);
 }
 
 void MainProcess::mousePressEvent(QMouseEvent *e)
@@ -298,6 +306,12 @@ void MainProcess::mousePressEvent(QMouseEvent *e)
         auto item = _scene->mousePressedItem();
         if(!item)return;
         QPointF p = item->mapFromScene(e->position());
+
+        auto itm = dynamic_cast<KRPTSceneScrolledAreaItem*>(item);
+        if(itm)
+        {
+            p = itm->mapToArea(p);
+        }
 
         if(!(e->modifiers() & Qt::Modifier::CTRL))
         {

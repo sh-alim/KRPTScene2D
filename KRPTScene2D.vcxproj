@@ -127,6 +127,7 @@
     <ClCompile Include="KRPTSceneBtnItem.cpp" />
     <ClCompile Include="KRPTSceneItem.cpp" />
     <ClCompile Include="KRPTSceneRectItem.cpp" />
+    <ClCompile Include="KRPTSceneScrolledAreaItem.cpp" />
     <ClCompile Include="KRPTSceneView.cpp" />
     <ClCompile Include="MainProcess.cpp" />
     <ClCompile Include="main.cpp" />
@@ -146,6 +147,7 @@
     <ClInclude Include="KRPTSceneBtnItem.h" />
     <ClInclude Include="KRPTSceneItem.h" />
     <ClInclude Include="KRPTSceneRectItem.h" />
+    <ClInclude Include="KRPTSceneScrolledAreaItem.h" />
     <ClInclude Include="KRPTSceneView.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -55,6 +55,9 @@
     <ClCompile Include="KRPTSceneCanvasItem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="KRPTSceneScrolledAreaItem.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="MainProcess.h">
@@ -90,6 +93,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="KRPTSceneCanvasItem.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="KRPTSceneScrolledAreaItem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

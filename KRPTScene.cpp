@@ -261,6 +261,8 @@ void KRPTScene::mousePressEvent(SceneMouseEvent *e) noexcept
     if(!_mousePressedItem)return;
     QPointF p = _mousePressedItem->mapFromScene(mousePos);
     _mousePressedItemPos = item->pos() - item->mapToParent(p);
+    _mousePressedItem->mousePressImpl(SceneMouseEvent::get(item->mapFromScene(mousePos), e->btns(), 
+        mousePos, e->keyModifers(), e->delta()).get());
     oldState = _mousePressedItem->_state;
     _mousePressedItem->_state += KRPTSceneItem::State::MousePressed;
     if(_mousePressedItem->must(KRPTSceneItem::Must::Checked))
