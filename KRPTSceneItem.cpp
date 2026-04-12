@@ -1132,7 +1132,7 @@ bool KRPTSceneItem::stateChangeImpl(const FState &cur, const FState &old) noexce
     if(must(Must::Anim) && _data->colors.mustAnim(cur, old))
     {
         startAnimImpl(AnimDst::Color, 0, 1, 100, QEasingCurve::Linear);
-    }
+    }else update();
     return true;
 }
 
@@ -1322,6 +1322,7 @@ bool KRPTSceneItem::updateCache(bool visible) noexcept
     bool dirty = false;
     KRPTFlag<State> oldState = _state;
     _state.up(State::VisibledInView, State::NeedPaint, State::NeedChildPaint);
+
     QTransform *transform = nullptr;
     auto it = _data->cache.begin();
     for(; it != _data->cache.end(); ++it)
@@ -1380,8 +1381,13 @@ bool KRPTSceneItem::updateCache(bool visible) noexcept
         if(!cache.visible)
         {
             _state.down(State::VisibledInView, State::NeedPaint);
+        #if 0
             if(cache.parent && !must(Must::NoClipChilds))
                 _state -= State::NeedChildPaint;
+        #else
+            if((cache.parent && !must(Must::NoClipChilds)) || _childItems.empty())
+                _state -= State::NeedChildPaint;
+        #endif
             if(visible)
             {
                 if(dirty)

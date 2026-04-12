@@ -247,13 +247,14 @@ void KRPTScene::mousePressEvent(SceneMouseEvent *e) noexcept
     {
         return item->must(KRPTSceneItem::Must::MousePressEvent);
     });
+    mouseOverUpdate(item, e);
     if(item == _mousePressedItem)return;
     KRPTSceneItem::FState oldState;
     if(!item && _mousePressedItem)
     {
         oldState = _mousePressedItem->_state;
         _mousePressedItem->_state -= KRPTSceneItem::State::MousePressed;
-        mouseOverCheck(e);
+        mouseOverUpdate(item, e);
         if(_mousePressedItem->_state != oldState)
             _mousePressedItem->stateChangeImpl(_mousePressedItem->_state, oldState);
     }
@@ -271,7 +272,6 @@ void KRPTScene::mousePressEvent(SceneMouseEvent *e) noexcept
             _mousePressedItem->_state -= KRPTSceneItem::State::Checked;
         else _mousePressedItem->_state += KRPTSceneItem::State::Checked;
     }
-    mouseOverCheck(e);
     if(_mousePressedItem->_state != oldState)
         _mousePressedItem->stateChangeImpl(_mousePressedItem->_state, oldState);
     _mousePressPos = mousePos;
@@ -320,7 +320,15 @@ void KRPTScene::mouseMoveEvent(SceneMouseEvent *e) noexcept
 void KRPTScene::whellEvent(SceneMouseEvent *e) noexcept
 {
     QPointF mousePos = e->pos();
-    KRPTSceneItem *item = _mouseOverItem;
+    KRPTSceneItem::Ptr item = nullptr;
+    if(_mouseOverItem && _mouseOverItem->must(KRPTSceneItem::Must::WhellEvent))
+        item = _mouseOverItem; else
+    {
+        item = itemFromPos(mousePos, [](KRPTSceneItem *item)
+        {
+            return item->must(KRPTSceneItem::Must::WhellEvent);
+        });
+    }
     if(item)
     {
         item->whellImpl(SceneMouseEvent::get(item->mapFromScene(mousePos), e->btns(), 
@@ -499,7 +507,7 @@ void KRPTScene::mouseOverCheck(SceneMouseEvent *e) noexcept
 {
     auto item = itemFromPos(_mousePos, [](KRPTSceneItem *item)
     {
-        return item->must(KRPTSceneItem::Must::MouseTracking);
+        return item->must(KRPTSceneItem::Must::MousePressEvent, KRPTSceneItem::Must::MouseTracking);
     });
     if(item != _mouseOverItem)mouseOverUpdate(item, e);
 }
