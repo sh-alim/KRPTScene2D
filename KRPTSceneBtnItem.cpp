@@ -9,29 +9,23 @@
 //#
 //########################################################################################################################
 
-KRPTSceneBtnItem::KRPTSceneBtnItem(KRPTScene *scene, KRPTSceneItem *parent) noexcept
-    : KRPTSceneItem(scene, parent)
+KRPTSceneBtnItem::KRPTSceneBtnItem(KRPTScene *scene, KRPTSceneItem *parent, const QRectF &geometry) noexcept
+    : KRPTSceneItem(scene, parent, geometry,
+        KRPTSceneItem::Must::NoClipPainter         | 
+        KRPTSceneItem::Must::NoCheckChildVisibled  |
+        KRPTSceneItem::Must::Anim                  |
+        KRPTSceneItem::Must::AccuracyCheckContains |
+        KRPTSceneItem::Must::Checked               |
+        KRPTSceneItem::Must::MouseTracking         |
+        KRPTSceneItem::Must::StateChangeEvent      |
+        KRPTSceneItem::Must::MousePressEvent       |
+        KRPTSceneItem::Must::MouseMoveEvent        |
+        KRPTSceneItem::Must::MouseEnterEvent
+    )
 {
-    upMust(
-//        KRPTSceneItem::Must::NoClipChilds,
-        KRPTSceneItem::Must::NoClipPainter,
-        KRPTSceneItem::Must::NoCheckChildVisibled,
-        KRPTSceneItem::Must::Anim,
-        KRPTSceneItem::Must::AccuracyCheckContains,
 //            KRPTSceneItem::Must::AccuracyClip,
-
 //            KRPTSceneItem::Must::NoSceneRotate,
 //            KRPTSceneItem::Must::NoSceneScale,
-
-        KRPTSceneItem::Must::Checked,
-
-        KRPTSceneItem::Must::MouseTracking,
-        KRPTSceneItem::Must::StateChangeEvent,
-        KRPTSceneItem::Must::MousePressEvent,
-        KRPTSceneItem::Must::MouseMoveEvent,
-        KRPTSceneItem::Must::MouseEnterEvent
-    );
-
     setColor(0, QColor(  0,  50,   0, 255));
     setColor(0, QColor(  0, 100,   0, 255), State::MouseOver);
     setColor(0, QColor(  0, 100,   0, 255), State::MousePressed);

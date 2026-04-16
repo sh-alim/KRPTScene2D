@@ -14,15 +14,11 @@
 //#
 //########################################################################################################################
 
-class KRPTSceneCanvasItem : public KRPTSceneItem
+class KRPTSceneAreaItem : public KRPTSceneItem
 {
-friend class KRPTSceneCanvasItemClient;
 public:
-    KRPTSceneCanvasItem(KRPTScene *scene, KRPTSceneItem *parent) noexcept;
-    ~KRPTSceneCanvasItem()                                       noexcept;
-public:
-    QPointF mapToClient(const QPointF &point) noexcept;
-
+    KRPTSceneAreaItem(KRPTScene *scene, KRPTSceneItem *parent) noexcept;
+   ~KRPTSceneAreaItem()                                        noexcept;
 protected:
     void paintBackground (QPainter &painter, uint32_t stage)    noexcept override;
     void paintForeground (QPainter &painter, uint32_t stage)    noexcept override;
@@ -51,12 +47,8 @@ protected:
     };
     std::array<MinMax, 4> _minMax;
 protected:
-    KRPTSceneCanvasItemClient *_client;
-    QRectF                     _clientRect; 
-
-    QPointF              _clientMousePressedPos      ;
-
-
-    QPointF              _p0;
     
+    QPointF _margin = QPointF(20, 20);
+
+    QRectF _r;
 };

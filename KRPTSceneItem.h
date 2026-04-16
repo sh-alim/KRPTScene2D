@@ -140,7 +140,8 @@ protected:
     KRPTSceneItem()                     = delete;
     KRPTSceneItem(const KRPTSceneItem&) = delete;
     KRPTSceneItem(KRPTSceneItem&&)      = delete;
-    KRPTSceneItem(KRPTScene *scene, KRPTSceneItem *parent)                                                           noexcept;
+    KRPTSceneItem(KRPTScene *scene, KRPTSceneItem *parent, 
+                  const QRectF &geometry = QRectF(0, 0, 100, 100), FMust must = Must::No)                            noexcept;
     virtual ~KRPTSceneItem()                                                                                         noexcept;
 public:
     template<typename T, typename ... Args> inline auto addChild(Args&& ... arg)                                     noexcept

@@ -16,7 +16,7 @@
 
 class KRPTSceneScrolledAreaItem : public KRPTSceneItem
 {
-friend class KRPTSceneAreaItem;
+friend class KRPTSceneScrolledAreaCanvasItem;
 public:
     KRPTSceneScrolledAreaItem(KRPTScene *scene, KRPTSceneItem *parent)                            noexcept;
     ~KRPTSceneScrolledAreaItem()                                                                  noexcept;
@@ -87,9 +87,9 @@ private:
     bool checkAreaRect(const QRectF &src, QRectF &dst, QPointF &dp) noexcept;
     void updateAreaRect() noexcept;
 protected:
-    KRPTSceneAreaItem *_area               ;
-    QRectF             _areaRect           ;
-    QPointF            _areaMousePos;
+    KRPTSceneScrolledAreaCanvasItem *_area               ;
+    QRectF                           _areaRect           ;
+    QPointF                          _areaMousePos;
 
     double  _radius = 20;
 

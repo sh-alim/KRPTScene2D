@@ -9,12 +9,12 @@
 //#
 //########################################################################################################################
 
-class KRPTSceneAreaItem : public KRPTSceneItem
+class KRPTSceneScrolledAreaCanvasItem : public KRPTSceneItem
 {
 friend class KRPTSceneScrolledAreaItem;
 public:
-    KRPTSceneAreaItem(KRPTScene *scene, KRPTSceneItem *parent)                   noexcept;
-    ~KRPTSceneAreaItem()                                                         noexcept;
+    KRPTSceneScrolledAreaCanvasItem(KRPTScene *scene, KRPTSceneItem *parent)                   noexcept;
+    ~KRPTSceneScrolledAreaCanvasItem()                                                         noexcept;
 protected:
     void paintBackground (QPainter &painter, uint32_t stage)                     noexcept override;
     void paintForeground (QPainter &painter, uint32_t stage)                     noexcept override;
@@ -31,7 +31,7 @@ private:
 //*
 //************************************************************************************************************************
 
-KRPTSceneAreaItem::KRPTSceneAreaItem(KRPTScene *scene, KRPTSceneItem *parent) noexcept
+KRPTSceneScrolledAreaCanvasItem::KRPTSceneScrolledAreaCanvasItem(KRPTScene *scene, KRPTSceneItem *parent) noexcept
     : KRPTSceneItem(scene, parent), _owner(static_cast<KRPTSceneScrolledAreaItem*>(parent))
 {
     upMust
@@ -58,7 +58,7 @@ KRPTSceneAreaItem::KRPTSceneAreaItem(KRPTScene *scene, KRPTSceneItem *parent) no
 #endif
 }
 
-KRPTSceneAreaItem::~KRPTSceneAreaItem() noexcept
+KRPTSceneScrolledAreaCanvasItem::~KRPTSceneScrolledAreaCanvasItem() noexcept
 {
 }
 
@@ -66,7 +66,7 @@ KRPTSceneAreaItem::~KRPTSceneAreaItem() noexcept
 //*
 //************************************************************************************************************************
 
-void KRPTSceneAreaItem::paintBackground(QPainter &painter, uint32_t stage) noexcept
+void KRPTSceneScrolledAreaCanvasItem::paintBackground(QPainter &painter, uint32_t stage) noexcept
 {
 #if 0
     painter.setRenderHint(QPainter::Antialiasing);
@@ -77,7 +77,7 @@ void KRPTSceneAreaItem::paintBackground(QPainter &painter, uint32_t stage) noexc
 #endif
 }
 
-void KRPTSceneAreaItem::paintForeground(QPainter &painter, uint32_t stage) noexcept
+void KRPTSceneScrolledAreaCanvasItem::paintForeground(QPainter &painter, uint32_t stage) noexcept
 {
 #if 0
     painter.setRenderHint(QPainter::Antialiasing);
@@ -92,13 +92,13 @@ void KRPTSceneAreaItem::paintForeground(QPainter &painter, uint32_t stage) noexc
 //*
 //************************************************************************************************************************
 
-void KRPTSceneAreaItem::addChildImpl(KRPTSceneItem::Ptr item, KRPTSceneItem::Ptr parent) noexcept
+void KRPTSceneScrolledAreaCanvasItem::addChildImpl(KRPTSceneItem::Ptr item, KRPTSceneItem::Ptr parent) noexcept
 {
     KRPTSceneItem::addChildImpl(item, parent);
 }
 
 #if 1
-void KRPTSceneAreaItem::childTransformEvent(KRPTSceneItem::Ptr item, SceneTransformEvent *e) noexcept 
+void KRPTSceneScrolledAreaCanvasItem::childTransformEvent(KRPTSceneItem::Ptr item, SceneTransformEvent *e) noexcept 
 {
     _owner->childTransformEvent(item, e);
 };
@@ -131,7 +131,7 @@ KRPTSceneScrolledAreaItem::KRPTSceneScrolledAreaItem(KRPTScene *scene, KRPTScene
 #endif
     setColor(0, QColor( 50,  50,  50));
     setColor(1, QColor(250, 250, 250));
-    _area = addChild<KRPTSceneAreaItem>();
+    _area = addChild<KRPTSceneScrolledAreaCanvasItem>();
 
     _areaRect = QRectF(0, 0, 500, 500);
 

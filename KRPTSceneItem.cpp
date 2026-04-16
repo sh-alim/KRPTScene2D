@@ -282,13 +282,29 @@ private:
 //#
 //########################################################################################################################
 
-KRPTSceneItem::KRPTSceneItem(KRPTScene *scene, KRPTSceneItem *parent) noexcept
-    : _scene(scene), _parent(parent), _data(new KRPTSceneItemData(this)), _dirty(Dirty::All), 
+KRPTSceneItem::KRPTSceneItem(KRPTScene *scene, KRPTSceneItem *parent, const QRectF &geometry, FMust must) noexcept
+    : _scene(scene), _parent(parent), _data(new KRPTSceneItemData(this)), _dirty(Dirty::All), _must(must),
       _state(State::NeedPaint | State::VisibledInView | State::NeedChildPaint),
       _updateLocked(0), _eventLocked(0), _visible(true), _angle(0), _scale(1), _opaq(1), 
       _transformAnchor(TransformAnchor::Center), _posAnchor(TransformAnchor::LeftTop), 
-      _paintStageCount(1), _tag(0)
+      _paintStageCount(1), _geometry(geometry), _tag(0)
 {
+//    setGeometryImpl(geometry);
+
+    _rect.setSize(_geometry.size());
+
+//    _dirty.up(Dirty::Transform     , Dirty::TransformInv     , Dirty::VisibleChildItems,
+//              Dirty::SceneTransform, Dirty::SceneTransformInv, Dirty::BBoxMapToParent);
+//    if(isMoved  )_dirty.up(Dirty::TransformTrans);
+//    if(isResized)_dirty.up(Dirty::TransformSize, Dirty::BBox, Dirty::Outline);
+//    if(_parent)_parent->_dirty.up(Dirty::VisibleChildItems);
+//    ++_data->genTransform;
+//    sendTransformEvent(geometry, oldGeometry, _angle, _angle, _scale, _scale, 
+//                       isMoved, isResized, false, false);
+//    if(_state.any(State::MouseOver, State::ChildMouseOver))
+//        _scene->mouseOverCheck();
+//    update();
+
 }
 
 KRPTSceneItem::~KRPTSceneItem() noexcept

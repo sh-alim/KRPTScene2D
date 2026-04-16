@@ -52,10 +52,10 @@
     <ClCompile Include="KRPTSceneBtnItem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="KRPTSceneCanvasItem.cpp">
+    <ClCompile Include="KRPTSceneScrolledAreaItem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="KRPTSceneScrolledAreaItem.cpp">
+    <ClCompile Include="KRPTSceneAreaItem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -92,10 +92,10 @@
     <ClInclude Include="KRPTSceneBtnItem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="KRPTSceneCanvasItem.h">
+    <ClInclude Include="KRPTSceneScrolledAreaItem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="KRPTSceneScrolledAreaItem.h">
+    <ClInclude Include="KRPTSceneAreaItem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -67,10 +67,13 @@ MainProcess::MainProcess(QWidget *parent)
 
 //    _root = _scene->addItem<KRPTSceneRectItem>();
     _root = _scene->addItem<KRPTSceneScrolledAreaItem>();
-    _root->setGeometry(QRectF(10, 10, 1000, 800));
+//    _root = _scene->addItem<KRPTSceneAreaItem_>();
+
+
+    _root->setGeometry(QRectF(10, 10, 500, 500));
     _root->setTag(++_tag);
 
-#if 1
+#if 0
     double x1 = 10;
     for(int i = 0; i < 5; ++i)
     {
@@ -325,8 +328,10 @@ void MainProcess::mousePressEvent(QMouseEvent *e)
 
         if(!(e->modifiers() & Qt::Modifier::CTRL))
         {
+            QRectF r(p, QSizeF(100, 100));
+
 //        auto child = item->addChild<KRPTSceneRectItem>();
-        auto child = item->addChild<KRPTSceneBtnItem>();
+        auto child = item->addChild<KRPTSceneBtnItem>(r);
 
 //        child->setBackgroundColor(QColor(0, 255, 0));
 
@@ -350,8 +355,8 @@ void MainProcess::mousePressEvent(QMouseEvent *e)
             KRPTSceneItem::Must::WhellEvent
         );
 
-        child->setSize(150, 50);
-        child->setPos(p);
+//        child->setSize(150, 50);
+//        child->setPos(p);
 
         child->setTag(++_tag);
 

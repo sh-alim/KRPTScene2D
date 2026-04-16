@@ -17,7 +17,8 @@
 class KRPTSceneBtnItem : public KRPTSceneItem
 {
 public:
-    KRPTSceneBtnItem(KRPTScene *scene, KRPTSceneItem *parent)            noexcept;
+    KRPTSceneBtnItem(KRPTScene *scene, KRPTSceneItem *parent, 
+                     const QRectF &geometry = QRectF(0, 0, 100, 100))    noexcept;
     ~KRPTSceneBtnItem()                                                  noexcept;
 protected:
     void stateChangeEvent(const FState &newState, const FState &oldState) noexcept override;
