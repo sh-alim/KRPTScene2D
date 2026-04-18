@@ -17,31 +17,27 @@ KRPTSceneAreaItem::KRPTSceneAreaItem(KRPTScene *scene, KRPTSceneItem *parent) no
       KRPTSceneItem::Must::MouseMoveEvent  |
       KRPTSceneItem::Must::WhellEvent)
 {
-#if 0
-    upMust
-    (
-        KRPTSceneItem::Must::NoClipPainter,
-//        KRPTSceneItem::Must::NoClipChilds,
-//        KRPTSceneItem::Must::NoCheckChildVisibled,
-
-            KRPTSceneItem::Must::TransformEvent,
-//            KRPTSceneItem::Must::AccuracyClip,
-//            KRPTSceneItem::Must::Anim,
-//            KRPTSceneItem::Must::AccuracyClip,
-//            KRPTSceneItem::Must::AccuracyCheckContains,
-//            KRPTSceneItem::Must::MouseMoved,
-            KRPTSceneItem::Must::MousePressEvent,
-            KRPTSceneItem::Must::MouseMoveEvent,
-            KRPTSceneItem::Must::WhellEvent
-    );
-#endif
     resetMinMax();
     setColor(0, QColor( 50,  50,  50));
     setColor(1, QColor(250, 250, 250));
+
+
+    _margin = QPointF(10, 10);
 }
 
-KRPTSceneAreaItem::~KRPTSceneAreaItem() noexcept
+//************************************************************************************************************************
+//*
+//************************************************************************************************************************
+
+QPointF KRPTSceneAreaItem::margin() const noexcept
 {
+    return _margin;
+}
+
+void KRPTSceneAreaItem::setMargin(const QPointF &margin) noexcept
+{
+    _margin = margin;
+    resetMinMax();
 }
 
 //************************************************************************************************************************
@@ -87,18 +83,6 @@ void KRPTSceneAreaItem::addChildImpl(KRPTSceneItem::Ptr item, KRPTSceneItem::Ptr
     item->upMust(KRPTSceneItem::Must::TransformToParentEvent);
     item->downMust(KRPTSceneItem::Must::MouseMoved);
     updateMinMax(item);
-}
-
-void KRPTSceneAreaItem::mousePressImpl(SceneMouseEvent *e) noexcept
-{
-}
-
-void KRPTSceneAreaItem::mouseReleaseImpl(SceneMouseEvent *e) noexcept
-{
-}
-
-void KRPTSceneAreaItem::mouseMoveImpl(SceneMouseEvent *e) noexcept
-{
 }
 
 //************************************************************************************************************************
@@ -174,6 +158,7 @@ void KRPTSceneAreaItem::updateMinMax(KRPTSceneItem::Ptr item) noexcept
 
 void KRPTSceneAreaItem::updateClentRect() noexcept
 {
+#if 0
     double w  = _minMax[2].value - _minMax[0].value;
     double h  = _minMax[3].value - _minMax[1].value;
     double dx = _minMax[0].value;
@@ -206,4 +191,15 @@ void KRPTSceneAreaItem::updateClentRect() noexcept
         lockEvents(false);
         lockUpdate(false);
     }
+#else
+    double w  = _minMax[2].value;
+    double h  = _minMax[3].value;
+    QRectF geometry = _geometry;
+    geometry.setWidth (w);
+    geometry.setHeight(h);
+    if(!qFuzzyCompare(geometry, _geometry))
+    {
+        setGeometry(geometry);
+    }
+#endif
 }

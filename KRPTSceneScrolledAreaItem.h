@@ -68,6 +68,9 @@ protected:
     void transformImpl      (SceneTransformEvent *e)                                              noexcept override;
     void childTransformEvent(KRPTSceneItem::Ptr item, 
                              SceneTransformEvent *e)                                              noexcept override;
+    void areaChildTransformEvent(KRPTSceneItem::Ptr item, SceneTransformEvent *e)noexcept; 
+
+
     void addChildImpl       (KRPTSceneItem::Ptr item, 
                              KRPTSceneItem::Ptr parent)                                           noexcept override;
     void mousePressImpl     (SceneMouseEvent *e)                                                  noexcept override;
@@ -86,12 +89,24 @@ private:
     }_trans;
     bool checkAreaRect(const QRectF &src, QRectF &dst, QPointF &dp) noexcept;
     void updateAreaRect() noexcept;
+private:
+    struct AreaMinMax
+    {
+        KRPTSceneItem::Ptr item  = nullptr;
+        double             value = 0      ;
+    };
+    std::array<AreaMinMax, 4> _areaMinMax;
+    void resetAreaMinMax() noexcept;
+    void updateAreaMinMax(KRPTSceneItem::Ptr item) noexcept;
+
 protected:
     KRPTSceneScrolledAreaCanvasItem *_area               ;
     QRectF                           _areaRect           ;
     QPointF                          _areaMousePos;
 
     double  _radius = 20;
+    QPointF _margin = QPointF(0, 0);
+
 
     QRectF             _r0;
     QRectF             _r1;

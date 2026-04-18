@@ -297,11 +297,15 @@ void KRPTScene::mouseReleaseEvent(SceneMouseEvent *e) noexcept
 void KRPTScene::mouseMoveEvent(SceneMouseEvent *e) noexcept
 {
     _mousePos = e->pos();
-//    if(e->btns() == SceneMouseEvent::Btn::No)
+#if 0
+    if(e->btns() == SceneMouseEvent::Btn::No)
     {
         mouseOverCheck(e);
-//        return;
+        return;
     }
+#else
+    mouseOverCheck(e);
+#endif
     if(_mousePressedItem)
     {
         _mousePressedItem->mouseMoveImpl(SceneMouseEvent::get(_mousePressedItem->mapFromScene(_mousePos), 
@@ -310,8 +314,15 @@ void KRPTScene::mouseMoveEvent(SceneMouseEvent *e) noexcept
         {
             if(_mousePressedItem->must(KRPTSceneItem::Must::MouseMoved))
             {
+            #if 0
                 _mousePressedItem->setPos(_mousePressedItem->mapToParent(
                     _mousePressedItem->mapFromScene(_mousePos)) + _mousePressedItemPos);
+            #else
+                _mousePressedItem->setPos(_mousePressedItem->mapToParent(
+                    _mousePressedItem->mapFromScene(_mousePos)) + _mousePressedItemPos);
+                _mousePressedItemPos = _mousePressedItem->pos() - 
+                    _mousePressedItem->mapToParent(_mousePressedItem->mapFromScene(_mousePos));
+            #endif
             }
         }
     }
@@ -461,7 +472,6 @@ void KRPTScene::paintImpl(QPainter &painter, KRPTSceneItem *item, uint32_t stage
     painter.setOpacity(painter.opacity() * item->opaq());
     if(item->needPaint())
         item->paintBackground(painter, stage);
-//    painter.save();
     if(!childs.empty() && !item->must(KRPTSceneItem::Must::NoClipChilds, KRPTSceneItem::Must::NoClipPainter))
     {
         if(!item->must(KRPTSceneItem::Must::AccuracyClip))
@@ -492,7 +502,6 @@ void KRPTScene::paintImpl(QPainter &painter, KRPTSceneItem *item, uint32_t stage
             ch.splice(ch.end(), tch);
         }
     }
-//    painter.restore();
     if(item->needPaint())
         item->paintForeground(painter, stage);
     painter.restore();

@@ -66,23 +66,29 @@ MainProcess::MainProcess(QWidget *parent)
     setGeometry(300, 50, 1800, 1400);
 
 //    _root = _scene->addItem<KRPTSceneRectItem>();
-    _root = _scene->addItem<KRPTSceneScrolledAreaItem>();
-//    _root = _scene->addItem<KRPTSceneAreaItem_>();
+//    _root = _scene->addItem<KRPTSceneScrolledAreaItem>();
+    _root = _scene->addItem<KRPTSceneAreaItem>();
 
 
     _root->setGeometry(QRectF(10, 10, 500, 500));
     _root->setTag(++_tag);
 
 #if 0
-    double x1 = 10;
-    for(int i = 0; i < 5; ++i)
+    double x1 = 15;
+    double y1 = 15;
+    for(int i = 0; i < 2; ++i)
     {
-        auto child = _root->addChild<KRPTSceneBtnItem>();
+        auto child = _root->addChild<KRPTSceneBtnItem>(QRectF(x1, y1, 50, 50));
 //        auto child = _root->addChild<KRPTSceneRectItem>();
-        child->setGeometry(10, x1, 50, 50);
-        x1 += 60;
+//        child->setGeometry(10, y1, 50, 50);
+        x1 += 50;
+        if(x1 > 200)
+        {
+            y1 += 50;
+            x1 = 0;
+        }
     }
-    ((KRPTSceneScrolledAreaItem*)_root)->setAreaSize(100, 5 * 60 + 10);
+//    ((KRPTSceneScrolledAreaItem*)_root)->setAreaSize(100, 5 * 60 + 10);
 #endif
 
     _root->upMust
