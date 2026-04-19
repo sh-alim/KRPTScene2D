@@ -13,16 +13,18 @@ class KRPTSceneScrolledAreaCanvasItem : public KRPTSceneItem
 {
 friend class KRPTSceneScrolledAreaItem;
 public:
-    KRPTSceneScrolledAreaCanvasItem(KRPTScene *scene, KRPTSceneItem *parent)                   noexcept;
-    ~KRPTSceneScrolledAreaCanvasItem()                                                         noexcept;
+    KRPTSceneScrolledAreaCanvasItem(KRPTScene *scene, KRPTSceneItem *parent, 
+                                    const QRectF &geometry)                      noexcept;
+    ~KRPTSceneScrolledAreaCanvasItem()                                           noexcept;
 protected:
     void paintBackground (QPainter &painter, uint32_t stage)                     noexcept override;
     void paintForeground (QPainter &painter, uint32_t stage)                     noexcept override;
 protected:
-    void addChildImpl       (KRPTSceneItem::Ptr item, KRPTSceneItem::Ptr parent) noexcept override;
-#if 1
-    void childTransformEvent(KRPTSceneItem::Ptr item, SceneTransformEvent *e)    noexcept override;
-#endif
+    void addChildImpl          (KRPTSceneItem::Ptr item, KRPTSceneItem::Ptr parent) noexcept override;
+    void childTransformEvent   (KRPTSceneItem::Ptr item, SceneTransformEvent *e)    noexcept override;
+    void childMousePressEvent  (KRPTSceneItem::Ptr item, SceneMouseEvent *e)        noexcept override;
+    void childMouseReleaseEvent(KRPTSceneItem::Ptr item, SceneMouseEvent *e)        noexcept override;
+    void childMouseMoveEvent   (KRPTSceneItem::Ptr item, SceneMouseEvent *e)        noexcept override;
 private:
     KRPTSceneScrolledAreaItem *_owner;
 };
@@ -31,18 +33,17 @@ private:
 //*
 //************************************************************************************************************************
 
-KRPTSceneScrolledAreaCanvasItem::KRPTSceneScrolledAreaCanvasItem(KRPTScene *scene, KRPTSceneItem *parent) noexcept
-    : KRPTSceneItem(scene, parent), _owner(static_cast<KRPTSceneScrolledAreaItem*>(parent))
+KRPTSceneScrolledAreaCanvasItem::KRPTSceneScrolledAreaCanvasItem(KRPTScene *scene, KRPTSceneItem *parent, 
+    const QRectF &geometry) noexcept
+    : KRPTSceneItem(scene, parent, geometry,
+//        Must::NoPaint       |
+        Must::NoClipChilds  |
+        Must::NoClipPainter |
+        Must::Anim          |
+        Must::MouseTracking |
+        Must::TransformToParentEvent), 
+    _owner(static_cast<KRPTSceneScrolledAreaItem*>(parent))
 {
-    upMust
-    (
-//        KRPTSceneItem::Must::NoPaint,
-//        KRPTSceneItem::Must::NoClipChilds,
-        KRPTSceneItem::Must::NoClipPainter,
-        KRPTSceneItem::Must::Anim,
-        KRPTSceneItem::Must::MouseTracking,
-        KRPTSceneItem::Must::TransformToParentEvent
-    );
     setColor(0, QColor( 50,  50,  50));
     setColor(1, QColor(250, 250, 250));
 
@@ -97,44 +98,48 @@ void KRPTSceneScrolledAreaCanvasItem::addChildImpl(KRPTSceneItem::Ptr item, KRPT
     KRPTSceneItem::addChildImpl(item, parent);
 }
 
-#if 1
 void KRPTSceneScrolledAreaCanvasItem::childTransformEvent(KRPTSceneItem::Ptr item, SceneTransformEvent *e) noexcept 
 {
-//    _owner->childTransformEvent(item, e);
     _owner->areaChildTransformEvent(item, e);
 };
-#endif
+
+void KRPTSceneScrolledAreaCanvasItem::childMousePressEvent(KRPTSceneItem::Ptr item, SceneMouseEvent *e) noexcept
+{
+    _owner->areaChildMousePressEvent(item, e);
+}
+
+void KRPTSceneScrolledAreaCanvasItem::childMouseReleaseEvent(KRPTSceneItem::Ptr item, SceneMouseEvent *e) noexcept
+{
+    _owner->areaChildMouseReleaseEvent(item, e);
+}
+
+void KRPTSceneScrolledAreaCanvasItem::childMouseMoveEvent(KRPTSceneItem::Ptr item, SceneMouseEvent *e) noexcept
+{
+    _owner->areaChildMouseMoveEvent(item, e);
+}
 
 //########################################################################################################################
 //#
 //########################################################################################################################
 
-KRPTSceneScrolledAreaItem::KRPTSceneScrolledAreaItem(KRPTScene *scene, KRPTSceneItem *parent) noexcept
-    : KRPTSceneItem(scene, parent), _area(nullptr)
+KRPTSceneScrolledAreaItem::KRPTSceneScrolledAreaItem(KRPTScene *scene, KRPTSceneItem *parent, 
+    const QRectF &geometry) noexcept
+    : KRPTSceneItem(scene, parent, geometry,
+        Must::NoClipPainter   |
+        Must::NoClipChilds    |
+        Must::AccuracyClip    |
+        Must::Anim            |
+        Must::TransformEvent  |
+        Must::MousePressEvent |
+        Must::MouseMoveEvent  |
+        Must::WhellEvent), 
+    _area(nullptr), _areaSizePolicy(AreaSizePolicy::AutoSize), 
+    _scrollPolicy(ScrollPolicy::Mouse | ScrollPolicy::Whell | ScrollPolicy::Vertical | ScrollPolicy::Horisontal),
+    _mouseMoveDistance(0)
 {
-#if 1
-    upMust
-    (
-        KRPTSceneItem::Must::NoClipPainter,
-        KRPTSceneItem::Must::NoClipChilds,
-        KRPTSceneItem::Must::AccuracyClip,
-        KRPTSceneItem::Must::Anim,
-
-//        KRPTSceneItem::Must::AccuracyCheckContains,
-//        KRPTSceneItem::Must::MouseMoved,
-//        KRPTSceneItem::Must::MouseTracking,
-
-        KRPTSceneItem::Must::TransformEvent,
-        KRPTSceneItem::Must::MousePressEvent,
-        KRPTSceneItem::Must::MouseMoveEvent,
-        KRPTSceneItem::Must::WhellEvent
-    );
-#endif
     setColor(0, QColor( 50,  50,  50));
     setColor(1, QColor(250, 250, 250));
-    _area = addChild<KRPTSceneScrolledAreaCanvasItem>();
-    _areaRect = QRectF(0, 0, 500, 500);
-
+    _area = addChild<KRPTSceneScrolledAreaCanvasItem>(QRectF(0, 0, 500, 500));
     resetAreaMinMax();
 }
 
@@ -176,8 +181,24 @@ double  KRPTSceneScrolledAreaItem::areaHeight() const noexcept
     return _areaRect.height();
 }
 
-bool KRPTSceneScrolledAreaItem::setAreaGeometry(const QRectF &geometry, 
-    uint32_t time, QEasingCurve curve) noexcept
+KRPTSceneScrolledAreaItem::AreaSizePolicy KRPTSceneScrolledAreaItem::areaSizePolicy() const noexcept
+{
+    return _areaSizePolicy;
+}
+
+QPointF KRPTSceneScrolledAreaItem::margin() const noexcept
+{
+    return _margin;
+}
+
+void KRPTSceneScrolledAreaItem::setAreaSizePolicy(AreaSizePolicy policy) noexcept 
+{
+    if(policy == _areaSizePolicy)return;
+    _areaSizePolicy = policy;
+    if(_areaSizePolicy != AreaSizePolicy::None)updateAreaMinMax();
+}
+
+bool KRPTSceneScrolledAreaItem::setAreaGeometry(const QRectF &geometry, uint32_t time, QEasingCurve curve) noexcept
 {
     QRectF rect;
     QPointF dp;
@@ -223,9 +244,9 @@ void KRPTSceneScrolledAreaItem::setAreaY(double y, uint32_t time, QEasingCurve c
 void KRPTSceneScrolledAreaItem::setAreaSize(const QSizeF &size, uint32_t time, QEasingCurve curve) noexcept
 {
     if(qFuzzyCompare(_areaRect.size(), size))return;
-    setAreaGeometry(_areaRect.topLeft(), size, time, curve);
     _trans.dirtyArea = true;
-    updateAreaRect();
+    setAreaGeometry(_areaRect.topLeft(), size, time, curve);
+//    updateAreaRect();
 }
 
 void KRPTSceneScrolledAreaItem::setAreaSize(double w, double h, uint32_t time, QEasingCurve curve) noexcept
@@ -251,6 +272,13 @@ void KRPTSceneScrolledAreaItem::translateArea(const QPointF &p, uint32_t time, Q
 void KRPTSceneScrolledAreaItem::translateArea(double x, double y, uint32_t time, QEasingCurve curve) noexcept
 {
     setAreaPos(areaX() + x, areaY() + y, time, curve);
+}
+
+void KRPTSceneScrolledAreaItem::setMargin(const QPointF &margin) noexcept
+{
+    if(margin == _margin)return;
+    _margin = margin;
+    update();
 }
 
 //************************************************************************************************************************
@@ -290,20 +318,9 @@ void KRPTSceneScrolledAreaItem::paintForeground(QPainter &painter, uint32_t stag
     QPen pen(color(1), 2);
     pen.setCosmetic(true);
     painter.setPen(pen);
-    if(qFuzzyIsNull(_radius))
-        painter.drawRect(_rect.adjusted(0.5, 0.5, -0.5, -0.5));
-    else
-        painter.drawRoundedRect(_rect.adjusted(0.5, 0.5, -0.5, -0.5), _radius, _radius);
-
-//    pen.setColor(QColor(0, 255, 0));
-//    painter.setPen(pen);
-//    painter.drawRect(_r0);
-//    pen.setColor(QColor(0, 255, 255));
-//    painter.setPen(pen);
-//    painter.drawRect(_r1);
-//    painter.drawPolygon(_p0);
-//    painter.drawRect(_area->_geometry);
-//    painter.drawRect(_areaRect);
+    if(qFuzzyIsNull(_radius))painter.drawRect(_rect.adjusted(0.5, 0.5, -0.5, -0.5));
+    else painter.drawRoundedRect(_rect.adjusted(0.5, 0.5, -0.5, -0.5), _radius, _radius);
+    painter.drawRect(_areaRect);
 }
 
 //************************************************************************************************************************
@@ -326,18 +343,13 @@ void KRPTSceneScrolledAreaItem::transformImpl(SceneTransformEvent *e) noexcept
     }
 }
 
-void KRPTSceneScrolledAreaItem::childTransformEvent(KRPTSceneItem::Ptr item, SceneTransformEvent *e)noexcept 
+void KRPTSceneScrolledAreaItem::childTransformEvent(KRPTSceneItem::Ptr item, SceneTransformEvent *e) noexcept 
 {
     if(e->scaled() || e->rotated())
     {
         _trans.dirtyArea = true;
         updateAreaRect();
     }
-}
-
-void KRPTSceneScrolledAreaItem::areaChildTransformEvent(KRPTSceneItem::Ptr item, SceneTransformEvent *e)noexcept 
-{
-    updateAreaMinMax(item);
 }
 
 void KRPTSceneScrolledAreaItem::addChildImpl(KRPTSceneItem::Ptr item, KRPTSceneItem::Ptr parent) noexcept
@@ -348,55 +360,96 @@ void KRPTSceneScrolledAreaItem::addChildImpl(KRPTSceneItem::Ptr item, KRPTSceneI
         return;
     }
     _area->addChildImpl(item, _area);
-    item->upMust  (KRPTSceneItem::Must::TransformToParentEvent);
+    item->upMust  (Must::TransformToParentEvent, Must::MousePressToParentEvent, Must::MouseMoveToParentEvent);
     item->downMust(KRPTSceneItem::Must::MouseMoved);
-
-#if 0
-    item->lockUpdate(true);
-    item->lockEvents(true);
-    if(item->x() < _margin.x())item->setX(_margin.x());
-    if(item->y() < _margin.y())item->setY(_margin.y());
-    item->lockEvents(false);
-    item->lockUpdate(false);
-#endif
-
-    updateAreaMinMax(item);
+    if(_areaSizePolicy != AreaSizePolicy::None)updateAreaMinMax(item);
 }
 
 void KRPTSceneScrolledAreaItem::mousePressImpl(SceneMouseEvent *e) noexcept
 {
-    _areaMousePos = e->pos();
+    _mousePos = e->pos();
     _area->stopAnimImpl(KRPTSceneItem::AnimDst::Geometry);
     _area->stopAnimImpl(KRPTSceneItem::AnimDst::Angle);
     _area->stopAnimImpl(KRPTSceneItem::AnimDst::Scale);
+    if(_scrollPolicy.any(ScrollPolicy::Mouse) && _scrollPolicy.any(ScrollPolicy::Horisontal, ScrollPolicy::Vertical))
+    {
+        _mouseVelocity.setX(0);
+        _mouseVelocity.setY(0);
+        _mouseMoveDistance = 0;
+        _mouseVelocityTimer.start();
+    }
 }
 
 void KRPTSceneScrolledAreaItem::mouseReleaseImpl(SceneMouseEvent *e) noexcept
 {
+    if(_scrollPolicy.any(ScrollPolicy::Mouse) && _scrollPolicy.any(ScrollPolicy::Horisontal, ScrollPolicy::Vertical))
+    {
+        int64_t dt = _mouseVelocityTimer.restart(); 
+        if(dt > 0)translateArea(_mouseVelocity * _mouseMoveDistance / dt * 5, 1000);
+        _mouseVelocity.setX(0);
+        _mouseVelocity.setY(0);
+        _mouseMoveDistance = 0;
+    }
 }
 
 void KRPTSceneScrolledAreaItem::mouseMoveImpl(SceneMouseEvent *e) noexcept
 {
-    QPointF dp = e->pos() - _areaMousePos;
+    QPointF dp = e->pos() - _mousePos;
     if(e->btns() == SceneMouseEvent::Btn::Left)
     {
-        translateArea(dp);
+        if(_scrollPolicy.any(ScrollPolicy::Mouse) && _scrollPolicy.any(ScrollPolicy::Horisontal, ScrollPolicy::Vertical))
+        {
+            QPointF d(_scrollPolicy[ScrollPolicy::Horisontal] ? dp.x() : 0,
+                      _scrollPolicy[ScrollPolicy::Vertical  ] ? dp.y() : 0);
+            translateArea(d);
+            _mouseMoveDistance += std::hypot(dp.x(), dp.y());
+            _mouseVelocity = dp;
+        }
     }
-    _areaMousePos = e->pos();
+    _mousePos = e->pos();
 }
 
 void KRPTSceneScrolledAreaItem::whellImpl(SceneMouseEvent *e) noexcept
 {
-#if 1
-    double dx = e->delta().x() == 0 ? 0 : e->delta().x() > 0 ? 60 : -60;
-    double dy = e->delta().y() == 0 ? 0 : e->delta().y() > 0 ? 60 : -60;
-//    translateArea(dx, dy, 1000, QEasingCurve::Linear);
-    translateArea(dx, dy, 300);
-#else
-    double dx = e->delta().x() == 0 ? 0 : e->delta().x() > 0 ? 1 : -1;
-    double dy = e->delta().y() == 0 ? 0 : e->delta().y() > 0 ? 0.5 : -0.5;
-    _area->rotate(dy);
-#endif
+    if(_scrollPolicy(ScrollPolicy::Whell) && _scrollPolicy(ScrollPolicy::Vertical | ScrollPolicy::Horisontal))
+    {
+        double dx = e->delta().x() == 0 ? 0 : e->delta().x() > 0 ? 60 : -60;
+        double dy = e->delta().y() == 0 ? 0 : e->delta().y() > 0 ? 60 : -60;
+        translateArea(dx, dy, 1000);
+    }
+}
+
+//************************************************************************************************************************
+//*
+//************************************************************************************************************************
+
+void KRPTSceneScrolledAreaItem::areaChildTransformEvent(KRPTSceneItem::Ptr item, SceneTransformEvent *e) noexcept 
+{
+    if(_areaSizePolicy != AreaSizePolicy::None)updateAreaMinMax(item);
+}
+
+void KRPTSceneScrolledAreaItem::areaChildMousePressEvent(KRPTSceneItem::Ptr item, SceneMouseEvent *e) noexcept
+{
+    if(!_scrollPolicy[ScrollPolicy::MouseChildOver])return;
+    QPointF scenePos = item->mapToScene(e->pos());
+    QPointF pos = mapFromScene(scenePos);
+    mousePressImpl(SceneMouseEvent::get(pos, e->btns(), scenePos, e->keyModifers(), e->delta()).get());
+}
+
+void KRPTSceneScrolledAreaItem::areaChildMouseReleaseEvent(KRPTSceneItem::Ptr item, SceneMouseEvent *e) noexcept
+{
+    if(!_scrollPolicy[ScrollPolicy::MouseChildOver])return;
+    QPointF scenePos = item->mapToScene(e->pos());
+    QPointF pos = mapFromScene(scenePos);
+    mouseReleaseImpl(SceneMouseEvent::get(pos, e->btns(), scenePos, e->keyModifers(), e->delta()).get());
+}
+
+void KRPTSceneScrolledAreaItem::areaChildMouseMoveEvent(KRPTSceneItem::Ptr item, SceneMouseEvent *e) noexcept
+{
+    if(!_scrollPolicy[ScrollPolicy::MouseChildOver])return;
+    QPointF scenePos = item->mapToScene(e->pos());
+    QPointF pos = mapFromScene(scenePos);
+    mouseMoveImpl(SceneMouseEvent::get(pos, e->btns(), scenePos, e->keyModifers(), e->delta()).get());
 }
 
 //************************************************************************************************************************
@@ -441,7 +494,8 @@ bool KRPTSceneScrolledAreaItem::checkAreaRect(const QRectF &src, QRectF &dst, QP
         dp.setY(dp0.x() * _trans.sin + dp0.y() * _trans.cos);
         dst.translate(dp);
     }
-    return !qFuzzyCompare(src, dst) || qFuzzyIsNull(dp);
+//    return !qFuzzyCompare(src, dst) || !qFuzzyIsNull(dp);
+    return true;
 }
 
 void KRPTSceneScrolledAreaItem::updateAreaRect() noexcept
@@ -450,7 +504,11 @@ void KRPTSceneScrolledAreaItem::updateAreaRect() noexcept
     QPointF dp;
     if(checkAreaRect(_areaRect, rect, dp))
     {
-        _area->setGeometry(rect);
+        if(!qFuzzyCompare(_area->_geometry, rect))
+        {
+            qDebug() << _area->_geometry << rect;
+            _area->setGeometry(rect);
+        }
         _areaRect.translate(dp);
     }
 }
@@ -470,7 +528,6 @@ void KRPTSceneScrolledAreaItem::resetAreaMinMax() noexcept
 
 void KRPTSceneScrolledAreaItem::updateAreaMinMax(KRPTSceneItem::Ptr item) noexcept
 {
-#if 0
     bool updateMinMax = !item;
     if(!updateMinMax)
         for(auto &item : _areaMinMax)
@@ -526,19 +583,19 @@ void KRPTSceneScrolledAreaItem::updateAreaMinMax(KRPTSceneItem::Ptr item) noexce
     }
     if(updateClientRect)
     {
-        double w  = _areaMinMax[2].value - _areaMinMax[0].value;
-        double h  = _areaMinMax[3].value - _areaMinMax[1].value;
-        double dx = _areaMinMax[0].value;
-        double dy = _areaMinMax[1].value;
+        double w  = _areaSizePolicy == AreaSizePolicy::AutoSize ? _areaMinMax[2].value : _areaMinMax[2].value - _areaMinMax[0].value;
+        double h  = _areaSizePolicy == AreaSizePolicy::AutoSize ? _areaMinMax[3].value : _areaMinMax[3].value - _areaMinMax[1].value;
+        double dx = _areaSizePolicy == AreaSizePolicy::AutoSize ? 0 : _areaMinMax[0].value;
+        double dy = _areaSizePolicy == AreaSizePolicy::AutoSize ? 0 : _areaMinMax[1].value;
         QRectF geometry = _area->_geometry;
         geometry.setWidth (w);
         geometry.setHeight(h);
-        geometry.translate(dx, dy);
+        if(_areaSizePolicy == AreaSizePolicy::AutoPosSize)geometry.translate(dx, dy);
         if(!qFuzzyCompare(geometry, _area->_geometry))
         {
             lockUpdate(true);
             lockEvents(true);
-            if(!qFuzzyIsNull(dx) || !qFuzzyIsNull(dy))
+            if(_areaSizePolicy == AreaSizePolicy::AutoPosSize && (!qFuzzyIsNull(dx) || !qFuzzyIsNull(dy)))
             {
                 const auto &childs = _area->_childItems;
                 for(auto &child : childs)
@@ -560,90 +617,5 @@ void KRPTSceneScrolledAreaItem::updateAreaMinMax(KRPTSceneItem::Ptr item) noexce
             lockUpdate(false);
         }
     }
-#else
-    #if 0
-    /*
-        resetAreaMinMax();
-        const auto &childs = _area->_childItems;
-
-        if(childs.size() == 1)
-        {
-            auto child = childs.front();
-            QRectF r = child->bBoxMapToParent();
-
-            child->lockUpdate(true);
-            child->lockEvents(true);
-            child->setPos(child->x() + _margin.x(), child->y() + _margin.y());
-            child->lockEvents(false);
-            child->lockUpdate(false);
-
-
-            _areaRect = QRectF(_margin.x(), _margin.y(), r.width() + _margin.x(), r.height() + _margin.y());
-            updateAreaRect();
-            return;
-        }
-        */
-
-        resetAreaMinMax();
-        const auto &childs = _area->_childItems;
-        for(auto &child : childs)
-        {
-            QRectF r = child->bBoxMapToParent();
-        #if 1
-            if(r.x     () - _margin.x() < _areaMinMax[0].value){_areaMinMax[0].value = r.x     () - _margin.x(); _areaMinMax[0].item = child;}
-            if(r.y     () - _margin.y() < _areaMinMax[1].value){_areaMinMax[1].value = r.y     () - _margin.y(); _areaMinMax[1].item = child;}
-            if(r.right () + _margin.x() > _areaMinMax[2].value){_areaMinMax[2].value = r.right () + _margin.x(); _areaMinMax[2].item = child;}
-            if(r.bottom() + _margin.y() > _areaMinMax[3].value){_areaMinMax[3].value = r.bottom() + _margin.y(); _areaMinMax[3].item = child;}
-        #else
-            if(r.x() < _margin.x())r.moveLeft(_margin.x());
-            if(r.y() < _margin.y())r.moveTop(_margin.y());
-
-            if(r.x     () < _areaMinMax[0].value){_areaMinMax[0].value = r.x     (); _areaMinMax[0].item = child;}
-            if(r.y     () < _areaMinMax[1].value){_areaMinMax[1].value = r.y     (); _areaMinMax[1].item = child;}
-            if(r.right () > _areaMinMax[2].value){_areaMinMax[2].value = r.right (); _areaMinMax[2].item = child;}
-            if(r.bottom() > _areaMinMax[3].value){_areaMinMax[3].value = r.bottom(); _areaMinMax[3].item = child;}
-
-
-        #endif
-        }
-        double w  = _areaMinMax[2].value - _areaMinMax[0].value;
-        double h  = _areaMinMax[3].value - _areaMinMax[1].value;
-        double dx = _areaMinMax[0].value;
-        double dy = _areaMinMax[1].value;
-        QRectF geometry = _area->_geometry;
-        geometry.setWidth (w);
-        geometry.setHeight(h);
-        geometry.translate(dx, dy);
-
-        qDebug() << dy;
-//        dx -= _areaMinMax[0].value;
-
-        if(!qFuzzyCompare(geometry, _areaRect))
-        {
-            lockUpdate(true);
-            lockEvents(true);
-//            if(!qFuzzyIsNull(dx) || !qFuzzyIsNull(dy))
-            {
-                const auto &childs = _area->_childItems;
-                for(auto &child : childs)
-                {
-                    child->lockUpdate(true);
-                    child->lockEvents(true);
-                    child->translate(-dx, -dy);
-                    child->lockEvents(false);
-                    child->lockUpdate(false);
-                }
-                _areaMinMax[0].value -= dx;
-                _areaMinMax[1].value -= dy;
-                _areaMinMax[2].value -= dx;
-                _areaMinMax[3].value -= dy;
-            }
-            _areaRect = geometry;
-            updateAreaRect();
-            lockEvents(false);
-            lockUpdate(false);
-        }
-    #endif
-#endif
 }
 

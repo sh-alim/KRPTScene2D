@@ -99,8 +99,9 @@ public:
         MouseMoveToSceneEvent   = 0x02000000,
         WhellToParentEvent      = 0x04000000,
         WhellToSceneEvent       = 0x08000000,
-        MouseMoved              = 0x10000000,
-        Checked                 = 0x20000000,
+        Checked                 = 0x10000000,
+        MouseMoved              = 0x20000000,
+        MouseChecked            = 0x40000000,
         All                     = 0xFFFFFFFF
     };
     enum class State : uint8_t
@@ -158,11 +159,14 @@ public:
         insertChildImpl(item, this, before);
         return item;
     }
-
     bool delChild(KRPTSceneItem *item)                                                                               noexcept;
-    template<typename ... Args> inline bool must(Args&& ... args)                                              const noexcept
+    template<typename ... Args> inline bool mustAny(Args&& ... args)                                           const noexcept
     {
         return _must.any(std::forward<Args>(args)...);
+    }
+    template<typename ... Args> inline bool mustAll(Args&& ... args)                                           const noexcept
+    {
+        return _must.all(std::forward<Args>(args)...);
     }
     template<typename ... Args> inline void upMust(Args&& ... args)                                                  noexcept
     {
@@ -177,7 +181,6 @@ public:
         if(_must != old)mustChangeImpl(_must, old);
     }
 public:
-    KRPTFlag<Must>       must                  ()                                                              const noexcept;
     KRPTScene          * scene                 ()                                                              const noexcept;
     KRPTSceneItem::Ptr   parent                ()                                                              const noexcept;
     const List         & childItems            ()                                                              const noexcept;
@@ -214,6 +217,8 @@ public:
     bool                 eventLocked           ()                                                              const noexcept;
     uint32_t             tag                   ()                                                              const noexcept;
     const QColor       & color                 (uint32_t id)                                                         noexcept;
+    bool                 checkable             ()                                                              const noexcept;
+    bool                 checked               ()                                                              const noexcept;
 
     void                 setParent             (KRPTSceneItem::Ptr parent)                                           noexcept;
     void                 setVisible            (bool visible)                                                        noexcept;
@@ -266,6 +271,8 @@ public:
     void                 setTag                (uint32_t tag)                                                        noexcept;
     void                 setColor              (uint32_t id, const QColor &color, FState state = State::No)          noexcept;
     void                 setCheckable          (bool checkable)                                                      noexcept;
+    void                 setChecked            (bool checked)                                                        noexcept;
+
     void                 lockUpdate            (bool lock)                                                           noexcept;
     void                 lockEvents            (bool lock)                                                           noexcept;
     QPointF              mapToParent           (const QPointF &point)                                                noexcept;

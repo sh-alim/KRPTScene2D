@@ -287,24 +287,8 @@ KRPTSceneItem::KRPTSceneItem(KRPTScene *scene, KRPTSceneItem *parent, const QRec
       _state(State::NeedPaint | State::VisibledInView | State::NeedChildPaint),
       _updateLocked(0), _eventLocked(0), _visible(true), _angle(0), _scale(1), _opaq(1), 
       _transformAnchor(TransformAnchor::Center), _posAnchor(TransformAnchor::LeftTop), 
-      _paintStageCount(1), _geometry(geometry), _tag(0)
+      _paintStageCount(1), _geometry(geometry), _rect(QPointF(), geometry.size()), _tag(0)
 {
-//    setGeometryImpl(geometry);
-
-    _rect.setSize(_geometry.size());
-
-//    _dirty.up(Dirty::Transform     , Dirty::TransformInv     , Dirty::VisibleChildItems,
-//              Dirty::SceneTransform, Dirty::SceneTransformInv, Dirty::BBoxMapToParent);
-//    if(isMoved  )_dirty.up(Dirty::TransformTrans);
-//    if(isResized)_dirty.up(Dirty::TransformSize, Dirty::BBox, Dirty::Outline);
-//    if(_parent)_parent->_dirty.up(Dirty::VisibleChildItems);
-//    ++_data->genTransform;
-//    sendTransformEvent(geometry, oldGeometry, _angle, _angle, _scale, _scale, 
-//                       isMoved, isResized, false, false);
-//    if(_state.any(State::MouseOver, State::ChildMouseOver))
-//        _scene->mouseOverCheck();
-//    update();
-
 }
 
 KRPTSceneItem::~KRPTSceneItem() noexcept
@@ -326,11 +310,6 @@ bool KRPTSceneItem::delChild(KRPTSceneItem *item) noexcept
 //************************************************************************************************************************
 //*
 //************************************************************************************************************************
-
-KRPTFlag<KRPTSceneItem::Must> KRPTSceneItem::must() const noexcept 
-{
-    return _must;
-}
 
 KRPTScene* KRPTSceneItem::scene() const noexcept 
 {
@@ -425,7 +404,7 @@ double KRPTSceneItem::opaq() const noexcept
 const KRPTSceneItem::List& KRPTSceneItem::visibleChildItems() noexcept
 {
     const auto &childItems = filterChildItems();
-    if(childItems.empty() || must(Must::NoCheckChildVisibled))
+    if(childItems.empty() || mustAny(Must::NoCheckChildVisibled))
         return childItems;
     if(!dirtyVisibleChilds())return _visibleChildItems;
     _visibleChildItems.clear();
@@ -579,7 +558,7 @@ QRectF KRPTSceneItem::bBoxMapToParent() noexcept
 bool KRPTSceneItem::contains(const QPointF &point) noexcept
 {
     bool ret = _rect.contains(point);
-    if(ret && must(Must::AccuracyCheckContains))
+    if(ret && mustAny(Must::AccuracyCheckContains))
         ret = outline().contains(point);
     return ret;
 }
@@ -608,6 +587,16 @@ const QColor& KRPTSceneItem::color(uint32_t id) noexcept
     return _data->colors.get(id, _state);
 }
 
+bool KRPTSceneItem::checkable() const noexcept
+{
+    return mustAny(Must::Checked);
+}
+
+bool KRPTSceneItem::checked() const noexcept
+{
+    return _state.any(State::Checked);
+}
+
 void KRPTSceneItem::setParent(KRPTSceneItem::Ptr parent) noexcept
 {
     setParentImpl(parent);
@@ -630,7 +619,7 @@ bool KRPTSceneItem::setGeometry(const QRectF &geometry,
         _data->startAnim(AnimDst::Geometry, _geometry, geometry, time, curve);
         return true;
     }
-    if(must(Must::Anim))_data->stopAnim(AnimDst::Geometry);
+    if(mustAny(Must::Anim))_data->stopAnim(AnimDst::Geometry);
     return setGeometryImpl(geometry);
 }
 
@@ -693,7 +682,7 @@ bool KRPTSceneItem::setAngle(double angle, uint32_t time, QEasingCurve curve) no
         _data->startAnim(AnimDst::Angle, _angle, angle, time, curve);
         return true;
     }
-    if(must(Must::Anim))_data->stopAnim(AnimDst::Angle);
+    if(mustAny(Must::Anim))_data->stopAnim(AnimDst::Angle);
     return setAngleImpl(angle);
 }
 
@@ -727,7 +716,7 @@ bool KRPTSceneItem::setScale(double scale, uint32_t time, QEasingCurve curve) no
         _data->startAnim(AnimDst::Scale, _scale, scale, time, curve);
         return true;
     }
-    if(must(Must::Anim))_data->stopAnim(AnimDst::Scale);
+    if(mustAny(Must::Anim))_data->stopAnim(AnimDst::Scale);
     return setScaleImpl(scale);
 }
 
@@ -761,7 +750,7 @@ bool KRPTSceneItem::setOpaq(double opaq, uint32_t time, QEasingCurve curve) noex
         _data->startAnim(AnimDst::Opaq, _opaq, opaq, time, curve);
         return true;
     }
-    if(must(Must::Anim))_data->stopAnim(AnimDst::Opaq);
+    if(mustAny(Must::Anim))_data->stopAnim(AnimDst::Opaq);
     return setOpaqImpl(opaq);
 }
 
@@ -821,9 +810,17 @@ void KRPTSceneItem::setColor(uint32_t id, const QColor &color, KRPTSceneItem::FS
 
 void KRPTSceneItem::setCheckable(bool checkable) noexcept
 {
-    KRPTSceneItem::FState oldState = _state;
     if(checkable)upMust(Must::Checked);
     else downMust(Must::Checked);
+}
+
+void KRPTSceneItem::setChecked(bool checked) noexcept
+{
+    if(!mustAny(Must::Checked) || _state[State::Checked] == checked)return;
+    KRPTSceneItem::FState oldState = _state;
+    if(checked)_state += KRPTSceneItem::State::Checked;
+    else _state -= KRPTSceneItem::State::Checked;
+    if(_state != oldState)stateChangeImpl(_state, oldState);
 }
 
 void KRPTSceneItem::lockUpdate(bool lock) noexcept 
@@ -951,7 +948,7 @@ KRPTSceneItem::Ptr KRPTSceneItem::commonParent(KRPTSceneItem::Ptr item) const no
 
 bool KRPTSceneItem::needPaint() const noexcept
 {
-    bool needPaint = !must(Must::NoPaint) && 
+    bool needPaint = !mustAny(Must::NoPaint) && 
         (!_parent || _state[State::NeedPaint]) && _visible && 
         !qFuzzyIsNull(_opaq) && !qFuzzyIsNull(_scale);
     return needPaint;
@@ -959,7 +956,7 @@ bool KRPTSceneItem::needPaint() const noexcept
 
 bool KRPTSceneItem::canBeUpdated() const noexcept
 {
-    bool canBeUpdated = (!_childItems.empty() || !must(Must::NoPaint)) && 
+    bool canBeUpdated = (!_childItems.empty() || !mustAny(Must::NoPaint)) && 
         (!_parent || _state[State::NeedPaint] || _dirty[Dirty::Transform]) && 
         _visible && !qFuzzyIsNull(_opaq) && !qFuzzyIsNull(_scale);
     return canBeUpdated;
@@ -1140,12 +1137,12 @@ bool KRPTSceneItem::stateChangeImpl(const FState &cur, const FState &old) noexce
 {
     if(cur == old)return false;
     FState diff = cur.diff(old);
-    if(must(Must::StateChangeEvent))stateChangeEvent(cur, old);
+    if(mustAny(Must::StateChangeEvent))stateChangeEvent(cur, old);
     if(diff[State::MouseOver])
     {
-        if(must(Must::MouseEnterEvent))mouseEnterEvent(_state[State::MouseOver]);
+        if(mustAny(Must::MouseEnterEvent))mouseEnterEvent(_state[State::MouseOver]);
     }
-    if(must(Must::Anim) && _data->colors.mustAnim(cur, old))
+    if(mustAny(Must::Anim) && _data->colors.mustAnim(cur, old))
     {
         startAnimImpl(AnimDst::Color, 0, 1, 100, QEasingCurve::Linear);
     }else update();
@@ -1156,10 +1153,10 @@ void KRPTSceneItem::mousePressImpl(SceneMouseEvent *e) noexcept
 {
     if(!eventLocked())
     {
-        if(must(Must::MousePressEvent))mousePressEvent(e);
-        if(_parent && must(Must::MousePressToParentEvent))
+        if(mustAny(Must::MousePressEvent))mousePressEvent(e);
+        if(_parent && mustAny(Must::MousePressToParentEvent))
             _parent->childMousePressEvent(this, e);
-        if(_scene && must(Must::MousePressToSceneEvent))
+        if(_scene && mustAny(Must::MousePressToSceneEvent))
             _scene->childMousePressEvent(this, e);
     }
 }
@@ -1168,10 +1165,10 @@ void KRPTSceneItem::mouseReleaseImpl(SceneMouseEvent *e) noexcept
 {
     if(!eventLocked())
     {
-        if(must(Must::MousePressEvent))mouseReleaseEvent(e);
-        if(_parent && must(Must::MousePressToParentEvent))
+        if(mustAny(Must::MousePressEvent))mouseReleaseEvent(e);
+        if(_parent && mustAny(Must::MousePressToParentEvent))
             _parent->childMouseReleaseEvent(this, e);
-        if(_scene && must(Must::MousePressToSceneEvent))
+        if(_scene && mustAny(Must::MousePressToSceneEvent))
             _scene->childMouseReleaseEvent(this, e);
     }
 }
@@ -1180,10 +1177,10 @@ void KRPTSceneItem::mouseMoveImpl(SceneMouseEvent *e) noexcept
 {
     if(!eventLocked())
     {
-        if(must(Must::MouseMoveEvent))mouseMoveEvent(e);
-        if(_parent && must(Must::MouseMoveToParentEvent))
+        if(mustAny(Must::MouseMoveEvent))mouseMoveEvent(e);
+        if(_parent && mustAny(Must::MouseMoveToParentEvent))
             _parent->childMouseMoveEvent(this, e);
-        if(_scene && must(Must::MouseMoveToSceneEvent))
+        if(_scene && mustAny(Must::MouseMoveToSceneEvent))
             _scene->childMouseMoveEvent(this, e);
     }
 }
@@ -1192,10 +1189,10 @@ void KRPTSceneItem::whellImpl(SceneMouseEvent *e) noexcept
 {
     if(!eventLocked())
     {
-        if(must(Must::WhellEvent))whellEvent(e);
-        if(_parent && must(Must::WhellToParentEvent))
+        if(mustAny(Must::WhellEvent))whellEvent(e);
+        if(_parent && mustAny(Must::WhellToParentEvent))
             _parent->childWhellEvent(this, e);
-        if(_scene && must(Must::WhellToSceneEvent))
+        if(_scene && mustAny(Must::WhellToSceneEvent))
             _scene->childWhellEvent(this, e);
     }
 }
@@ -1256,7 +1253,7 @@ void KRPTSceneItem::transform(const QRectF &rect, double angle, double scale, QT
         anchorPoint(_posAnchor      , rect.size(), dx1, dy1);
         bool mustSceneTransformed = false;
         bool dirtySceneTransformed = false;
-        if(must(Must::NoSceneScale))
+        if(mustAny(Must::NoSceneScale))
         {
             if(_dirty[Dirty::SceneScale])
             {
@@ -1267,7 +1264,7 @@ void KRPTSceneItem::transform(const QRectF &rect, double angle, double scale, QT
             }
             mustSceneTransformed = true;
         }
-        if(must(Must::NoSceneRotate))
+        if(mustAny(Must::NoSceneRotate))
         {
             if(_dirty[Dirty::SceneRotate])
             {
@@ -1362,7 +1359,7 @@ bool KRPTSceneItem::updateCache(bool visible) noexcept
         if(dirty)
         {
             cache.transform = transform ? *transform * cache.item->transform() : cache.item->transform();
-            if(!cache.parent || !cache.parent->must(Must::NoClipChilds))
+            if(!cache.parent || !cache.parent->mustAny(Must::NoClipChilds))
             {
                 mappedRectPoints(cache.transform, _rect, cache.points);
                 bBox(cache.points, cache.bBox);
@@ -1386,7 +1383,7 @@ bool KRPTSceneItem::updateCache(bool visible) noexcept
         }
         if(cache.visibleDirty)
         {
-            if(!cache.parent || cache.parent->must(Must::NoClipChilds))cache.visible = true; else
+            if(!cache.parent || cache.parent->mustAny(Must::NoClipChilds))cache.visible = true; else
             {
                 cache.visible = cache.parent->_rect.intersects(cache.bBox);
                 if(cache.visible && !cache.parent->_rect.contains(cache.points[4]))
@@ -1401,7 +1398,7 @@ bool KRPTSceneItem::updateCache(bool visible) noexcept
             if(cache.parent && !must(Must::NoClipChilds))
                 _state -= State::NeedChildPaint;
         #else
-            if((cache.parent && !must(Must::NoClipChilds)) || _childItems.empty())
+            if((cache.parent && !mustAny(Must::NoClipChilds)) || _childItems.empty())
                 _state -= State::NeedChildPaint;
         #endif
             if(visible)
@@ -1423,7 +1420,7 @@ bool KRPTSceneItem::updateCache(bool visible) noexcept
         _sceneTransform = *transform;
         _dirty -= Dirty::SceneTransform;
         _dirty += Dirty::SceneTransformInv;
-        if(must(Must::SceneTransformEvent) && !eventLocked())
+        if(mustAny(Must::SceneTransformEvent) && !eventLocked())
         {
             lockEvents(true);
             sceneTransformEvent(_sceneTransform);
@@ -1448,31 +1445,31 @@ bool KRPTSceneItem::dirtyTransform() noexcept
         auto &cache = *it;
         if(cache.item == this)
         {
-            if((scaleDirty || angleDirty) && (must(Must::NoSceneScale) || 
-               must(Must::NoSceneRotate)))cache.dirty = true;
+            if((scaleDirty || angleDirty) && (mustAny(Must::NoSceneScale, Must::NoSceneRotate)))
+                cache.dirty = true;
             break;
         }
         if(cache.genScale != cache.item->_data->genScale)
         {
             cache.genScale = cache.item->_data->genScale;
             scaleDirty = true;
-            if(must(Must::NoSceneScale))_dirty += Dirty::SceneScale;
+            if(mustAny(Must::NoSceneScale))_dirty += Dirty::SceneScale;
         }
         if(cache.genAngle != cache.item->_data->genAngle)
         {
             cache.genAngle = cache.item->_data->genAngle;
             angleDirty = true;
-            if(must(Must::NoSceneRotate))_dirty += Dirty::SceneRotate;
+            if(mustAny(Must::NoSceneRotate))_dirty += Dirty::SceneRotate;
         }
         if(scaleDirty)
         {
-            _data->sceneScale *= (!cache.item->must(Must::NoSceneScale)) ? cache.item->_scale :
+            _data->sceneScale *= (!cache.item->mustAny(Must::NoSceneScale)) ? cache.item->_scale :
                 1 / _data->sceneScale * cache.item->_scale;
             cache.scale = _data->sceneScale;
         }
         if(angleDirty)
         {
-            _data->sceneAngle += !cache.item->must(Must::NoSceneRotate) ? cache.item->_angle :
+            _data->sceneAngle += !cache.item->mustAny(Must::NoSceneRotate) ? cache.item->_angle :
                 -_data->sceneAngle + cache.item->_angle;
             cache.angle = _data->sceneAngle;
         }
@@ -1482,7 +1479,7 @@ bool KRPTSceneItem::dirtyTransform() noexcept
     if(dirty || scaleDirty || angleDirty)
     {
         _dirty.up(Dirty::SceneTransform, Dirty::SceneTransformInv);
-        if(must(Must::NoSceneScale) || must(Must::NoSceneRotate))
+        if(mustAny(Must::NoSceneScale, Must::NoSceneRotate))
         {
             _dirty.up(Dirty::Transform        , Dirty::TransformInv, Dirty::SceneTransform, 
                       Dirty::SceneTransformInv, Dirty::BBox        , Dirty::BBoxMapToParent);
@@ -1490,9 +1487,9 @@ bool KRPTSceneItem::dirtyTransform() noexcept
         if(!eventLocked())
         {
             lockEvents(true);
-            if(must(Must::SceneScaleEvent) && scaleDirty)
+            if(mustAny(Must::SceneScaleEvent) && scaleDirty)
                 sceneScaleEvent(_data->sceneScale, sceneScale);
-            if(must(Must::SceneRotateEvent) && angleDirty)
+            if(mustAny(Must::SceneRotateEvent) && angleDirty)
                 sceneScaleEvent(_data->sceneAngle, sceneAngle);
             lockEvents(false);
         }
@@ -1519,7 +1516,7 @@ bool KRPTSceneItem::dirtyVisibleChilds() noexcept
 
 bool KRPTSceneItem::mustAnim(uint32_t time) const noexcept
 {
-    return time > 0 && _visible && must(Must::Anim);
+    return time > 0 && _visible && mustAny(Must::Anim);
 }
 
 //************************************************************************************************************************
@@ -1528,7 +1525,7 @@ bool KRPTSceneItem::mustAnim(uint32_t time) const noexcept
 
 void KRPTSceneItem::stopAnimImpl(uint32_t id) noexcept
 {
-    if(must(Must::Anim))_data->stopAnim(id);
+    if(mustAny(Must::Anim))_data->stopAnim(id);
 }
 
 void KRPTSceneItem::startAnimImpl(uint32_t id, const std::vector<double> &start, 
@@ -1593,12 +1590,12 @@ void KRPTSceneItem::sendTransformEvent(const QRectF &geometry, const QRectF &old
         double angle, double oldAngle, double scale, double oldScale,
         bool moved, bool resized, bool rotated, bool scaled) noexcept
 {
-    if(!eventLocked() && must(Must::TransformEvent, Must::TransformToSceneEvent, Must::TransformToParentEvent))
+    if(!eventLocked() && mustAny(Must::TransformEvent, Must::TransformToSceneEvent, Must::TransformToParentEvent))
     {
         SceneTransformEvent::Ptr e = SceneTransformEvent::get(geometry, oldGeometry, 
             _angle, _angle, _scale, _scale, moved, resized, rotated, scaled);
-        if(must(Must::TransformEvent))transformImpl(e.get());
-        if(_parent && must(Must::TransformToParentEvent))_parent->childTransformEvent(this, e.get());
-        if(_scene  && must(Must::TransformToSceneEvent ))_scene->childTransformEvent (this, e.get());
+        if(mustAny(Must::TransformEvent))transformImpl(e.get());
+        if(_parent && mustAny(Must::TransformToParentEvent))_parent->childTransformEvent(this, e.get());
+        if(_scene  && mustAny(Must::TransformToSceneEvent ))_scene->childTransformEvent (this, e.get());
     }
 }

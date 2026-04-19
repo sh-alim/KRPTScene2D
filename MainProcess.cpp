@@ -66,26 +66,36 @@ MainProcess::MainProcess(QWidget *parent)
     setGeometry(300, 50, 1800, 1400);
 
 //    _root = _scene->addItem<KRPTSceneRectItem>();
-//    _root = _scene->addItem<KRPTSceneScrolledAreaItem>();
-    _root = _scene->addItem<KRPTSceneAreaItem>();
+//    _root = _scene->addItem<KRPTSceneScrolledAreaItem>(QRectF(10, 10, 500, 500));
+//    _root = _scene->addItem<KRPTSceneAreaItem>();
+
+    _root = _scene->addItem<KRPTSceneBtnGroupItem>(QRectF(10, 10, 70, 70));
 
 
-    _root->setGeometry(QRectF(10, 10, 500, 500));
+        auto itm = dynamic_cast<KRPTSceneScrolledAreaItem*>(_root);
+        if(itm)
+        {
+//            itm->setAreaSizePolicy(KRPTSceneScrolledAreaItem::AreaSizePolicy::AutoPosSize);
+        }
+
+
     _root->setTag(++_tag);
 
-#if 0
-    double x1 = 15;
-    double y1 = 15;
-    for(int i = 0; i < 2; ++i)
+
+
+#if 1
+    double x1 = 10;
+    double y1 = 10;
+    for(int i = 0; i < 15; ++i)
     {
         auto child = _root->addChild<KRPTSceneBtnItem>(QRectF(x1, y1, 50, 50));
 //        auto child = _root->addChild<KRPTSceneRectItem>();
 //        child->setGeometry(10, y1, 50, 50);
-        x1 += 50;
-        if(x1 > 200)
+        y1 += 55;
+        if(y1 > 500)
         {
-            y1 += 50;
-            x1 = 0;
+            x1 += 55;
+            y1 = 5;
         }
     }
 //    ((KRPTSceneScrolledAreaItem*)_root)->setAreaSize(100, 5 * 60 + 10);
@@ -314,7 +324,7 @@ void MainProcess::mousePressEvent(QMouseEvent *e)
         for(int i = 0; i < _mustBtns.size(); ++i)
         {
             _mustBtns[i]->blockSignals(true);
-            _mustBtns[i]->setChecked(_selectedItem->must(must[i].first));
+            _mustBtns[i]->setChecked(_selectedItem->mustAny(must[i].first));
             _mustBtns[i]->blockSignals(false);
         }
         _scene->update();

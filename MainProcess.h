@@ -20,7 +20,7 @@
 #include "KRPTSceneBtnItem.h"
 #include "KRPTSceneScrolledAreaItem.h"
 #include "KRPTSceneAreaItem.h"
-
+#include "KRPTSceneBtnGroupItem.h"
 
 //########################################################################################################################
 //#

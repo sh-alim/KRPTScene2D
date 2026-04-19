@@ -11,16 +11,17 @@
 
 KRPTSceneBtnItem::KRPTSceneBtnItem(KRPTScene *scene, KRPTSceneItem *parent, const QRectF &geometry) noexcept
     : KRPTSceneItem(scene, parent, geometry,
-        KRPTSceneItem::Must::NoClipPainter         | 
-        KRPTSceneItem::Must::NoCheckChildVisibled  |
-        KRPTSceneItem::Must::Anim                  |
-        KRPTSceneItem::Must::AccuracyCheckContains |
-        KRPTSceneItem::Must::Checked               |
-        KRPTSceneItem::Must::MouseTracking         |
-        KRPTSceneItem::Must::StateChangeEvent      |
-        KRPTSceneItem::Must::MousePressEvent       |
-        KRPTSceneItem::Must::MouseMoveEvent        |
-        KRPTSceneItem::Must::MouseEnterEvent
+        Must::NoClipPainter         | 
+        Must::NoCheckChildVisibled  |
+        Must::Anim                  |
+        Must::AccuracyCheckContains |
+        Must::Checked               |
+        Must::MouseChecked          | 
+        Must::MouseTracking         |
+        Must::StateChangeEvent      |
+        Must::MousePressEvent       |
+        Must::MouseMoveEvent        |
+        Must::MouseEnterEvent
     )
 {
 //            KRPTSceneItem::Must::AccuracyClip,

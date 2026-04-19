@@ -158,7 +158,7 @@ void KRPTSceneAreaItem::updateMinMax(KRPTSceneItem::Ptr item) noexcept
 
 void KRPTSceneAreaItem::updateClentRect() noexcept
 {
-#if 0
+#if 1
     double w  = _minMax[2].value - _minMax[0].value;
     double h  = _minMax[3].value - _minMax[1].value;
     double dx = _minMax[0].value;

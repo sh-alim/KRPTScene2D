@@ -245,7 +245,7 @@ void KRPTScene::mousePressEvent(SceneMouseEvent *e) noexcept
     QPointF mousePos = e->pos();
     auto item = itemFromPos(mousePos, [](KRPTSceneItem *item)
     {
-        return item->must(KRPTSceneItem::Must::MousePressEvent);
+        return item->mustAny(KRPTSceneItem::Must::MousePressEvent);
     });
     mouseOverUpdate(item, e);
     if(item == _mousePressedItem)return;
@@ -266,7 +266,7 @@ void KRPTScene::mousePressEvent(SceneMouseEvent *e) noexcept
         mousePos, e->keyModifers(), e->delta()).get());
     oldState = _mousePressedItem->_state;
     _mousePressedItem->_state += KRPTSceneItem::State::MousePressed;
-    if(_mousePressedItem->must(KRPTSceneItem::Must::Checked))
+    if(_mousePressedItem->mustAll(KRPTSceneItem::Must::Checked, KRPTSceneItem::Must::MouseChecked))
     {
         if(_mousePressedItem->_state[KRPTSceneItem::State::Checked])
             _mousePressedItem->_state -= KRPTSceneItem::State::Checked;
@@ -312,7 +312,7 @@ void KRPTScene::mouseMoveEvent(SceneMouseEvent *e) noexcept
             e->btns(), _mousePos, e->keyModifers(), e->delta()).get());
         if(e->btns()[SceneMouseEvent::Btn::Left])
         {
-            if(_mousePressedItem->must(KRPTSceneItem::Must::MouseMoved))
+            if(_mousePressedItem->mustAny(KRPTSceneItem::Must::MouseMoved))
             {
             #if 0
                 _mousePressedItem->setPos(_mousePressedItem->mapToParent(
@@ -332,12 +332,12 @@ void KRPTScene::whellEvent(SceneMouseEvent *e) noexcept
 {
     QPointF mousePos = e->pos();
     KRPTSceneItem::Ptr item = nullptr;
-    if(_mouseOverItem && _mouseOverItem->must(KRPTSceneItem::Must::WhellEvent))
+    if(_mouseOverItem && _mouseOverItem->mustAny(KRPTSceneItem::Must::WhellEvent))
         item = _mouseOverItem; else
     {
         item = itemFromPos(mousePos, [](KRPTSceneItem *item)
         {
-            return item->must(KRPTSceneItem::Must::WhellEvent);
+            return item->mustAny(KRPTSceneItem::Must::WhellEvent);
         });
     }
     if(item)
@@ -413,7 +413,7 @@ KRPTSceneItem::Ptr KRPTScene::itemFromPosImpl(const QPointF &pos, CompFn comp, K
 KRPTScene::Items KRPTScene::itemsFromPosImpl(const QPointF &pos, CompFn comp, KRPTSceneItem *item, 
     bool one, uint32_t level) noexcept
 {
-    if(!_item->visible() || item->must(KRPTSceneItem::Must::NoMouseEventTranslate))return KRPTScene::Items();
+    if(!_item->visible() || item->mustAny(KRPTSceneItem::Must::NoMouseEventTranslate))return KRPTScene::Items();
     const Items &childs = item->visibleChildItems();
     Items res;
     if(childs.empty())return std::move(res);
@@ -423,11 +423,11 @@ KRPTScene::Items KRPTScene::itemsFromPosImpl(const QPointF &pos, CompFn comp, KR
         KRPTSceneItem *child = *it;
         if(!child->visible())continue;
         QPointF p = child->mapFromParent(pos);
-        if(child->must(KRPTSceneItem::Must::NoClipChilds))
+        if(child->mustAny(KRPTSceneItem::Must::NoClipChilds))
             res.splice(res.begin(), std::move(itemsFromPosImpl(p, comp, child, one, level + 1)));
         if(child->contains(p))
         {
-            if(!child->must(KRPTSceneItem::Must::NoClipChilds))
+            if(!child->mustAny(KRPTSceneItem::Must::NoClipChilds))
                 res.splice(res.begin(), std::move(itemsFromPosImpl(p, comp, child, one, level + 1)));
             if(comp(child))res.push_front(child);
             if(one)break;
@@ -472,9 +472,9 @@ void KRPTScene::paintImpl(QPainter &painter, KRPTSceneItem *item, uint32_t stage
     painter.setOpacity(painter.opacity() * item->opaq());
     if(item->needPaint())
         item->paintBackground(painter, stage);
-    if(!childs.empty() && !item->must(KRPTSceneItem::Must::NoClipChilds, KRPTSceneItem::Must::NoClipPainter))
+    if(!childs.empty() && !item->mustAny(KRPTSceneItem::Must::NoClipChilds, KRPTSceneItem::Must::NoClipPainter))
     {
-        if(!item->must(KRPTSceneItem::Must::AccuracyClip))
+        if(!item->mustAny(KRPTSceneItem::Must::AccuracyClip))
             painter.setClipRect(item->_rect, Qt::ClipOperation::IntersectClip);
         else painter.setClipPath(item->outline(), Qt::ClipOperation::IntersectClip);
     }
@@ -516,7 +516,7 @@ void KRPTScene::mouseOverCheck(SceneMouseEvent *e) noexcept
 {
     auto item = itemFromPos(_mousePos, [](KRPTSceneItem *item)
     {
-        return item->must(KRPTSceneItem::Must::MousePressEvent, KRPTSceneItem::Must::MouseTracking);
+        return item->mustAny(KRPTSceneItem::Must::MousePressEvent, KRPTSceneItem::Must::MouseTracking);
     });
     if(item != _mouseOverItem)mouseOverUpdate(item, e);
 }
