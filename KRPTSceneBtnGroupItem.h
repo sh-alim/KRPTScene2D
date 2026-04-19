@@ -26,11 +26,14 @@ protected:
     void mousePressImpl            (SceneMouseEvent *e)                                 noexcept override;
     void mouseReleaseImpl          (SceneMouseEvent *e)                                 noexcept override;
     void mouseMoveImpl             (SceneMouseEvent *e)                                 noexcept override;
+    void mouseOutImpl              (KRPTSceneItem::Ptr item, SceneMouseEvent *e)        noexcept override;
     void areaChildMousePressEvent  (KRPTSceneItem::Ptr item, SceneMouseEvent *e)        noexcept override;
     void areaChildMouseReleaseEvent(KRPTSceneItem::Ptr item, SceneMouseEvent *e)        noexcept override;
     void areaChildMouseMoveEvent   (KRPTSceneItem::Ptr item, SceneMouseEvent *e)        noexcept override;
 protected:
-    KRPTSceneItem::Ptr _mousePressItem;
+    KRPTSceneItem::Ptr _mousePressedItem;
+    KRPTSceneItem::Ptr _selectedItem    ;
+
 
     bool _expanded = false;
 

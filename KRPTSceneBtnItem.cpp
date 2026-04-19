@@ -5,6 +5,8 @@
 #include "KRPTSceneBtnItem.h"
 #include "KRPTScene.h"
 
+#include <QPainterPath>
+
 //########################################################################################################################
 //#
 //########################################################################################################################
@@ -27,6 +29,8 @@ KRPTSceneBtnItem::KRPTSceneBtnItem(KRPTScene *scene, KRPTSceneItem *parent, cons
 //            KRPTSceneItem::Must::AccuracyClip,
 //            KRPTSceneItem::Must::NoSceneRotate,
 //            KRPTSceneItem::Must::NoSceneScale,
+
+#if 0
     setColor(0, QColor(  0,  50,   0, 255));
     setColor(0, QColor(  0, 100,   0, 255), State::MouseOver);
     setColor(0, QColor(  0, 100,   0, 255), State::MousePressed);
@@ -40,6 +44,22 @@ KRPTSceneBtnItem::KRPTSceneBtnItem(KRPTScene *scene, KRPTSceneItem *parent, cons
     setColor(1, QColor(255, 255,   0, 255), State::Checked);
     setColor(1, QColor(255, 255,   0, 255), State::Checked | State::MouseOver);
     setColor(1, QColor(255, 255,   0, 255), State::Checked | State::MouseOver | State::MousePressed);
+#else
+
+    setColor(0, QColor(  23, 33, 43, 255));
+    setColor(0, QColor(  32, 43, 54, 255), State::MouseOver);
+    setColor(0, QColor(  32, 43, 54, 255), State::MouseOver | State::MousePressed);
+
+    setColor(0, QColor(  82, 136, 193, 255), State::Checked);
+    setColor(0, QColor(  82, 136, 193, 255), State::Checked | State::MouseOver);
+    setColor(0, QColor(  82, 136, 193, 255), State::Checked | State::MouseOver | State::MousePressed);
+
+//    setColor(0, QColor(  32, 43, 54, 255));
+
+
+    setColor(1, QColor(  30,  30,   30, 255));
+
+#endif
 }
 
 KRPTSceneBtnItem::~KRPTSceneBtnItem() noexcept
@@ -90,6 +110,9 @@ void KRPTSceneBtnItem::paintBackground(QPainter &painter, uint32_t stage) noexce
     painter.setBrush(color(0)); 
     painter.drawRoundedRect(_rect, _radius, _radius);
     painter.setBrush(Qt::NoBrush); 
+//    QPen pen(QColor(255, 255, 255), 2.0);
+//    painter.setPen(pen); 
+//    painter.drawEllipse(_rect.adjusted(10, 10, -10, -10));
 }
 
 void KRPTSceneBtnItem::paintForeground(QPainter &painter, uint32_t stage) noexcept

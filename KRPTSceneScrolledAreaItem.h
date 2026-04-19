@@ -35,11 +35,11 @@ public:
         MouseChildOver = 0x10,
     };
     using FScrollPolicy = KRPTFlag<ScrollPolicy>;
-    template<typename ... Args> inline void upScrollPolicy(Args&& ... args)                                                  noexcept
+    template<typename ... Args> inline void upScrollPolicy(Args&& ... args)                                    noexcept
     {
         _scrollPolicy.up(std::forward<Args>(args)...);
     }
-    template<typename ... Args> inline void downScrollPolicy(Args&& ... args)                                                noexcept
+    template<typename ... Args> inline void downScrollPolicy(Args&& ... args)                                  noexcept
     {
         _scrollPolicy.down(std::forward<Args>(args)...);
     }
@@ -48,6 +48,7 @@ public:
                                            const QRectF &geometry = QRectF(0, 0, 100, 100))                     noexcept;
     ~KRPTSceneScrolledAreaItem            ()                                                                    noexcept;
 public:
+    const List   & areaChildItems         ()                                                              const noexcept;
     QPointF        areaPos                ()                                                              const noexcept;
     double         areaX                  ()                                                              const noexcept;
     double         areaY                  ()                                                              const noexcept;
@@ -102,13 +103,16 @@ protected:
     void           mouseReleaseImpl       (SceneMouseEvent *e)                                                  noexcept override;
     void           mouseMoveImpl          (SceneMouseEvent *e)                                                  noexcept override;
     void           whellImpl              (SceneMouseEvent *e)                                                  noexcept override;
+    void           animImpl               (uint32_t id, const std::vector<double> &value, 
+                                           uint32_t time, bool completed, int loop)                             noexcept override;
 protected:
     virtual void   areaChildTransformEvent   (KRPTSceneItem::Ptr item, SceneTransformEvent *e)                  noexcept; 
     virtual void   areaChildMousePressEvent  (KRPTSceneItem::Ptr item, SceneMouseEvent *e)                      noexcept;
     virtual void   areaChildMouseReleaseEvent(KRPTSceneItem::Ptr item, SceneMouseEvent *e)                      noexcept;
     virtual void   areaChildMouseMoveEvent   (KRPTSceneItem::Ptr item, SceneMouseEvent *e)                      noexcept;
+    virtual void   areaChildMouseOutEvent    (KRPTSceneItem::Ptr item, 
+                                              KRPTSceneItem::Ptr newItem, SceneMouseEvent *e)                   noexcept;
 private:
-    bool           checkAreaRect          (const QRectF &src, QRectF &dst, QPointF &dp)                         noexcept;
     void           updateAreaRect         ()                                                                    noexcept;
     void           resetAreaMinMax        ()                                                                    noexcept;
     void           updateAreaMinMax       (KRPTSceneItem::Ptr item = nullptr)                                   noexcept;

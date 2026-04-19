@@ -307,11 +307,14 @@ protected:
     virtual void         mouseReleaseEvent     (SceneMouseEvent *e)                                                  noexcept {};
     virtual void         mouseMoveEvent        (SceneMouseEvent *e)                                                  noexcept {};
     virtual void         mouseEnterEvent       (bool enter)                                                          noexcept {};
+    virtual void         mouseOutEvent         (KRPTSceneItem::Ptr newItem, SceneMouseEvent *e)                      noexcept {};
     virtual void         whellEvent            (SceneMouseEvent *e)                                                  noexcept {};
     virtual void         childTransformEvent   (KRPTSceneItem::Ptr item, SceneTransformEvent *e)                     noexcept {};
     virtual void         childMousePressEvent  (KRPTSceneItem::Ptr item, SceneMouseEvent *e)                         noexcept {};
     virtual void         childMouseReleaseEvent(KRPTSceneItem::Ptr item, SceneMouseEvent *e)                         noexcept {};
     virtual void         childMouseMoveEvent   (KRPTSceneItem::Ptr item, SceneMouseEvent *e)                         noexcept {};
+    virtual void         childMouseOutEvent    (KRPTSceneItem::Ptr item, 
+                                                KRPTSceneItem::Ptr newItem, SceneMouseEvent *e)                      noexcept {};
     virtual void         childWhellEvent       (KRPTSceneItem::Ptr item, SceneMouseEvent *e)                         noexcept {};
     virtual void         sceneTransformEvent   (const QTransform &transform)                                         noexcept {};
     virtual void         sceneScaleEvent       (double scale, double oldScale)                                       noexcept {};
@@ -335,6 +338,7 @@ protected:
     virtual void         mousePressImpl        (SceneMouseEvent *e)                                                  noexcept;
     virtual void         mouseReleaseImpl      (SceneMouseEvent *e)                                                  noexcept;
     virtual void         mouseMoveImpl         (SceneMouseEvent *e)                                                  noexcept;
+    virtual void         mouseOutImpl          (KRPTSceneItem::Ptr newItem, SceneMouseEvent *e)                      noexcept;
     virtual void         whellImpl             (SceneMouseEvent *e)                                                  noexcept;
     virtual void         animImpl              (uint32_t id, const std::vector<double> &value, 
                                                 uint32_t time, bool completed, int loop)                             noexcept;

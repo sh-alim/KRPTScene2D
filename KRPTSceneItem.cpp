@@ -1185,6 +1185,16 @@ void KRPTSceneItem::mouseMoveImpl(SceneMouseEvent *e) noexcept
     }
 }
 
+void KRPTSceneItem::mouseOutImpl(KRPTSceneItem::Ptr newItem, SceneMouseEvent *e) noexcept
+{
+    if(!eventLocked())
+    {
+        if(mustAny(Must::MousePressEvent))mouseOutEvent(newItem, e);
+        if(_parent && mustAny(Must::MousePressToParentEvent))
+            _parent->childMouseOutEvent(this, newItem, e);
+    }
+}
+
 void KRPTSceneItem::whellImpl(SceneMouseEvent *e) noexcept
 {
     if(!eventLocked())

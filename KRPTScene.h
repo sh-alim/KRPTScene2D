@@ -118,14 +118,15 @@ protected:
     void               mouseOverUpdate       (KRPTSceneItem::Ptr item, 
                                               SceneMouseEvent *e = nullptr)           noexcept;
 protected:
-    KRPTSceneView      * _view               ;
-    KRPTSceneItem::Ptr   _item               ;
-    double               _deviceScale        ;
-    QPointF              _mousePressPos      ;
-    KRPTSceneItem::Ptr   _mousePressedItem   ;
-    QPointF              _mousePressedItemPos;
-    KRPTSceneItem::Ptr   _mouseOverItem      ;
-    QPointF              _mousePos           ;
+    KRPTSceneView      * _view                ;
+    KRPTSceneItem::Ptr   _item                ;
+    double               _deviceScale         ;
+    QPointF              _mousePressPos       ;
+    KRPTSceneItem::Ptr   _mousePressedItem    ;
+    KRPTSceneItem::Ptr   _mouseLastPressedItem;
+    QPointF              _mousePressedItemPos ;
+    KRPTSceneItem::Ptr   _mouseOverItem       ;
+    QPointF              _mousePos            ;
 
     QElapsedTimer _debugTimer; 
     bool    _printDebug = true;

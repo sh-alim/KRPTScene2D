@@ -84,19 +84,19 @@ MainProcess::MainProcess(QWidget *parent)
 
 
 #if 1
-    double x1 = 10;
-    double y1 = 10;
-    for(int i = 0; i < 15; ++i)
+    double x1 = 5;
+    double y1 = 5;
+    for(int i = 0; i < 10; ++i)
     {
         auto child = _root->addChild<KRPTSceneBtnItem>(QRectF(x1, y1, 50, 50));
 //        auto child = _root->addChild<KRPTSceneRectItem>();
 //        child->setGeometry(10, y1, 50, 50);
         y1 += 55;
-        if(y1 > 500)
-        {
-            x1 += 55;
-            y1 = 5;
-        }
+//        if(y1 > 500)
+//        {
+//            x1 += 55;
+//            y1 = 5;
+//        }
     }
 //    ((KRPTSceneScrolledAreaItem*)_root)->setAreaSize(100, 5 * 60 + 10);
 #endif
