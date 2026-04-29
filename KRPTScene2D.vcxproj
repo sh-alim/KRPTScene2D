@@ -38,12 +38,12 @@
   </ImportGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'" Label="QtSettings">
     <QtInstall>6.8.0</QtInstall>
-    <QtModules>core;gui;network;widgets;opengl;openglwidgets</QtModules>
+    <QtModules>core;gui;network;widgets;opengl;openglwidgets;svg;xml</QtModules>
     <QtBuildConfig>debug</QtBuildConfig>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'" Label="QtSettings">
     <QtInstall>6.8.0</QtInstall>
-    <QtModules>core;gui;network;widgets;opengl;openglwidgets</QtModules>
+    <QtModules>core;gui;network;widgets;opengl;openglwidgets;svg</QtModules>
     <QtBuildConfig>release</QtBuildConfig>
   </PropertyGroup>
   <Target Name="QtMsBuildNotFound" BeforeTargets="CustomBuild;ClCompile" Condition="!Exists('$(QtMsBuild)\qt.targets') or !Exists('$(QtMsBuild)\qt.props')">
@@ -126,10 +126,12 @@
     <ClCompile Include="KRPTSceneBtnGroupItem.cpp" />
     <ClCompile Include="KRPTSceneEllipseItem.cpp" />
     <ClCompile Include="KRPTSceneBtnItem.cpp" />
+    <ClCompile Include="KRPTSceneImageCache.cpp" />
     <ClCompile Include="KRPTSceneItem.cpp" />
     <ClCompile Include="KRPTSceneRectItem.cpp" />
     <ClCompile Include="KRPTSceneScrolledAreaItem.cpp" />
     <ClCompile Include="KRPTSceneView.cpp" />
+    <ClCompile Include="KRPTStaticImage.cpp" />
     <ClCompile Include="MainProcess.cpp" />
     <ClCompile Include="main.cpp" />
     <None Include="Project.ico" />
@@ -147,10 +149,12 @@
     <ClInclude Include="KRPTSceneEllipseItem.h" />
     <ClInclude Include="KRPTSceneEvent.h" />
     <ClInclude Include="KRPTSceneBtnItem.h" />
+    <ClInclude Include="KRPTSceneImageCache.h" />
     <ClInclude Include="KRPTSceneItem.h" />
     <ClInclude Include="KRPTSceneRectItem.h" />
     <ClInclude Include="KRPTSceneScrolledAreaItem.h" />
     <ClInclude Include="KRPTSceneView.h" />
+    <ClInclude Include="KRPTStaticImage.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">

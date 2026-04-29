@@ -71,6 +71,7 @@ MainProcess::MainProcess(QWidget *parent)
 
     _root = _scene->addItem<KRPTSceneBtnGroupItem>(QRectF(10, 10, 70, 70));
 
+//    _root = _scene->addItem<KRPTSceneBtnItem>(QRectF(100, 100, 50, 50));
 
         auto itm = dynamic_cast<KRPTSceneScrolledAreaItem*>(_root);
         if(itm)
@@ -88,14 +89,18 @@ MainProcess::MainProcess(QWidget *parent)
     double y1 = 5;
     for(int i = 0; i < 10; ++i)
     {
-        auto child = _root->addChild<KRPTSceneBtnItem>(QRectF(x1, y1, 50, 50));
+        auto child = _root->addChild<KRPTSceneBtnItem>(QRectF(x1, y1, 48, 48));
+
+//        child->setScale(1.1);
+
 //        auto child = _root->addChild<KRPTSceneRectItem>();
 //        child->setGeometry(10, y1, 50, 50);
         y1 += 55;
-//        if(y1 > 500)
+
+//        if(x1 > 2000)
 //        {
-//            x1 += 55;
-//            y1 = 5;
+//            y1 += 55;
+//            x1 = 15;
 //        }
     }
 //    ((KRPTSceneScrolledAreaItem*)_root)->setAreaSize(100, 5 * 60 + 10);
@@ -266,7 +271,7 @@ void MainProcess::resizeEvent(QResizeEvent *value)
 {
     _view->setGeometry(200, 10, width() - 210, height() - 20);
 
-    _root->setGeometry(150, 150, width() - 800, height() - 500);
+    _root->setGeometry(50, 50, width() - 100, height() - 100);
 }
 
 void MainProcess::mousePressEvent(QMouseEvent *e)
