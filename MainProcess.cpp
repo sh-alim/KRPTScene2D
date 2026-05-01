@@ -16,7 +16,7 @@ static const std::vector<std::pair<KRPTSceneItem::Must, QString>> must =
     {KRPTSceneItem::Must::NoCheckChildVisibled   , "NoCheckChildVisibled"   },
     {KRPTSceneItem::Must::NoSceneScale           , "NoSceneScale"           },
     {KRPTSceneItem::Must::NoSceneRotate          , "NoSceneRotate"          },
-    {KRPTSceneItem::Must::Anim                   , "Anim"                   },
+    {KRPTSceneItem::Must::TransformAnim          , "TransformAnim"          },
     {KRPTSceneItem::Must::AccuracyCheckContains  , "AccuracyCheckContains"  },
     {KRPTSceneItem::Must::AccuracyClip           , "AccuracyClip"           },
     {KRPTSceneItem::Must::NoMouseEventTranslate  , "NoMouseEventTranslate"  },
@@ -87,21 +87,25 @@ MainProcess::MainProcess(QWidget *parent)
 #if 1
     double x1 = 5;
     double y1 = 5;
-    for(int i = 0; i < 10; ++i)
+    for(int i = 0; i < 1; ++i)
     {
         auto child = _root->addChild<KRPTSceneBtnItem>(QRectF(x1, y1, 48, 48));
+
+//        child->setImage("setting_1");
+        child->setImageSrc("D:/Desktop/иконки/8/brush.svg");
+
 
 //        child->setScale(1.1);
 
 //        auto child = _root->addChild<KRPTSceneRectItem>();
-//        child->setGeometry(10, y1, 50, 50);
-        y1 += 55;
+//        child->setGeometry(x1, y1, 50, 50);
+        x1 += 55;
 
-//        if(x1 > 2000)
-//        {
-//            y1 += 55;
-//            x1 = 15;
-//        }
+        if(x1 > 2000)
+        {
+            y1 += 55;
+            x1 = 5;
+        }
     }
 //    ((KRPTSceneScrolledAreaItem*)_root)->setAreaSize(100, 5 * 60 + 10);
 #endif
@@ -115,7 +119,7 @@ MainProcess::MainProcess(QWidget *parent)
 //            KRPTSceneItem::Must::NoSceneRotate,
 //            KRPTSceneItem::Must::NoSceneScale,
 //            KRPTSceneItem::Must::AccuracyClip,
-//            KRPTSceneItem::Must::Anim,
+//            KRPTSceneItem::Must::TransformAnim,
 //            KRPTSceneItem::Must::AccuracyClip,
 //            KRPTSceneItem::Must::AccuracyCheckContains,
 //            KRPTSceneItem::Must::MouseMoved,
@@ -140,7 +144,7 @@ MainProcess::MainProcess(QWidget *parent)
 //            KRPTSceneItem::Must::NoSceneRotate,
 //            KRPTSceneItem::Must::NoSceneScale,
 //            KRPTSceneItem::Must::AccuracyClip,
-            KRPTSceneItem::Must::Anim,
+            KRPTSceneItem::Must::TransformAnim,
 //            KRPTSceneItem::Must::AccuracyClip,
 //            KRPTSceneItem::Must::AccuracyCheckContains,
             KRPTSceneItem::Must::MouseMoved,
@@ -367,7 +371,7 @@ void MainProcess::mousePressEvent(QMouseEvent *e)
 //            KRPTSceneItem::Must::SceneTransformEvent,
 //            KRPTSceneItem::Must::SceneScaleEvent,
 
-            KRPTSceneItem::Must::Anim,
+            KRPTSceneItem::Must::TransformAnim,
 //            KRPTSceneItem::Must::AccuracyClip,
 //            KRPTSceneItem::Must::AccuracyCheckContains,
             KRPTSceneItem::Must::MouseMoved,
@@ -411,7 +415,7 @@ void MainProcess::mousePressEvent(QMouseEvent *e)
 //                KRPTSceneItem::Must::NoSceneRotate,
 //                KRPTSceneItem::Must::NoSceneScale,
 //            KRPTSceneItem::Must::AccuracyClip,
-                KRPTSceneItem::Must::Anim,
+                KRPTSceneItem::Must::TransformAnim,
 //            KRPTSceneItem::Must::AccuracyClip,
 //            KRPTSceneItem::Must::AccuracyCheckContains,
                 KRPTSceneItem::Must::MouseMoved,
@@ -440,14 +444,17 @@ void MainProcess::mousePressEvent(QMouseEvent *e)
 
 void MainProcess::mouseReleaseEvent(QMouseEvent *e)
 {
+    (void)e;
 }
 
 void MainProcess::mouseMoveEvent(QMouseEvent *e)
 {
+    (void)e;
 }
 
 void MainProcess::wheelEvent(QWheelEvent *e)
 {
+    (void)e;
 #if 0
     auto item = _i0;
 

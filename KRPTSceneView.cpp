@@ -121,7 +121,7 @@ void KRPTSceneViewPriv::paintEvent(QPaintEvent *e)
 //########################################################################################################################
 
 KRPTSceneView::KRPTSceneView(QWidget *parent, KRPTScene *scene) noexcept
-    : QObject(parent), _scene(scene), _p(new KRPTSceneViewPriv(parent, this)), _translateEvents(false)
+    : QObject(parent), _p(new KRPTSceneViewPriv(parent, this)), _scene(scene), _translateEvents(false)
 {
     setHwAccel      (true);
     setAutoFill     (false);
@@ -224,26 +224,32 @@ void KRPTSceneView::update() noexcept
 
 void KRPTSceneView::resizeEvent(QResizeEvent *e)
 {
+    (void)e;
 }
 
 void KRPTSceneView::mousePressEvent(QMouseEvent *e)
 {
+    (void)e;
 }
 
 void KRPTSceneView::mouseReleaseEvent(QMouseEvent *e)
 {
+    (void)e;
 }
 
 void KRPTSceneView::mouseMoveEvent(QMouseEvent *e)
 {
+    (void)e;
 }
 
 void KRPTSceneView::wheelEvent(QWheelEvent *e)
 {
+    (void)e;
 }
 
 void KRPTSceneView::paintEvent(QPainter &p)
 {
+    (void)p;
 }
 
 //************************************************************************************************************************
@@ -299,6 +305,7 @@ void KRPTSceneView::wheelEventImpl(QWheelEvent *e) noexcept
 
 void KRPTSceneView::paintEventImpl(QPaintEvent *e) noexcept
 {
+    (void)e;
     if(!_scene)return;
     QPainter painter(_p->viewport());
     _scene->paintEvent(painter);

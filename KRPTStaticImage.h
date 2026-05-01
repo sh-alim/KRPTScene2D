@@ -33,15 +33,20 @@ public:
     using Cache  = std::unordered_map<uint64_t, PImage>;
     enum class SourceType{Uncknown, Vector, Raster};
 public:
-    KRPTStaticImage() noexcept;
-   ~KRPTStaticImage() noexcept;
+    KRPTStaticImage()                                                            noexcept;
+    KRPTStaticImage (const QByteArray &src, bool useCache = false)               noexcept;
+   ~KRPTStaticImage()                                                            noexcept;
+
+
+//   KRPTStaticImage(const KRPTStaticImage&) noexcept{};
+
 public:
     bool            useCache   ()                                          const noexcept {return _useCache;}
     QRectF          viewBox    ()                                          const noexcept {return _viewBox ;}
     const Image   * pixmap     (const QRectF &rect, const QColor &color)         noexcept;
     bool            setSource  (const QByteArray &src)                           noexcept;
     void            setUseCache(bool use)                                        noexcept;
-    void            draw       (QPainter &painter, const QRectF &rect, 
+    bool            draw       (QPainter &painter, const QRectF &rect, 
                                 const QColor &color)                             noexcept;
 private:
     bool    drawVector         (QPainter &painter, const QRectF &rect, 
@@ -112,7 +117,6 @@ private:
 public:
     VectorItems _vectorItems   ;
     PImage      _pixmap        ;
-    bool        _useCache      ;
     Cache       _cache         ;
     Image       _cachePixmap   ;
     QRectF      _viewBox       ;
@@ -124,6 +128,7 @@ public:
     QString     _data          ;
     int         _pos           ;
     SourceType  _sourceType    ;
+    bool        _useCache      ;
     QByteArray  _src           ;
     bool        _isFile        ;
     bool        _dirtySource   ;

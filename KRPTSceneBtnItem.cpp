@@ -4,8 +4,17 @@
 
 #include "KRPTSceneBtnItem.h"
 #include "KRPTScene.h"
-
 #include "KRPTImageCache.h"
+
+//########################################################################################################################
+//#
+//########################################################################################################################
+
+class KRPTSceneBtnItemData
+{
+    friend KRPTSceneBtnItem;
+    KRPTImageCacheKeyType _imageKey;
+};
 
 //########################################################################################################################
 //#
@@ -15,7 +24,8 @@ KRPTSceneBtnItem::KRPTSceneBtnItem(KRPTScene *scene, KRPTSceneItem *parent, cons
     : KRPTSceneItem(scene, parent, geometry,
         Must::NoClipPainter         | 
         Must::NoCheckChildVisibled  |
-        Must::Anim                  |
+        Must::TransformAnim         |
+//        Must::ColorAnim             |
         Must::AccuracyCheckContains |
         Must::Checked               |
         Must::MouseChecked          | 
@@ -24,7 +34,8 @@ KRPTSceneBtnItem::KRPTSceneBtnItem(KRPTScene *scene, KRPTSceneItem *parent, cons
         Must::MousePressEvent       |
         Must::MouseMoveEvent        |
         Must::MouseEnterEvent
-    )
+    ), _d(new KRPTSceneBtnItemData()), _cornerRadius(6), _imageRect(3, 3, geometry.width() - 6, geometry.height() - 6)
+
 {
 //            KRPTSceneItem::Must::AccuracyClip,
 //            KRPTSceneItem::Must::NoSceneRotate,
@@ -86,7 +97,10 @@ KRPTSceneBtnItem::KRPTSceneBtnItem(KRPTScene *scene, KRPTSceneItem *parent, cons
 
 //    _image.setSource("D:/Desktop/иконки/7/activity.svg");
 //    _image.setSource("D:/Desktop/иконки/7/cursor.svg");
-    _image.setSource("D:/Desktop/иконки/8/brush.svg");
+//    _image.setSource("D:/Desktop/иконки/8/brush.svg");
+
+//    _imageKey = KRPTImageCache::key("D:/Desktop/иконки/8/brush.svg");
+//    _imageKey = KRPTImageCache::key("setting_1");
 
     
 #endif
@@ -94,6 +108,37 @@ KRPTSceneBtnItem::KRPTSceneBtnItem(KRPTScene *scene, KRPTSceneItem *parent, cons
 
 KRPTSceneBtnItem::~KRPTSceneBtnItem() noexcept
 {
+    delete _d;
+}
+
+//************************************************************************************************************************
+//*
+//************************************************************************************************************************
+
+void KRPTSceneBtnItem::setCornerRadius(double radius) noexcept
+{
+    if(qFuzzyCompare(_cornerRadius, radius))return;
+    _cornerRadius = radius;
+//    update();
+}
+
+void KRPTSceneBtnItem::setImageSrc(const QByteArray &src) noexcept
+{
+    _d->_imageKey = KRPTImageCache::key(src);
+}
+
+void KRPTSceneBtnItem::setImageRect(const QRectF &rect) noexcept
+{
+    if(qFuzzyCompare(_imageRect, rect))return;
+    _imageRect = rect;
+//    update();
+}
+
+void KRPTSceneBtnItem::setImage(const QByteArray &src, const QRectF &rect) noexcept
+{
+    if(qFuzzyCompare(_imageRect, rect))return;
+    _d->_imageKey = KRPTImageCache::key(src);
+    _imageRect = rect;
 }
 
 //************************************************************************************************************************
@@ -107,14 +152,17 @@ void KRPTSceneBtnItem::stateChangeEvent(const FState &newState, const FState &ol
 
 void KRPTSceneBtnItem::mousePressEvent(SceneMouseEvent *e) noexcept 
 {
+    (void)e;
 };
 
 void KRPTSceneBtnItem::mouseReleaseEvent(SceneMouseEvent *e) noexcept 
 {
+    (void)e;
 };
 
 void KRPTSceneBtnItem::mouseEnterEvent(bool enter) noexcept
 {
+    (void)enter;
 }
 
 //************************************************************************************************************************
@@ -123,8 +171,8 @@ void KRPTSceneBtnItem::mouseEnterEvent(bool enter) noexcept
 
 void KRPTSceneBtnItem::outlineImpl() noexcept
 {
-//    _outline.addRect(_rect);
-    _outline.addRoundedRect(_rect, _radius, _radius);
+    if(qFuzzyIsNull(_cornerRadius))_outline.addRect(_rect);
+    else _outline.addRoundedRect(_rect, _cornerRadius, _cornerRadius);
 }
 
 void KRPTSceneBtnItem::animImpl(uint32_t id, const std::vector<double> &value, 
@@ -135,28 +183,27 @@ void KRPTSceneBtnItem::animImpl(uint32_t id, const std::vector<double> &value,
 
 void KRPTSceneBtnItem::paintBackground(QPainter &painter, uint32_t stage) noexcept
 {
+    (void)stage;    
     painter.setRenderHint(QPainter::Antialiasing, true);
     painter.setPen(Qt::NoPen); 
-    painter.setBrush(color(0)); 
-    painter.drawRoundedRect(_rect.adjusted(0.5, 0.5, -0.5, -0.5), _radius, _radius);
-
-//    painter.drawRect(_rect);
-
+    painter.setBrush(color(0));
+    if(qFuzzyIsNull(_cornerRadius))painter.drawRect(_rect);
+    else painter.drawRoundedRect(_rect, _cornerRadius, _cornerRadius);
     painter.setBrush(Qt::NoBrush); 
 
-    QPen pen(QColor(255, 0, 0), 1.0);
-    pen.setCosmetic(true);
-    painter.setPen(pen); 
+//    QPen pen(QColor(255, 0, 0), 1.0);
+//    pen.setCosmetic(true);
+//    painter.setPen(pen); 
 
-//    KRPTSceneImageCache::Image image = KRPTSceneImageCache::get(0, _rect.size());
-//    painter.drawImage(_rect, *image);
 
-    QRectF r = _rect.adjusted(4.0, 4.0, -4.0, -4.0);
-    _image.draw(painter, r, color(2));
+    if(_d->_imageKey.enable())
+        KRPTImageCache::draw(_d->_imageKey, painter, _imageRect, color(2));
+
 }
 
 void KRPTSceneBtnItem::paintForeground(QPainter &painter, uint32_t stage) noexcept
 {
+    (void)stage;
     painter.setRenderHint(QPainter::Antialiasing, true);
 //    painter.setRenderHint(QPainter::Antialiasing, false);
     QPen pen(color(1), 1.5);

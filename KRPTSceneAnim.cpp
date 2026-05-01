@@ -9,7 +9,7 @@
 //########################################################################################################################
 
 KRPTSceneAnim::KRPTSceneAnim(uint32_t id, const Event &event, int duration, QEasingCurve easingCurve, int count) noexcept
-    : QAbstractAnimation(), _id(id), _duration(duration), _event(event), _easingCurve(easingCurve)
+    : QAbstractAnimation(), _event(event), _id(id), _duration(duration), _easingCurve(easingCurve)
 {
     setLoopCount(count);
 }

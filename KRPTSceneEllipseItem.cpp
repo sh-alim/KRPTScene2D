@@ -32,11 +32,13 @@ void KRPTSceneEllipseItem::outlineImpl() noexcept
 
 void KRPTSceneEllipseItem::paintBackground(QPainter &painter, uint32_t stage) noexcept
 {
+    (void)stage;
     painter.fillPath(outline(), color(0));
 }
 
 void KRPTSceneEllipseItem::paintForeground(QPainter &painter, uint32_t stage) noexcept
 {
+    (void)stage;
     QPen pen(color(1), 2);
     painter.setPen(pen);
 //    painter.drawRect(_rect);

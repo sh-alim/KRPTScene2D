@@ -7,6 +7,8 @@
 #include <QPainter>
 #include <QFile>
 
+#include <QDebug>
+
 //########################################################################################################################
 //#
 //########################################################################################################################
@@ -43,6 +45,7 @@ static bool isRaster(const QByteArray &src)
     return false;
 }
 
+#if 0
 static QString toCppArray(const QByteArray &data, const QString &name)
 {
     QString out;
@@ -58,6 +61,7 @@ static QString toCppArray(const QByteArray &data, const QString &name)
     out += "static const int " + name + "_size = " + QString::number(data.size()) + ";\n";
     return out;
 }
+#endif
 
 //########################################################################################################################
 //#
@@ -65,7 +69,13 @@ static QString toCppArray(const QByteArray &data, const QString &name)
 
 KRPTStaticImage::KRPTStaticImage() noexcept
     : _stroke(false), _fill(true), _maxStrokeWidth(1), _pos(0), _sourceType(SourceType::Uncknown),
-      _useCache(false), _isFile(false), _dirtySource(false), _dirtyPixmap(false)
+      _useCache(false), _isFile(false), _dirtySource(true), _dirtyPixmap(false)
+{
+}
+
+KRPTStaticImage::KRPTStaticImage(const QByteArray &src, bool useCache) noexcept
+    : _stroke(false), _fill(true), _maxStrokeWidth(1), _pos(0), _sourceType(SourceType::Uncknown),
+      _useCache(useCache), _src(src), _isFile(QFile(src).exists()), _dirtySource(true), _dirtyPixmap(false)
 {
 }
 
@@ -79,9 +89,6 @@ KRPTStaticImage::~KRPTStaticImage() noexcept
 
 const KRPTStaticImage::Image* KRPTStaticImage::pixmap(const QRectF &rect, const QColor &color) noexcept
 {
-//    QSizeF sz(size.width() * sx, size.height() * sy);
-
-
     QSize szi = rect.size().toSize();
     Image *pixmap = nullptr;
     if(_useCache)
@@ -99,6 +106,7 @@ const KRPTStaticImage::Image* KRPTStaticImage::pixmap(const QRectF &rect, const 
     #else
         pixmap = !_dirtyPixmap ? find->second.get() : 
             _cache.emplace(key, std::make_unique<Image>(szi, QImage::Format_ARGB32_Premultiplied)).first->second.get();
+//        if(_dirtyPixmap)qDebug() << _cache.size() << (_cache.size() * szi.width() * szi.height() * 4) / 1024;
     #endif
     }else
     {
@@ -111,7 +119,6 @@ const KRPTStaticImage::Image* KRPTStaticImage::pixmap(const QRectF &rect, const 
         if(!_pixmap)_pixmap = std::make_unique<Image>(szi, QImage::Format_ARGB32_Premultiplied);
     #endif
         pixmap = _pixmap.get();
-
     }
     if(_dirtyPixmap)
     {
@@ -127,7 +134,7 @@ const KRPTStaticImage::Image* KRPTStaticImage::pixmap(const QRectF &rect, const 
             #endif
                 pixmap->swap(tmp);
             }
-        #if 0
+        #if 1
             pixmap->fill(QColor(0, 0, 255));
         #else
             pixmap->fill(Qt::transparent);
@@ -137,18 +144,19 @@ const KRPTStaticImage::Image* KRPTStaticImage::pixmap(const QRectF &rect, const 
             {
                 case SourceType::Vector : drawVector(pntr, rect, color); break;
                 case SourceType::Raster : drawRaster(pntr, rect       ); break;
+                default : break;
             }
         }
     }
     return pixmap;
 }
 
-void KRPTStaticImage::draw(QPainter &painter, const QRectF &rect, const QColor &color) noexcept
+bool KRPTStaticImage::draw(QPainter &painter, const QRectF &rect, const QColor &color) noexcept
 {
     if(_dirtySource)
     {
         _dirtySource = false;
-        if(!prepare())return;
+        if(!prepare())return false;
     }
     double dpr = painter.device()->devicePixelRatioF();
     const QTransform &t = painter.transform();
@@ -182,7 +190,9 @@ void KRPTStaticImage::draw(QPainter &painter, const QRectF &rect, const QColor &
         painter.drawImage(r, *pixmap);
     #endif
         painter.restore();
+        return true;
     }
+    return false;
 }
 
 bool KRPTStaticImage::setSource(const QByteArray &src) noexcept
@@ -427,7 +437,6 @@ std::vector<double> KRPTStaticImage::parseArguments(const QString &src) noexcept
     std::vector<double> ret;
     bool delimer = false;
     bool last = false;
-    int b = 0, e = 0;
     QString cur;
     for(auto &c : src)
     {
@@ -466,7 +475,7 @@ QTransform KRPTStaticImage::parseTransform(const QString &src) noexcept
     while(true)
     {
         int b = -1, e = -1, id = 0;
-        for(int i = 0; i < names.size(); ++i)
+        for(int i = 0; i < (int)names.size(); ++i)
         {
             int p = in.indexOf(names[i], pos);
             if(p < 0)continue;

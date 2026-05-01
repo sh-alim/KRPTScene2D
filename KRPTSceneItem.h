@@ -77,31 +77,32 @@ public:
         NoCheckChildVisibled    = 0x00000008,
         NoSceneScale            = 0x00000010,
         NoSceneRotate           = 0x00000020,
-        Anim                    = 0x00000040,
-        AccuracyCheckContains   = 0x00000080,
-        AccuracyClip            = 0x00000100,
-        NoMouseEventTranslate   = 0x00000200,
-        MouseTracking           = 0x00000400,
-        StateChangeEvent        = 0x00000800,
-        MousePressEvent         = 0x00001000,
-        MouseMoveEvent          = 0x00002000,
-        MouseEnterEvent         = 0x00004000,
-        WhellEvent              = 0x00008000,
-        TransformEvent          = 0x00010000,
-        SceneTransformEvent     = 0x00020000,
-        SceneScaleEvent         = 0x00040000,
-        SceneRotateEvent        = 0x00080000,
-        TransformToParentEvent  = 0x00100000,
-        TransformToSceneEvent   = 0x00200000,
-        MousePressToParentEvent = 0x00400000,
-        MousePressToSceneEvent  = 0x00800000,
-        MouseMoveToParentEvent  = 0x01000000,
-        MouseMoveToSceneEvent   = 0x02000000,
-        WhellToParentEvent      = 0x04000000,
-        WhellToSceneEvent       = 0x08000000,
-        Checked                 = 0x10000000,
-        MouseMoved              = 0x20000000,
-        MouseChecked            = 0x40000000,
+        TransformAnim           = 0x00000040,
+        ColorAnim               = 0x00000080,
+        AccuracyCheckContains   = 0x00000100,
+        AccuracyClip            = 0x00000200,
+        NoMouseEventTranslate   = 0x00000400,
+        MouseTracking           = 0x00000800,
+        StateChangeEvent        = 0x00001000,
+        MousePressEvent         = 0x00002000,
+        MouseMoveEvent          = 0x00004000,
+        MouseEnterEvent         = 0x00008000,
+        WhellEvent              = 0x00010000,
+        TransformEvent          = 0x00020000,
+        SceneTransformEvent     = 0x00040000,
+        SceneScaleEvent         = 0x00080000,
+        SceneRotateEvent        = 0x00100000,
+        TransformToParentEvent  = 0x00200000,
+        TransformToSceneEvent   = 0x00400000,
+        MousePressToParentEvent = 0x00800000,
+        MousePressToSceneEvent  = 0x01000000,
+        MouseMoveToParentEvent  = 0x02000000,
+        MouseMoveToSceneEvent   = 0x04000000,
+        WhellToParentEvent      = 0x08000000,
+        WhellToSceneEvent       = 0x10000000,
+        Checked                 = 0x20000000,
+        MouseMoved              = 0x40000000,
+        MouseChecked            = 0x80000000,
         All                     = 0xFFFFFFFF
     };
     enum class State : uint8_t
@@ -299,26 +300,26 @@ public:
     bool                 canBeUpdated          ()                                                              const noexcept;
     bool                 needChildPaint        ()                                                              const noexcept;
 protected:
-    virtual void         addChildEvent         (KRPTSceneItem::Ptr item)                                             noexcept {};
-    virtual void         delChildEvent         (KRPTSceneItem::Ptr item)                                             noexcept {};
-    virtual void         transformEvent        (SceneTransformEvent *e)                                              noexcept {};
-    virtual void         stateChangeEvent      (const FState &newState, const FState &oldState)                      noexcept {};
-    virtual void         mousePressEvent       (SceneMouseEvent *e)                                                  noexcept {};
-    virtual void         mouseReleaseEvent     (SceneMouseEvent *e)                                                  noexcept {};
-    virtual void         mouseMoveEvent        (SceneMouseEvent *e)                                                  noexcept {};
-    virtual void         mouseEnterEvent       (bool enter)                                                          noexcept {};
-    virtual void         mouseOutEvent         (KRPTSceneItem::Ptr newItem, SceneMouseEvent *e)                      noexcept {};
-    virtual void         whellEvent            (SceneMouseEvent *e)                                                  noexcept {};
-    virtual void         childTransformEvent   (KRPTSceneItem::Ptr item, SceneTransformEvent *e)                     noexcept {};
-    virtual void         childMousePressEvent  (KRPTSceneItem::Ptr item, SceneMouseEvent *e)                         noexcept {};
-    virtual void         childMouseReleaseEvent(KRPTSceneItem::Ptr item, SceneMouseEvent *e)                         noexcept {};
-    virtual void         childMouseMoveEvent   (KRPTSceneItem::Ptr item, SceneMouseEvent *e)                         noexcept {};
+    virtual void         addChildEvent         (KRPTSceneItem::Ptr item)                                             noexcept {(void)item                        ;}
+    virtual void         delChildEvent         (KRPTSceneItem::Ptr item)                                             noexcept {(void)item                        ;}
+    virtual void         transformEvent        (SceneTransformEvent *e)                                              noexcept {(void)e                           ;}
+    virtual void         stateChangeEvent      (const FState &newState, const FState &oldState)                      noexcept {(void)newState; (void)oldState    ;}
+    virtual void         mousePressEvent       (SceneMouseEvent *e)                                                  noexcept {(void)e                           ;}
+    virtual void         mouseReleaseEvent     (SceneMouseEvent *e)                                                  noexcept {(void)e                           ;}
+    virtual void         mouseMoveEvent        (SceneMouseEvent *e)                                                  noexcept {(void)e                           ;}
+    virtual void         mouseEnterEvent       (bool enter)                                                          noexcept {(void)enter                       ;}
+    virtual void         mouseOutEvent         (KRPTSceneItem::Ptr newItem, SceneMouseEvent *e)                      noexcept {(void)newItem; (void)e            ;}
+    virtual void         whellEvent            (SceneMouseEvent *e)                                                  noexcept {(void)e                           ;}
+    virtual void         childTransformEvent   (KRPTSceneItem::Ptr item, SceneTransformEvent *e)                     noexcept {(void)item; (void)e               ;}
+    virtual void         childMousePressEvent  (KRPTSceneItem::Ptr item, SceneMouseEvent *e)                         noexcept {(void)item; (void)e               ;}
+    virtual void         childMouseReleaseEvent(KRPTSceneItem::Ptr item, SceneMouseEvent *e)                         noexcept {(void)item; (void)e               ;}
+    virtual void         childMouseMoveEvent   (KRPTSceneItem::Ptr item, SceneMouseEvent *e)                         noexcept {(void)item; (void)e               ;}
     virtual void         childMouseOutEvent    (KRPTSceneItem::Ptr item, 
-                                                KRPTSceneItem::Ptr newItem, SceneMouseEvent *e)                      noexcept {};
-    virtual void         childWhellEvent       (KRPTSceneItem::Ptr item, SceneMouseEvent *e)                         noexcept {};
-    virtual void         sceneTransformEvent   (const QTransform &transform)                                         noexcept {};
-    virtual void         sceneScaleEvent       (double scale, double oldScale)                                       noexcept {};
-    virtual void         sceneRotateEvent      (double angle, double oldAngle)                                       noexcept {};
+                                                KRPTSceneItem::Ptr newItem, SceneMouseEvent *e)                      noexcept {(void)item; (void)newItem; (void)e;}
+    virtual void         childWhellEvent       (KRPTSceneItem::Ptr item, SceneMouseEvent *e)                         noexcept {(void)item; (void)e               ;}
+    virtual void         sceneTransformEvent   (const QTransform &transform)                                         noexcept {(void)transform                   ;}
+    virtual void         sceneScaleEvent       (double scale, double oldScale)                                       noexcept {(void)scale; (void)oldScale       ;}
+    virtual void         sceneRotateEvent      (double angle, double oldAngle)                                       noexcept {(void)angle; (void)oldAngle       ;}
 protected:
     virtual void         update                ()                                                                    noexcept;
     virtual CList      & filterChildItems      ()                                                                    noexcept;
@@ -380,11 +381,11 @@ private:
                                                 bool moved, bool resized, bool rotated, bool scaled)                 noexcept;
 protected:
     KRPTSceneItemData   *_data             ;
+    KRPTScene           *_scene            ;
+    KRPTSceneItem       *_parent           ;
     FDirty               _dirty            ;
     FMust                _must             ;
     FState               _state            ;
-    KRPTScene           *_scene            ;
-    KRPTSceneItem       *_parent           ;
     List                 _childItems       ;
     List                 _visibleChildItems;
     Index                _index            ;

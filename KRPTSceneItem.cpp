@@ -283,11 +283,11 @@ private:
 //########################################################################################################################
 
 KRPTSceneItem::KRPTSceneItem(KRPTScene *scene, KRPTSceneItem *parent, const QRectF &geometry, FMust must) noexcept
-    : _scene(scene), _parent(parent), _data(new KRPTSceneItemData(this)), _dirty(Dirty::All), _must(must),
-      _state(State::NeedPaint | State::VisibledInView | State::NeedChildPaint),
-      _updateLocked(0), _eventLocked(0), _visible(true), _angle(0), _scale(1), _opaq(1), 
+    : _data(new KRPTSceneItemData(this)), _scene(scene), _parent(parent), _dirty(Dirty::All), _must(must),
+      _state(State::NeedPaint | State::VisibledInView | State::NeedChildPaint), _updateLocked(0), _eventLocked(0), 
+      _visible(true), _geometry(geometry), _rect(QPointF(), geometry.size()), _angle(0), _scale(1), _opaq(1), 
       _transformAnchor(TransformAnchor::Center), _posAnchor(TransformAnchor::LeftTop), 
-      _paintStageCount(1), _geometry(geometry), _rect(QPointF(), geometry.size()), _tag(0)
+      _paintStageCount(1), _tag(0)
 {
 }
 
@@ -413,7 +413,7 @@ const KRPTSceneItem::List& KRPTSceneItem::visibleChildItems() noexcept
     {
         item->updateCache(true);
         bool needPaint = (!item->_parent || 
-            item->_state[State::VisibledInView, State::NeedChildPaint]) && _visible;
+            item->_state.any(State::VisibledInView, State::NeedChildPaint)) && _visible;
         if(needPaint)
             _visibleChildItems.emplace_back(item);
     }
@@ -424,7 +424,7 @@ const KRPTSceneItem::List& KRPTSceneItem::visibleChildItems() noexcept
         {
             item->updateCache(true);
             bool needPaint = (!item->_parent || 
-                item->_state[State::VisibledInView, State::NeedChildPaint]) && _visible;
+                item->_state.any(State::VisibledInView, State::NeedChildPaint)) && _visible;
             if(needPaint)
                 _visibleChildItems.emplace_back(item);
         }
@@ -455,7 +455,7 @@ const KRPTSceneItem::List& KRPTSceneItem::visibleChildItems() noexcept
             auto item = *it;
             item->updateCache(true);
             bool needPaint = (!item->_parent || 
-                item->_state[State::VisibledInView, State::NeedChildPaint]) && _visible;
+                item->_state.any(State::VisibledInView, State::NeedChildPaint)) && _visible;
             if(needPaint)
                 r.list.emplace_back(item);
         }
@@ -521,7 +521,7 @@ const QTransform& KRPTSceneItem::sceneTransform() noexcept
 
 const QTransform& KRPTSceneItem::sceneTransformInv() noexcept 
 {
-    if(!_dirty[Dirty::SceneTransformInv])_sceneTransformInv;
+    if(!_dirty[Dirty::SceneTransformInv])return _sceneTransformInv;
     _dirty -= Dirty::SceneTransformInv;
     _sceneTransformInv = sceneTransform().inverted();
     return _sceneTransformInv;
@@ -619,7 +619,7 @@ bool KRPTSceneItem::setGeometry(const QRectF &geometry,
         _data->startAnim(AnimDst::Geometry, _geometry, geometry, time, curve);
         return true;
     }
-    if(mustAny(Must::Anim))_data->stopAnim(AnimDst::Geometry);
+    if(mustAny(Must::TransformAnim))_data->stopAnim(AnimDst::Geometry);
     return setGeometryImpl(geometry);
 }
 
@@ -682,7 +682,7 @@ bool KRPTSceneItem::setAngle(double angle, uint32_t time, QEasingCurve curve) no
         _data->startAnim(AnimDst::Angle, _angle, angle, time, curve);
         return true;
     }
-    if(mustAny(Must::Anim))_data->stopAnim(AnimDst::Angle);
+    if(mustAny(Must::TransformAnim))_data->stopAnim(AnimDst::Angle);
     return setAngleImpl(angle);
 }
 
@@ -716,7 +716,7 @@ bool KRPTSceneItem::setScale(double scale, uint32_t time, QEasingCurve curve) no
         _data->startAnim(AnimDst::Scale, _scale, scale, time, curve);
         return true;
     }
-    if(mustAny(Must::Anim))_data->stopAnim(AnimDst::Scale);
+    if(mustAny(Must::TransformAnim))_data->stopAnim(AnimDst::Scale);
     return setScaleImpl(scale);
 }
 
@@ -750,7 +750,7 @@ bool KRPTSceneItem::setOpaq(double opaq, uint32_t time, QEasingCurve curve) noex
         _data->startAnim(AnimDst::Opaq, _opaq, opaq, time, curve);
         return true;
     }
-    if(mustAny(Must::Anim))_data->stopAnim(AnimDst::Opaq);
+    if(mustAny(Must::ColorAnim))_data->stopAnim(AnimDst::Opaq);
     return setOpaqImpl(opaq);
 }
 
@@ -1142,9 +1142,9 @@ bool KRPTSceneItem::stateChangeImpl(const FState &cur, const FState &old) noexce
     {
         if(mustAny(Must::MouseEnterEvent))mouseEnterEvent(_state[State::MouseOver]);
     }
-    if(mustAny(Must::Anim) && _data->colors.mustAnim(cur, old))
+    if(mustAny(Must::ColorAnim) && _data->colors.mustAnim(cur, old))
     {
-        startAnimImpl(AnimDst::Color, 0, 1, 100, QEasingCurve::Linear);
+        startAnimImpl(AnimDst::Color, 0, 1, 50, QEasingCurve::Linear);
     }else update();
     return true;
 }
@@ -1210,6 +1210,7 @@ void KRPTSceneItem::whellImpl(SceneMouseEvent *e) noexcept
 void KRPTSceneItem::animImpl(uint32_t id, const std::vector<double> &value, 
     uint32_t time, bool completed, int loop) noexcept
 {
+    (void)completed; (void)loop;
     switch(id)
     {
         case AnimDst::Geometry : setGeometryImpl(KRPTSceneAnim::valuesTo<QRectF>(value)); break;
@@ -1223,10 +1224,12 @@ void KRPTSceneItem::animImpl(uint32_t id, const std::vector<double> &value,
 
 void KRPTSceneItem::paintBackground(QPainter &painter, uint32_t stage) noexcept
 {
+    (void)painter; (void)stage;
 }
 
 void KRPTSceneItem::paintForeground(QPainter &painter, uint32_t stage) noexcept
 {
+    (void)painter; (void)stage;
 }
 
 //************************************************************************************************************************
@@ -1526,7 +1529,7 @@ bool KRPTSceneItem::dirtyVisibleChilds() noexcept
 
 bool KRPTSceneItem::mustAnim(uint32_t time) const noexcept
 {
-    return time > 0 && _visible && mustAny(Must::Anim);
+    return time > 0 && _visible && mustAny(Must::TransformAnim, Must::ColorAnim);
 }
 
 //************************************************************************************************************************
@@ -1535,7 +1538,7 @@ bool KRPTSceneItem::mustAnim(uint32_t time) const noexcept
 
 void KRPTSceneItem::stopAnimImpl(uint32_t id) noexcept
 {
-    if(mustAny(Must::Anim))_data->stopAnim(id);
+    if(mustAny(Must::TransformAnim))_data->stopAnim(id);
 }
 
 void KRPTSceneItem::startAnimImpl(uint32_t id, const std::vector<double> &start, 
@@ -1593,6 +1596,7 @@ void KRPTSceneItem::anchorPoint(TransformAnchor anchor, const QSizeF &size, doub
         case TransformAnchor::RightCenter  : dx =  w; dy = h2; break;
         case TransformAnchor::TopCenter    : dx = w2; dy =  0; break;
         case TransformAnchor::BottomCenter : dx = w2; dy =  h; break;
+        default : break;
     }
 }
 
@@ -1600,6 +1604,7 @@ void KRPTSceneItem::sendTransformEvent(const QRectF &geometry, const QRectF &old
         double angle, double oldAngle, double scale, double oldScale,
         bool moved, bool resized, bool rotated, bool scaled) noexcept
 {
+    (void)angle; (void)oldAngle; (void)scale; (void)oldScale;
     if(!eventLocked() && mustAny(Must::TransformEvent, Must::TransformToSceneEvent, Must::TransformToParentEvent))
     {
         SceneTransformEvent::Ptr e = SceneTransformEvent::get(geometry, oldGeometry, 

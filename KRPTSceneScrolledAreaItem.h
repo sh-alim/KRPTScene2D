@@ -15,6 +15,8 @@
 //#
 //########################################################################################################################
 
+class KRPTSceneScrolledAreaCanvasItem;
+
 class KRPTSceneScrolledAreaItem : public KRPTSceneItem
 {
 friend class KRPTSceneScrolledAreaCanvasItem;

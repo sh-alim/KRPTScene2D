@@ -41,7 +41,7 @@ KRPTSceneScrolledAreaCanvasItem::KRPTSceneScrolledAreaCanvasItem(KRPTScene *scen
         Must::NoPaint       |
 //        Must::NoClipChilds  |
         Must::NoClipPainter |
-//        Must::Anim          |
+//        Must::TransformAnim          |
         Must::MouseTracking |
         Must::TransformToParentEvent), 
     _owner(static_cast<KRPTSceneScrolledAreaItem*>(parent))
@@ -71,6 +71,7 @@ KRPTSceneScrolledAreaCanvasItem::~KRPTSceneScrolledAreaCanvasItem() noexcept
 
 void KRPTSceneScrolledAreaCanvasItem::paintBackground(QPainter &painter, uint32_t stage) noexcept
 {
+    (void)painter; (void)stage;
 #if 0
     painter.setRenderHint(QPainter::Antialiasing);
     painter.setPen(Qt::NoPen); 
@@ -82,6 +83,7 @@ void KRPTSceneScrolledAreaCanvasItem::paintBackground(QPainter &painter, uint32_
 
 void KRPTSceneScrolledAreaCanvasItem::paintForeground(QPainter &painter, uint32_t stage) noexcept
 {
+    (void)stage;
 #if 1
     painter.setRenderHint(QPainter::Antialiasing);
     QPen pen(color(1), 1);
@@ -138,7 +140,7 @@ KRPTSceneScrolledAreaItem::KRPTSceneScrolledAreaItem(KRPTScene *scene, KRPTScene
 //        Must::NoClipPainter   |
 //        Must::NoClipChilds    |
         Must::AccuracyClip    |
-        Must::Anim            |
+        Must::TransformAnim   |
         Must::TransformEvent  |
         Must::MousePressEvent |
         Must::MouseMoveEvent  |
@@ -225,7 +227,7 @@ bool KRPTSceneScrolledAreaItem::setAreaGeometry(const QRectF &geometry, uint32_t
         startAnimImpl(AnimDst::User, _areaRect, geometry, time, curve);
         return true;
     }
-    if(mustAny(Must::Anim))stopAnimImpl(AnimDst::User);
+    if(mustAny(Must::TransformAnim))stopAnimImpl(AnimDst::User);
     _areaRect = geometry;
     updateAreaRect();
     return true;
@@ -321,6 +323,7 @@ QPointF KRPTSceneScrolledAreaItem::mapFromArea(const QPointF &point) noexcept
 
 void KRPTSceneScrolledAreaItem::paintBackground(QPainter &painter, uint32_t stage) noexcept
 {
+    (void)stage;
 //    painter.fillRect(_rect, color(0));
     painter.setRenderHint(QPainter::Antialiasing);
     painter.setPen(Qt::NoPen); 
@@ -334,6 +337,7 @@ void KRPTSceneScrolledAreaItem::paintBackground(QPainter &painter, uint32_t stag
 
 void KRPTSceneScrolledAreaItem::paintForeground(QPainter &painter, uint32_t stage) noexcept
 {
+    (void)stage;
     painter.setRenderHint(QPainter::Antialiasing);
     QPen pen(color(1), 2);
     pen.setCosmetic(true);
@@ -365,6 +369,7 @@ void KRPTSceneScrolledAreaItem::transformImpl(SceneTransformEvent *e) noexcept
 
 void KRPTSceneScrolledAreaItem::childTransformEvent(KRPTSceneItem::Ptr item, SceneTransformEvent *e) noexcept 
 {
+    (void)item;
     if(e->scaled() || e->rotated())
     {
         _trans.dirtyArea = true;
@@ -374,6 +379,7 @@ void KRPTSceneScrolledAreaItem::childTransformEvent(KRPTSceneItem::Ptr item, Sce
 
 void KRPTSceneScrolledAreaItem::addChildImpl(KRPTSceneItem::Ptr item, KRPTSceneItem::Ptr parent) noexcept
 {
+    (void)item;
     if(!_area)
     {
         KRPTSceneItem::addChildImpl(item, parent);
@@ -403,6 +409,7 @@ void KRPTSceneScrolledAreaItem::mousePressImpl(SceneMouseEvent *e) noexcept
 
 void KRPTSceneScrolledAreaItem::mouseReleaseImpl(SceneMouseEvent *e) noexcept
 {
+    (void)e;
     if(_scrollPolicy.any(ScrollPolicy::Mouse) && _scrollPolicy.any(ScrollPolicy::Horisontal, ScrollPolicy::Vertical))
     {
         int64_t dt = _mouseVelocityTimer.restart(); 
@@ -412,6 +419,7 @@ void KRPTSceneScrolledAreaItem::mouseReleaseImpl(SceneMouseEvent *e) noexcept
 
 void KRPTSceneScrolledAreaItem::mouseMoveImpl(SceneMouseEvent *e) noexcept
 {
+    (void)e;
     QPointF dp = e->pos() - _mousePos;
     if(e->btns() == SceneMouseEvent::Btn::Left)
     {
@@ -465,6 +473,7 @@ void KRPTSceneScrolledAreaItem::animImpl(uint32_t id, const std::vector<double> 
 
 void KRPTSceneScrolledAreaItem::areaChildTransformEvent(KRPTSceneItem::Ptr item, SceneTransformEvent *e) noexcept 
 {
+    (void)e;
     if(_areaSizePolicy != AreaSizePolicy::None)updateAreaMinMax(item);
 }
 

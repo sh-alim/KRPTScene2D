@@ -46,11 +46,13 @@ void KRPTSceneAreaItem::setMargin(const QPointF &margin) noexcept
 
 void KRPTSceneAreaItem::paintBackground(QPainter &painter, uint32_t stage) noexcept
 {
+    (void)stage;
     painter.fillRect(_rect, color(0));
 }
 
 void KRPTSceneAreaItem::paintForeground(QPainter &painter, uint32_t stage) noexcept
 {
+    (void)stage;
     painter.setRenderHint(QPainter::Antialiasing);
     QPen pen(color(1), 1);
     pen.setCosmetic(true);
@@ -74,6 +76,7 @@ void KRPTSceneAreaItem::transformImpl(SceneTransformEvent *e) noexcept
 
 void KRPTSceneAreaItem::childTransformEvent(KRPTSceneItem::Ptr item, SceneTransformEvent *e)noexcept 
 {
+    (void)e;
     updateMinMax(item);
 }
 

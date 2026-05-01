@@ -40,7 +40,7 @@ public:
     }
 
     template<typename T, typename ... Args>
-    auto insertItem(KRPTSceneItem::Ptr before, Args&& ... arg)                                                      noexcept 
+    auto insertItem(KRPTSceneItem::Ptr before, Args&& ... arg)                        noexcept 
     {
         return _item->insertChild<T>(before, std::forward<Args>(arg) ...);
     }
@@ -89,17 +89,17 @@ public:
 public:
     virtual void       update                ()                                       noexcept;
 public:
-    virtual void       transformEvent        (SceneTransformEvent *e)                 noexcept {};
+    virtual void       transformEvent        (SceneTransformEvent *e)                 noexcept {(void)e            ;}
     virtual void       childTransformEvent   (KRPTSceneItem::Ptr item, 
-                                              SceneTransformEvent *e)                 noexcept {};
+                                              SceneTransformEvent *e)                 noexcept {(void)e; (void)item;}
     virtual void       childMousePressEvent  (KRPTSceneItem::Ptr item, 
-                                              SceneMouseEvent *e)                     noexcept {};
+                                              SceneMouseEvent *e)                     noexcept {(void)e; (void)item;}
     virtual void       childMouseReleaseEvent(KRPTSceneItem::Ptr item, 
-                                              SceneMouseEvent *e)                     noexcept {};
+                                              SceneMouseEvent *e)                     noexcept {(void)e; (void)item;}
     virtual void       childMouseMoveEvent   (KRPTSceneItem::Ptr item, 
-                                              SceneMouseEvent *e)                     noexcept {};
+                                              SceneMouseEvent *e)                     noexcept {(void)e; (void)item;}
     virtual void       childWhellEvent       (KRPTSceneItem::Ptr item, 
-                                              SceneMouseEvent *e)                     noexcept {};
+                                              SceneMouseEvent *e)                     noexcept {(void)e; (void)item;}
     virtual void       mousePressEvent       (SceneMouseEvent *e)                     noexcept;
     virtual void       mouseReleaseEvent     (SceneMouseEvent *e)                     noexcept;
     virtual void       mouseMoveEvent        (SceneMouseEvent *e)                     noexcept;

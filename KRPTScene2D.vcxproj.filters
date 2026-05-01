@@ -116,5 +116,8 @@
     <ClInclude Include="KRPTStaticImage.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="KRPTImageCacheData.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

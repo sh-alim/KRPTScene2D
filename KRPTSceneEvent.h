@@ -25,7 +25,7 @@ public:
 public:
     SceneMouseEvent(const QPointF &pos, Btns btns, const QPointF &scenePos, 
         KeyModifers keyModifers, const QPointF &delta)
-        : _pos(pos), _btns(btns), _scenePos(scenePos), _keyModifers(keyModifers), _delta(delta), _doubleClick(false) {}
+        : _pos(pos), _scenePos(scenePos), _btns(btns), _keyModifers(keyModifers), _delta(delta), _doubleClick(false) {}
 
     static SceneMouseEvent::Ptr get(const QPointF &pos, Btns btns, const QPointF &scenePos, 
         KeyModifers keyModifers, const QPointF &delta = QPointF())
@@ -41,10 +41,10 @@ public:
     void        setDelta      (const QPointF &delta)       noexcept {_delta = delta            ;}
     void        setDoubleClick(bool doubleClick)           noexcept {_doubleClick = doubleClick;}
 private:
-    Btns        _btns       ;
-    KeyModifers _keyModifers;
     QPointF     _pos        ;
     QPointF     _scenePos   ;
+    Btns        _btns       ;
+    KeyModifers _keyModifers;
     QPointF     _delta      ;
     bool        _doubleClick;
 };

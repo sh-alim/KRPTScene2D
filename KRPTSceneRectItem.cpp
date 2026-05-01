@@ -31,11 +31,13 @@ void KRPTSceneRectItem::outlineImpl() noexcept
 
 void KRPTSceneRectItem::paintBackground(QPainter &painter, uint32_t stage) noexcept
 {
+    (void)stage;
     painter.fillRect(_rect, color(0));
 }
 
 void KRPTSceneRectItem::paintForeground(QPainter &painter, uint32_t stage) noexcept
 {
+    (void)stage;
     painter.setRenderHint(QPainter::Antialiasing);
     QPen pen(color(1), 1);
     pen.setCosmetic(true);

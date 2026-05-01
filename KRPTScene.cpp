@@ -29,11 +29,13 @@ KRPTSceneRoot::KRPTSceneRoot(KRPTScene *scene, KRPTSceneItem *parent) noexcept
 
 void KRPTSceneRoot::paintBackground(QPainter &painter, uint32_t stage) noexcept
 {
+    (void)stage;
     painter.fillRect(_rect, color(0));
 }
 
 void KRPTSceneRoot::paintForeground(QPainter &painter, uint32_t stage) noexcept
 {
+    (void)stage;
     painter.setRenderHint(QPainter::Antialiasing, false);
     QPen pen(color(1), 1);
     pen.setCosmetic(true);
@@ -224,7 +226,7 @@ KRPTSceneItem::Ptr KRPTScene::itemFromPos(const QPointF &pos, CompFn comp) noexc
 KRPTScene::Items KRPTScene::itemsFromPos(const QPointF &pos, CompFn comp, bool one) noexcept
 {
     QPointF p = _item->transformInv().map(pos);
-    return std::move(itemsFromPosImpl(p, comp, _item, one));
+    return itemsFromPosImpl(p, comp, _item, one);
 }
 
 //************************************************************************************************************************
@@ -357,6 +359,7 @@ void KRPTScene::whellEvent(SceneMouseEvent *e) noexcept
 
 void KRPTScene::deviceScaleEvent(double scale) noexcept
 {
+    (void)scale;
 }
 
 void KRPTScene::paintEvent(QPainter &painter) noexcept
@@ -386,7 +389,7 @@ KRPTScene::Items KRPTScene::itemsFromPosImpl(const QPointF &pos, CompFn comp, KR
     if(!_item->visible() || item->mustAny(KRPTSceneItem::Must::NoMouseEventTranslate))return KRPTScene::Items();
     const Items &childs = item->visibleChildItems();
     Items res;
-    if(childs.empty())return std::move(res);
+    if(childs.empty())return res;
     auto it = childs.crbegin();
     for(; it != childs.crend(); ++it)
     {
@@ -403,7 +406,7 @@ KRPTScene::Items KRPTScene::itemsFromPosImpl(const QPointF &pos, CompFn comp, KR
             if(one)break;
         }
     }
-    return std::move(res);
+    return res;
 }
 
 void KRPTScene::paintImpl(QPainter &painter, KRPTSceneItem *item, uint32_t stage) noexcept
