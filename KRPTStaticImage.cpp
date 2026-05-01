@@ -93,7 +93,7 @@ const KRPTStaticImage::Image* KRPTStaticImage::pixmap(const QRectF &rect, const 
         uint64_t key = (uint64_t(w) << 48) | (uint64_t(h) << 32) | uint64_t(c);
         auto find = _cache.find(key);
         _dirtyPixmap = find == _cache.end();
-    #ifdef _USE_PXIMAP
+    #ifdef _STATIC_IMAGE_USE_PXIMAP
         pixmap = !_dirtyPixmap ? find->second.get() : 
             _cache.emplace(key, std::make_unique<Image>(szi)).first->second.get();
     #else
@@ -105,7 +105,7 @@ const KRPTStaticImage::Image* KRPTStaticImage::pixmap(const QRectF &rect, const 
         if(_dirtySize !=  szi || _dirtyColor != color)_dirtyPixmap = true;
         _dirtySize = szi;
         _dirtyColor = color;
-    #ifdef _USE_PXIMAP
+    #ifdef _STATIC_IMAGE_USE_PXIMAP
         if(!_pixmap)_pixmap = std::make_unique<Image>(szi);
     #else
         if(!_pixmap)_pixmap = std::make_unique<Image>(szi, QImage::Format_ARGB32_Premultiplied);
@@ -120,7 +120,7 @@ const KRPTStaticImage::Image* KRPTStaticImage::pixmap(const QRectF &rect, const 
         {
             if(pixmap->isNull() || pixmap->size() != szi)
             {
-            #ifdef _USE_PXIMAP
+            #ifdef _STATIC_IMAGE_USE_PXIMAP
                 Image tmp(szi);
             #else
                 Image tmp(szi, QImage::Format_ARGB32_Premultiplied);
@@ -176,7 +176,7 @@ void KRPTStaticImage::draw(QPainter &painter, const QRectF &rect, const QColor &
         t.scale(1.0 / sx, 1.0 / sy);
         t.translate(rect.x() * sx, rect.y() * sy);
         painter.setTransform(t);
-    #ifdef _USE_PXIMAP
+    #ifdef _STATIC_IMAGE_USE_PXIMAP
         painter.drawPixmap(0, 0, *pixmap);
     #else
         painter.drawImage(r, *pixmap);
@@ -265,7 +265,7 @@ bool KRPTStaticImage::drawRaster(QPainter &painter, const QRectF &rect) noexcept
     double s;
     QRectF r = fitRect(rect, _viewBox, s);
     QSize sz(_cachePixmap.width() * s + 0.5, _cachePixmap.height() * s + 0.5);
-#ifdef _USE_PXIMAP
+#ifdef _STATIC_IMAGE_USE_PXIMAP
     painter.drawPixmap(r.topLeft(), _cachePixmap.scaled(sz, Qt::AspectRatioMode::IgnoreAspectRatio,
         Qt::TransformationMode::SmoothTransformation));
 #else

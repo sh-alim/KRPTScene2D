@@ -13,7 +13,7 @@
 #include <QPixmap>
 #include <QFont>
 
-//#define _USE_PXIMAP
+//#define _STATIC_IMAGE_USE_PXIMAP
 
 //########################################################################################################################
 //#
@@ -24,7 +24,7 @@ class QXmlStreamAttributes;
 class KRPTStaticImage
 {
 public:
-#ifdef _USE_PXIMAP
+#ifdef _STATIC_IMAGE_USE_PXIMAP
     using Image  = QPixmap;
 #else
     using Image  = QImage;

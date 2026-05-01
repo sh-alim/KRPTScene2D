@@ -61,7 +61,7 @@
     <ClCompile Include="KRPTSceneBtnGroupItem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="KRPTSceneImageCache.cpp">
+    <ClCompile Include="KRPTImageCache.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="KRPTStaticImage.cpp">
@@ -110,7 +110,7 @@
     <ClInclude Include="KRPTSceneBtnGroupItem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="KRPTSceneImageCache.h">
+    <ClInclude Include="KRPTImageCache.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="KRPTStaticImage.h">

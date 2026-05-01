@@ -5,7 +5,7 @@
 #include "KRPTSceneBtnItem.h"
 #include "KRPTScene.h"
 
-//#include "KRPTSceneImageCache.h"
+#include "KRPTImageCache.h"
 
 //########################################################################################################################
 //#
