@@ -14,6 +14,7 @@
 #include <QFont>
 
 //#define _STATIC_IMAGE_USE_PXIMAP
+//#define _STATIC_IMAGE_FILL_RECT
 
 //########################################################################################################################
 //#
@@ -36,10 +37,6 @@ public:
     KRPTStaticImage()                                                            noexcept;
     KRPTStaticImage (const QByteArray &src, bool useCache = false)               noexcept;
    ~KRPTStaticImage()                                                            noexcept;
-
-
-//   KRPTStaticImage(const KRPTStaticImage&) noexcept{};
-
 public:
     bool            useCache   ()                                          const noexcept {return _useCache;}
     QRectF          viewBox    ()                                          const noexcept {return _viewBox ;}

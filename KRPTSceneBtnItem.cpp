@@ -198,7 +198,6 @@ void KRPTSceneBtnItem::paintBackground(QPainter &painter, uint32_t stage) noexce
 
     if(_d->_imageKey.enable())
         KRPTImageCache::draw(_d->_imageKey, painter, _imageRect, color(2));
-
 }
 
 void KRPTSceneBtnItem::paintForeground(QPainter &painter, uint32_t stage) noexcept

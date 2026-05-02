@@ -79,7 +79,7 @@ void KRPTSceneBtnGroupItem::mouseReleaseImpl(SceneMouseEvent *e) noexcept
 //        setSize(60, 360, 1000, QEasingCurve::Linear);
 //        setAreaPos(0, -d + 180, 1000, QEasingCurve::Linear);
 
-        double h = (50 + _margin.y()) * 5 + _margin.y();
+        double h = (50 + _margin.y()) * 10 + _margin.y();
 
 //        d -= h / 2;
 

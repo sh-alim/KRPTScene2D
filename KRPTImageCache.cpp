@@ -22,7 +22,11 @@ KRPTImageCacheKeyType KRPTImageCache::keyImpl(const QByteArray &src) noexcept
 #else
     key = p[0] ^ p[1];
 #endif
-    if(_index.find(key) != _index.end())return key;
+    if(_index.find(key) != _index.end())
+    {
+        key._enable = true;
+        return key;
+    }
     auto find = _krptImageCacheData.find(src);
     if(find != _krptImageCacheData.end())
     {

@@ -7,7 +7,7 @@
 #include <QPainter>
 #include <QFile>
 
-#include <QDebug>
+//#include <QDebug>
 
 //########################################################################################################################
 //#
@@ -20,11 +20,17 @@ constexpr static inline double degToRad(double degrees)
     return degrees * (_PI / 180);
 }
 
-static QRectF fitRect(const QRectF &r0, const QRectF &r1, double &s) noexcept
+static QRectF fitRect(const QRectF &r0, const QRectF &r1) noexcept
 {
     double k = std::min(r0.width() / r1.width(), r0.height() / r1.height());
     QRectF r(0, 0, r1.width() * k, r1.height() * k);
     r.moveCenter(r0.center());
+    return r;
+}
+
+static QRectF fitRect(const QRectF &r0, const QRectF &r1, double &s) noexcept
+{
+    QRectF r = fitRect(r0, r1);
     s = (std::max(r.width(), r.height())) / (std::max(r1.width(), r1.height()));
     return r;
 }
@@ -134,7 +140,7 @@ const KRPTStaticImage::Image* KRPTStaticImage::pixmap(const QRectF &rect, const 
             #endif
                 pixmap->swap(tmp);
             }
-        #if 1
+        #if 0
             pixmap->fill(QColor(0, 0, 255));
         #else
             pixmap->fill(Qt::transparent);
@@ -173,8 +179,14 @@ bool KRPTStaticImage::draw(QPainter &painter, const QRectF &rect, const QColor &
             sy *= t.m22();
         }
     }
-    QRectF r(0, 0, rect.width() * sx, rect.height() * sy);
-    const Image *pixmap = this->pixmap(r, color);
+#ifdef _STATIC_IMAGE_FILL_RECT
+    QRectF r = rect;
+#else
+    QRectF r = fitRect(rect, _viewBox);
+#endif
+    QRectF painterRect(r.x() * sx, r.y() * sy, r.width() * sx, r.height() * sy);
+    QRectF pixmapRect(0, 0, painterRect.width(), painterRect.height());
+    const Image *pixmap = this->pixmap(pixmapRect, color);
     if(pixmap && !pixmap->isNull())
     {
         painter.save();
@@ -182,12 +194,14 @@ bool KRPTStaticImage::draw(QPainter &painter, const QRectF &rect, const QColor &
         painter.setRenderHint(QPainter::SmoothPixmapTransform, true);
         QTransform t = painter.transform();
         t.scale(1.0 / sx, 1.0 / sy);
-        t.translate(rect.x() * sx, rect.y() * sy);
+//        t.translate(rect.x() * sx, rect.y() * sy);
         painter.setTransform(t);
     #ifdef _STATIC_IMAGE_USE_PXIMAP
         painter.drawPixmap(0, 0, *pixmap);
+//        painter.drawPixmap(painterRect.x(), painterRect.y(), *pixmap);
     #else
-        painter.drawImage(r, *pixmap);
+        painter.drawImage(painterRect, *pixmap);
+//        painter.drawImage(painterRect.x(), painterRect.y(), *pixmap);
     #endif
         painter.restore();
         return true;
@@ -225,8 +239,12 @@ bool KRPTStaticImage::drawVector(QPainter &painter, const QRectF &rect, const QC
         _dirtySource = false;
         if(!prepare())return false;
     }
-    double s = 1;
-    QRectF r = fitRect(rect, _viewBox, s);
+#ifdef _STATIC_IMAGE_FILL_RECT
+    QRectF r = fitRect(rect, _viewBox);
+#else
+    QRectF r = rect;
+#endif
+    double s = (std::max(r.width(), r.height())) / (std::max(_viewBox.width(), _viewBox.height()));
     QTransform t;
     t.translate(r.x(), r.y());
     t.scale(s, s);
@@ -272,8 +290,13 @@ bool KRPTStaticImage::drawRaster(QPainter &painter, const QRectF &rect) noexcept
         if(!prepare())return false;
     }
     if(_cachePixmap.isNull())return false;
-    double s;
+#ifdef _STATIC_IMAGE_FILL_RECT
+    double s = 1;
     QRectF r = fitRect(rect, _viewBox, s);
+#else
+    double s = (std::max(rect.width(), rect.height())) / (std::max(_viewBox.width(), _viewBox.height()));
+    QRectF r = rect;
+#endif
     QSize sz(_cachePixmap.width() * s + 0.5, _cachePixmap.height() * s + 0.5);
 #ifdef _STATIC_IMAGE_USE_PXIMAP
     painter.drawPixmap(r.topLeft(), _cachePixmap.scaled(sz, Qt::AspectRatioMode::IgnoreAspectRatio,

@@ -65,11 +65,11 @@ MainProcess::MainProcess(QWidget *parent)
 
     setGeometry(300, 50, 1800, 1400);
 
-    _root = _scene->addItem<KRPTSceneRectItem>();
+//    _root = _scene->addItem<KRPTSceneRectItem>();
 //    _root = _scene->addItem<KRPTSceneScrolledAreaItem>(QRectF(10, 10, 500, 500));
 //    _root = _scene->addItem<KRPTSceneAreaItem>();
 
-//    _root = _scene->addItem<KRPTSceneBtnGroupItem>(QRectF(10, 10, 70, 70));
+    _root = _scene->addItem<KRPTSceneBtnGroupItem>(QRectF(10, 10, 70, 70));
 
 //    _root = _scene->addItem<KRPTSceneBtnItem>(QRectF(100, 100, 50, 50));
 
@@ -83,15 +83,143 @@ MainProcess::MainProcess(QWidget *parent)
     _root->setTag(++_tag);
 
 
-
 #if 1
+        double y1 = 5;
+        QRectF ir(8, 8, 32, 32);
+        auto child = _root->addChild<KRPTSceneBtnItem>(QRectF(5, y1, 50, 50));
+        y1 += 55;
+        child->setImageRect(ir);
+        child->setImageSrc("D:/Desktop/иконки/8/brush.svg");
+
+
+        child = _root->addChild<KRPTSceneBtnItem>(QRectF(5, y1, 50, 50));
+        y1 += 55;
+        child->setImageRect(ir);
+        child->setImageSrc("D:/Desktop/иконки/1/Expand/40-Gear.svg");
+
+        child = _root->addChild<KRPTSceneBtnItem>(QRectF(5, y1, 50, 50));
+        y1 += 55;
+        child->setImageRect(ir);
+        child->setImageSrc("D:/Desktop/иконки/1/Expand/53-Location.svg");
+
+        child = _root->addChild<KRPTSceneBtnItem>(QRectF(5, y1, 50, 50));
+        y1 += 55;
+        child->setImageRect(ir);
+        child->setImageSrc("D:/Desktop/иконки/1/Expand/150-Compass.svg");
+        
+
+        child = _root->addChild<KRPTSceneBtnItem>(QRectF(5, y1, 50, 50));
+        y1 += 55;
+        child->setImageRect(ir);
+        child->setImageSrc("gear_0");
+
+        child = _root->addChild<KRPTSceneBtnItem>(QRectF(5, y1, 50, 50));
+        y1 += 55;
+        child->setImageRect(ir);
+        child->setImageSrc("D:/Desktop/иконки/2/twitter-logo.svg");
+
+        child = _root->addChild<KRPTSceneBtnItem>(QRectF(5, y1, 50, 50));
+        y1 += 55;
+        child->setImageRect(ir);
+        child->setImageSrc("D:/Desktop/иконки/2/paper-plane.svg");
+
+        child = _root->addChild<KRPTSceneBtnItem>(QRectF(5, y1, 50, 50));
+        y1 += 55;
+        child->setImageRect(ir);
+        child->setImageSrc("D:/Desktop/иконки/2/blending-mode.svg");
+
+        child = _root->addChild<KRPTSceneBtnItem>(QRectF(5, y1, 50, 50));
+        y1 += 55;
+        child->setImageRect(ir);
+        child->setImageSrc("D:/Desktop/иконки/2/modulz-logo.svg");
+
+        child = _root->addChild<KRPTSceneBtnItem>(QRectF(5, y1, 50, 50));
+        y1 += 55;
+        child->setImageRect(ir);
+        child->setImageSrc("D:/Desktop/иконки/2/lightning-bolt.svg");
+
+
+        child = _root->addChild<KRPTSceneBtnItem>(QRectF(5, y1, 50, 50));
+        y1 += 55;
+        child->setImageRect(ir);
+        child->setImageSrc("D:/Desktop/иконки/2/hand.svg");
+
+        child = _root->addChild<KRPTSceneBtnItem>(QRectF(5, y1, 50, 50));
+        y1 += 55;
+        child->setImageRect(ir);
+        child->setImageSrc("D:/Desktop/иконки/2/iconjar-logo.svg");
+
+        child = _root->addChild<KRPTSceneBtnItem>(QRectF(5, y1, 50, 50));
+        y1 += 55;
+        child->setImageRect(ir);
+        child->setImageSrc("D:/Desktop/иконки/2/github-logo.svg");
+
+        child = _root->addChild<KRPTSceneBtnItem>(QRectF(5, y1, 50, 50));
+        y1 += 55;
+        child->setImageRect(ir);
+        child->setImageSrc("D:/Desktop/иконки/3/heart.svg");
+
+
+        child = _root->addChild<KRPTSceneBtnItem>(QRectF(5, y1, 50, 50));
+        y1 += 55;
+        child->setImageRect(ir);
+        child->setImageSrc("D:/Desktop/иконки/4/Line/Bug.svg");
+
+        child = _root->addChild<KRPTSceneBtnItem>(QRectF(5, y1, 50, 50));
+        y1 += 55;
+        child->setImageRect(ir);
+        child->setImageSrc("D:/Desktop/иконки/4/Line/Anchor.svg");
+
+        child = _root->addChild<KRPTSceneBtnItem>(QRectF(5, y1, 50, 50));
+        y1 += 55;
+        child->setImageRect(ir);
+        child->setImageSrc("D:/Desktop/иконки/5/1/UI Basic outline-10.svg");
+
+        child = _root->addChild<KRPTSceneBtnItem>(QRectF(5, y1, 50, 50));
+        y1 += 55;
+        child->setImageRect(ir);
+        child->setImageSrc("D:/Desktop/иконки/5/1/UI Basic outline-88.svg");
+
+        child = _root->addChild<KRPTSceneBtnItem>(QRectF(5, y1, 50, 50));
+        y1 += 55;
+        child->setImageRect(ir);
+        child->setImageSrc("D:/Desktop/иконки/5/1/UI Basic outline-60.svg");
+
+        child = _root->addChild<KRPTSceneBtnItem>(QRectF(5, y1, 50, 50));
+        y1 += 55;
+        child->setImageRect(ir);
+        child->setImageSrc("D:/Desktop/иконки/5/1/UI Basic outline-39.svg");
+
+        child = _root->addChild<KRPTSceneBtnItem>(QRectF(5, y1, 50, 50));
+        y1 += 55;
+        child->setImageRect(ir);
+        child->setImageSrc("D:/Desktop/иконки/5/1/UI Basic outline-40.svg");
+
+        child = _root->addChild<KRPTSceneBtnItem>(QRectF(5, y1, 50, 50));
+        y1 += 55;
+        child->setImageRect(ir);
+        child->setImageSrc("D:/Desktop/иконки/5/1/UI Basic outline-41.svg");
+
+        child = _root->addChild<KRPTSceneBtnItem>(QRectF(5, y1, 50, 50));
+        y1 += 55;
+        child->setImageRect(ir);
+        child->setImageSrc("D:/Desktop/иконки/7/public.svg");
+
+        child = _root->addChild<KRPTSceneBtnItem>(QRectF(5, y1, 50, 50));
+        y1 += 55;
+        child->setImageRect(ir);
+        child->setImageSrc("D:/Desktop/иконки/7/rocket-fly.svg");
+
+#endif
+
+#if 0
     double x1 = 5;
     double y1 = 5;
     for(int i = 0; i < 1; ++i)
     {
-        auto child = _root->addChild<KRPTSceneBtnItem>(QRectF(x1, y1, 48, 48));
+        auto child = _root->addChild<KRPTSceneBtnItem>(QRectF(x1, y1, 148, 48));
 
-//        child->setImage("setting_1");
+//        child->setImageSrc("setting_1");
         child->setImageSrc("D:/Desktop/иконки/8/brush.svg");
 
 
