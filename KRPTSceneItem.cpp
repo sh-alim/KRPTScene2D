@@ -205,11 +205,6 @@ private:
     public:
         Colors() noexcept : _interp(1), _mask(0)
         {
-        #if 0
-            KRPTSceneItem::FState mask(KRPTSceneItem::State::MousePressed | KRPTSceneItem::State::MouseOver |
-                                       KRPTSceneItem::State::Checked      | KRPTSceneItem::State::ChildMouseOver);
-            _mask = mask.flag();
-        #endif
         }
         FlagT mask(KRPTSceneItem::FState state)                     const noexcept {return state.flag() & _mask     ;}
         FlagT mask(const Color &color, KRPTSceneItem::FState state) const noexcept {return state.flag() & color.mask;}
@@ -229,7 +224,6 @@ private:
         {
             auto it0 = _colors.find(id);
             if(it0 == _colors.end())return _defColor;
-//            FlagT flag = it0->second.mask & state.flag();
             FlagT flag = mask(it0->second, state.flag());
             while(true)
             {
@@ -301,7 +295,7 @@ KRPTSceneItem::KRPTSceneItem(KRPTScene *scene, KRPTSceneItem *parent, const QRec
       _state(State::NeedPaint | State::VisibledInView | State::NeedChildPaint), _updateLocked(0), _eventLocked(0), 
       _visible(true), _geometry(geometry), _rect(QPointF(), geometry.size()), _angle(0), _scale(1), _opaq(1), 
       _transformAnchor(TransformAnchor::Center), _posAnchor(TransformAnchor::LeftTop), 
-      _paintStageCount(1), _tag(0)
+      _paintStageCount(1), _id(0)
 {
 }
 
@@ -591,9 +585,9 @@ bool KRPTSceneItem::eventLocked() const noexcept
     return _eventLocked > 0;
 }
 
-uint32_t KRPTSceneItem::tag() const noexcept
+uint32_t KRPTSceneItem::id() const noexcept
 {
-    return _tag;
+    return _id;
 }
 
 const QColor& KRPTSceneItem::color(uint32_t id) noexcept
@@ -812,9 +806,9 @@ void KRPTSceneItem::scale(double scale, const QPointF &pt, TransSrc src,
     setScale(_scale * scale, pt, src, time, curve);
 }
 
-void KRPTSceneItem::setTag(uint32_t tag) noexcept
+void KRPTSceneItem::setId(uint32_t id) noexcept
 {
-    _tag = tag;
+    _id = id;
 }
 
 void KRPTSceneItem::setColor(uint32_t id, const QColor &color, KRPTSceneItem::FState state) noexcept
@@ -950,11 +944,7 @@ KRPTSceneItem::Ptr KRPTSceneItem::commonParent(KRPTSceneItem::Ptr item) const no
     KRPTSceneItem::Ptr parent = _parent;
     while(parent && parent->_parent)
     {
-        if(parent != item && item->isParent(parent))
-        {
-            ret = parent;
-            break;
-        }
+        if(parent != item && item->isParent(parent)){ret = parent; break;}
         parent = parent->_parent;
     }
     return ret;
@@ -1102,8 +1092,7 @@ bool KRPTSceneItem::setAngleImpl(double angle) noexcept
     ++_data->genTransform;
     ++_data->genAngle;
     _angle = angle;
-    sendTransformEvent(_geometry, _geometry, _angle, oldAngle, _scale, _scale, 
-                       false, false, true, false);
+    sendTransformEvent(_geometry, _geometry, _angle, oldAngle, _scale, _scale, false, false, true, false);
     if(_state.any(State::MouseOver, State::ChildMouseOver))
         _scene->mouseOverCheck();
     update();
@@ -1158,7 +1147,7 @@ bool KRPTSceneItem::stateChangeImpl(const FState &cur, const FState &old) noexce
     }
     if(mustAny(Must::ColorAnim) && _data->colors.mustAnim(cur, old))
     {
-        startAnimImpl(AnimDst::Color, 0, 1, 500, QEasingCurve::Linear);
+        startAnimImpl(AnimDst::Color, 0, 1, 50, QEasingCurve::Linear);
     }else update();
     return true;
 }
@@ -1421,13 +1410,8 @@ bool KRPTSceneItem::updateCache(bool visible) noexcept
         if(!cache.visible)
         {
             _state.down(State::VisibledInView, State::NeedPaint);
-        #if 0
-            if(cache.parent && !must(Must::NoClipChilds))
-                _state -= State::NeedChildPaint;
-        #else
             if((cache.parent && !mustAny(Must::NoClipChilds)) || _childItems.empty())
                 _state -= State::NeedChildPaint;
-        #endif
             if(visible)
             {
                 if(dirty)

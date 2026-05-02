@@ -25,7 +25,7 @@ KRPTSceneBtnItem::KRPTSceneBtnItem(KRPTScene *scene, KRPTSceneItem *parent, cons
         Must::NoClipPainter         | 
         Must::NoCheckChildVisibled  |
         Must::TransformAnim         |
-        Must::ColorAnim             |
+//        Must::ColorAnim             |
         Must::AccuracyCheckContains |
         Must::Checked               |
         Must::MouseChecked          | 
@@ -49,7 +49,7 @@ KRPTSceneBtnItem::KRPTSceneBtnItem(KRPTScene *scene, KRPTSceneItem *parent, cons
     setColor(0, QColor( 50,  50,   50, 255));
     setColor(0, QColor( 55, 55,   155, 255), State::MouseOver);
 
-//    setColor(0, QColor(  200, 200,   0, 255), State::MousePressed);
+    setColor(0, QColor(  200, 200,   0, 255), State::MousePressed);
 //    setColor(0, QColor(  0,  50,   255, 255), State::MouseOver | State::MousePressed);
 
 //    setColor(0, QColor(  60, 60,   60, 255), State::Checked);

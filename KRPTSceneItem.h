@@ -216,7 +216,7 @@ public:
     bool                 contains              (const QPointF &point)                                                noexcept;
     const QPainterPath & outline               ()                                                                    noexcept;
     bool                 eventLocked           ()                                                              const noexcept;
-    uint32_t             tag                   ()                                                              const noexcept;
+    uint32_t             id                    ()                                                              const noexcept;
     const QColor       & color                 (uint32_t id)                                                         noexcept;
     bool                 checkable             ()                                                              const noexcept;
     bool                 checked               ()                                                              const noexcept;
@@ -269,7 +269,7 @@ public:
                                                 uint32_t time = 0, QEasingCurve curve = QEasingCurve::OutExpo)       noexcept;
     void                 scale                 (double scale, const QPointF &pt, TransSrc src, 
                                                 uint32_t time, QEasingCurve curve)                                   noexcept;
-    void                 setTag                (uint32_t tag)                                                        noexcept;
+    void                 setId                 (uint32_t id)                                                         noexcept;
     void                 setColor              (uint32_t id, const QColor &color, FState state = State::No)          noexcept;
     void                 setCheckable          (bool checkable)                                                      noexcept;
     void                 setChecked            (bool checked)                                                        noexcept;
@@ -407,6 +407,6 @@ protected:
     uint32_t             _paintStageCount  ;
     QRectF               _bBox             ;
     QRectF               _bBoxMapToParent  ;
-    uint32_t             _tag              ;
+    uint32_t             _id               ;
 };
 

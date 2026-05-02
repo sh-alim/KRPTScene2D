@@ -80,7 +80,7 @@ MainProcess::MainProcess(QWidget *parent)
         }
 
 
-    _root->setTag(++_tag);
+    _root->setId(++_tag);
 
 
         double y1 = 5;
@@ -90,7 +90,7 @@ MainProcess::MainProcess(QWidget *parent)
         child->setImageRect(ir);
         child->setImageSrc("D:/Desktop/иконки/8/brush.svg");
 
-        child->setTag(++_tag);
+        child->setId(++_tag);
 
 #if 0
         child = _root->addChild<KRPTSceneBtnItem>(QRectF(5, y1, 50, 50));
@@ -512,7 +512,7 @@ void MainProcess::mousePressEvent(QMouseEvent *e)
 //        child->setSize(150, 50);
 //        child->setPos(p);
 
-        child->setTag(++_tag);
+        child->setId(++_tag);
 
 //        child->setGeometry(p, QSizeF(50, 50));
  
@@ -555,7 +555,7 @@ void MainProcess::mousePressEvent(QMouseEvent *e)
 
             child->setSize(50, 50);
             child->setPos(x, y);
-            child->setTag(200);
+            child->setId(200);
 
 
             x += child->width();
