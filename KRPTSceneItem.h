@@ -111,8 +111,8 @@ public:
         VisibledInView          = 0x01,
         NeedPaint               = 0x02,
         NeedChildPaint          = 0x04,
-        MousePressed            = 0x08,
-        MouseOver               = 0x10,
+        MouseOver               = 0x08,
+        MousePressed            = 0x10,
         Checked                 = 0x20,
         ChildMouseOver          = 0x40,
         All                     = 0xFF

@@ -25,7 +25,7 @@ KRPTSceneBtnItem::KRPTSceneBtnItem(KRPTScene *scene, KRPTSceneItem *parent, cons
         Must::NoClipPainter         | 
         Must::NoCheckChildVisibled  |
         Must::TransformAnim         |
-//        Must::ColorAnim             |
+        Must::ColorAnim             |
         Must::AccuracyCheckContains |
         Must::Checked               |
         Must::MouseChecked          | 
@@ -41,20 +41,30 @@ KRPTSceneBtnItem::KRPTSceneBtnItem(KRPTScene *scene, KRPTSceneItem *parent, cons
 //            KRPTSceneItem::Must::NoSceneRotate,
 //            KRPTSceneItem::Must::NoSceneScale,
 
-#if 0
-    setColor(0, QColor(  0,  50,   0, 255));
-    setColor(0, QColor(  0, 100,   0, 255), State::MouseOver);
-    setColor(0, QColor(  0, 100,   0, 255), State::MousePressed);
-    setColor(0, QColor(  0,  50,   0, 255), State::MouseOver | State::MousePressed);
-    setColor(0, QColor(  0, 180,   0, 255), State::Checked);
-    setColor(0, QColor(  0, 150,   0, 255), State::Checked | State::MouseOver);
-    setColor(0, QColor(  0,  50,   0, 255), State::Checked | State::MouseOver | State::MousePressed);
-    setColor(1, QColor(  0, 255,   0, 255));
-    setColor(1, QColor(  0, 255,   0, 255), State::MouseOver);
+#if 1
+//    setColor(0, QColor( 0,  0,   0, 255));
+//    setColor(0, QColor( 255, 255,   255, 255), State::MouseOver);
+
+
+    setColor(0, QColor( 50,  50,   50, 255));
+    setColor(0, QColor( 55, 55,   155, 255), State::MouseOver);
+
+//    setColor(0, QColor(  200, 200,   0, 255), State::MousePressed);
+//    setColor(0, QColor(  0,  50,   255, 255), State::MouseOver | State::MousePressed);
+
+//    setColor(0, QColor(  60, 60,   60, 255), State::Checked);
+//    setColor(0, QColor(  0, 150,   0, 255), State::Checked | State::MouseOver);
+//    setColor(0, QColor(  0,  50,   0, 255), State::Checked | State::MouseOver | State::MousePressed);
+ 
+
+    setColor(1, QColor( 200, 200,   200, 255));
+    setColor(1, QColor( 205, 205,   205, 255), State::MouseOver);
+//    setColor(1, QColor(255, 255,   0, 255), State::Checked);
+
     setColor(1, QColor(  0, 255,   0, 255), State::MouseOver | State::MousePressed);
-    setColor(1, QColor(255, 255,   0, 255), State::Checked);
-    setColor(1, QColor(255, 255,   0, 255), State::Checked | State::MouseOver);
-    setColor(1, QColor(255, 255,   0, 255), State::Checked | State::MouseOver | State::MousePressed);
+//    setColor(1, QColor(255, 255,   0, 255), State::Checked | State::MouseOver);
+//    setColor(1, QColor(255, 255,   0, 255), State::Checked | State::MouseOver | State::MousePressed);
+
 #else
 
     setColor(0, QColor(  50, 50, 50, 255));
@@ -197,7 +207,7 @@ void KRPTSceneBtnItem::paintBackground(QPainter &painter, uint32_t stage) noexce
 
 
     if(_d->_imageKey.enable())
-        KRPTImageCache::draw(_d->_imageKey, painter, _imageRect, color(2));
+        KRPTImageCache::draw(_d->_imageKey, painter, _imageRect, color(1));
 }
 
 void KRPTSceneBtnItem::paintForeground(QPainter &painter, uint32_t stage) noexcept

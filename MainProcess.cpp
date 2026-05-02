@@ -65,11 +65,11 @@ MainProcess::MainProcess(QWidget *parent)
 
     setGeometry(300, 50, 1800, 1400);
 
-//    _root = _scene->addItem<KRPTSceneRectItem>();
+    _root = _scene->addItem<KRPTSceneRectItem>();
 //    _root = _scene->addItem<KRPTSceneScrolledAreaItem>(QRectF(10, 10, 500, 500));
 //    _root = _scene->addItem<KRPTSceneAreaItem>();
 
-    _root = _scene->addItem<KRPTSceneBtnGroupItem>(QRectF(10, 10, 70, 70));
+//    _root = _scene->addItem<KRPTSceneBtnGroupItem>(QRectF(10, 10, 70, 70));
 
 //    _root = _scene->addItem<KRPTSceneBtnItem>(QRectF(100, 100, 50, 50));
 
@@ -83,7 +83,6 @@ MainProcess::MainProcess(QWidget *parent)
     _root->setTag(++_tag);
 
 
-#if 1
         double y1 = 5;
         QRectF ir(8, 8, 32, 32);
         auto child = _root->addChild<KRPTSceneBtnItem>(QRectF(5, y1, 50, 50));
@@ -91,7 +90,9 @@ MainProcess::MainProcess(QWidget *parent)
         child->setImageRect(ir);
         child->setImageSrc("D:/Desktop/иконки/8/brush.svg");
 
+        child->setTag(++_tag);
 
+#if 0
         child = _root->addChild<KRPTSceneBtnItem>(QRectF(5, y1, 50, 50));
         y1 += 55;
         child->setImageRect(ir);

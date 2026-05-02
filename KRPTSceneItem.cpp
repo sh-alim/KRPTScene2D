@@ -193,55 +193,77 @@ private:
     {
     public:
         using FlagT = std::underlying_type_t<KRPTSceneItem::State>;
-        Colors() noexcept : _interp(1)
+    private:
+        struct Color
         {
+            Color(const QColor &color) : mask(0), color(color), startColor(color) {}
+            std::unordered_map<FlagT, QColor> colors    ;
+            FlagT                             mask      ;
+            mutable QColor                    color     ;
+            QColor                            startColor;
+        };
+    public:
+        Colors() noexcept : _interp(1), _mask(0)
+        {
+        #if 0
             KRPTSceneItem::FState mask(KRPTSceneItem::State::MousePressed | KRPTSceneItem::State::MouseOver |
                                        KRPTSceneItem::State::Checked      | KRPTSceneItem::State::ChildMouseOver);
             _mask = mask.flag();
+        #endif
         }
-        FlagT mask(KRPTSceneItem::FState state) const noexcept {return state.flag() & _mask;}
+        FlagT mask(KRPTSceneItem::FState state)                     const noexcept {return state.flag() & _mask     ;}
+        FlagT mask(const Color &color, KRPTSceneItem::FState state) const noexcept {return state.flag() & color.mask;}
         void set(uint32_t id, const QColor &color, KRPTSceneItem::FState state) noexcept
         {
             auto it0 = _colors.find(id);
             if(it0 == _colors.end())it0 = _colors.emplace(id, Color(color)).first;
             if(state == KRPTSceneItem::State::No)it0->second.color = color;
+            _mask            |= state.flag();
+            it0->second.mask |= state.flag();
             FlagT flag = mask(state);
             auto it1 = it0->second.colors.find(flag);
             if(it1 == it0->second.colors.end())
                 it1 = it0->second.colors.emplace(flag, color).first;
         }
-        const QColor& get(uint32_t id, KRPTSceneItem::FState state) noexcept
+        const QColor& color(uint32_t id, KRPTSceneItem::FState state) const noexcept
         {
             auto it0 = _colors.find(id);
             if(it0 == _colors.end())return _defColor;
-            QColor &c0 = it0->second.startColor;
-            QColor &c1 = it0->second.color;
-            FlagT flag = mask(state);
-            auto it1 = it0->second.colors.find(flag);
-            if(it1 != it0->second.colors.end())c1 = it1->second; else
+//            FlagT flag = it0->second.mask & state.flag();
+            FlagT flag = mask(it0->second, state.flag());
+            while(true)
             {
-                it1 = it0->second.colors.find((FlagT)KRPTSceneItem::State::No);
-                if(it1 != it0->second.colors.end())c1 = it1->second;
+                const auto it1 = it0->second.colors.find(flag);
+                if(it1 != it0->second.colors.end())return it1->second;
+                if(flag == 0)return _defColor;
+                flag &= (flag - 1);
             }
-            if(qFuzzyCompare(_interp, 1))return c1;
-            c1.setRedF  (c0.redF  () + (c1.redF  () - c0.redF  ()) * _interp);
-            c1.setGreenF(c0.greenF() + (c1.greenF() - c0.greenF()) * _interp);
-            c1.setBlueF (c0.blueF () + (c1.blueF () - c0.blueF ()) * _interp);
-            return c1;
+            return _defColor;
         }
-        bool mustAnim(KRPTSceneItem::FState cur, KRPTSceneItem::FState old) const noexcept
+        const QColor& get(uint32_t id, KRPTSceneItem::FState state) noexcept
         {
-            bool ret = false;
-            FlagT fcur = mask(cur);
-            FlagT fold = mask(old);
-            if(_colors.empty() || fcur == fold)return ret;
-            for(auto &[key, color] : _colors)
+            auto it = _colors.find(id);
+            if(it == _colors.end())return _defColor;
+            const QColor &c1 = color(id, state);
+            if(qFuzzyCompare(_interp, 1))return c1;
+            const QColor &c0 = it->second.startColor;
+            QColor &c2 = it->second.color;
+            c2.setRedF  (c0.redF  () + (c1.redF  () - c0.redF  ()) * _interp);
+            c2.setGreenF(c0.greenF() + (c1.greenF() - c0.greenF()) * _interp);
+            c2.setBlueF (c0.blueF () + (c1.blueF () - c0.blueF ()) * _interp);
+            return c2;
+        }
+        bool mustAnim(KRPTSceneItem::FState cur, KRPTSceneItem::FState old) noexcept
+        {
+            if(_colors.empty() || mask(cur) == mask(old))return false;
+            for(auto &[key, c] : _colors)
             {
-                auto it = color.colors.find(fcur);
-                if(it == color.colors.end())it = color.colors.find((FlagT)KRPTSceneItem::State::No);
-                if(it != color.colors.end() && it->second != color.color){ret = true; break;}
+                if(mask(c, cur) == mask(c, old))continue;
+                const QColor &c0 = color(key, cur);
+                const QColor &c1 = color(key, old);
+                if(c0 != c1)return true;
             }
-            return ret;
+            return false;
         }
         void update(double interp, bool start) noexcept
         {
@@ -249,17 +271,9 @@ private:
             _interp = interp;
         }
     private:
-        struct Color
-        {
-            Color(const QColor &color) : color(color), startColor(color) {}
-            std::unordered_map<FlagT, QColor> colors    ;
-            QColor                            color     ;
-            QColor                            startColor;
-        };
-    private:
         std::unordered_map<uint32_t, Color> _colors  ;
         FlagT                               _mask    ;
-        QColor                              _defColor;
+        mutable QColor                      _defColor;
         double                              _interp  ;
     };
 private:
@@ -1144,7 +1158,7 @@ bool KRPTSceneItem::stateChangeImpl(const FState &cur, const FState &old) noexce
     }
     if(mustAny(Must::ColorAnim) && _data->colors.mustAnim(cur, old))
     {
-        startAnimImpl(AnimDst::Color, 0, 1, 50, QEasingCurve::Linear);
+        startAnimImpl(AnimDst::Color, 0, 1, 500, QEasingCurve::Linear);
     }else update();
     return true;
 }
