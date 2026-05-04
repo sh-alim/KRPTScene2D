@@ -123,7 +123,8 @@
     <ClCompile Include="KRPTScene.cpp" />
     <ClCompile Include="KRPTSceneAnim.cpp" />
     <ClCompile Include="KRPTSceneAreaItem.cpp" />
-    <ClCompile Include="KRPTSceneBtnGroupItem.cpp" />
+    <ClCompile Include="KRPTSceneGroupItem.cpp" />
+    <ClCompile Include="KRPTSceneSelectableBtnItem.cpp" />
     <ClCompile Include="KRPTSceneEllipseItem.cpp" />
     <ClCompile Include="KRPTSceneBtnItem.cpp" />
     <ClCompile Include="KRPTImageCache.cpp" />
@@ -146,7 +147,8 @@
     <ClInclude Include="KRPTScene.h" />
     <ClInclude Include="KRPTSceneAnim.h" />
     <ClInclude Include="KRPTSceneAreaItem.h" />
-    <ClInclude Include="KRPTSceneBtnGroupItem.h" />
+    <ClInclude Include="KRPTSceneGroupItem.h" />
+    <ClInclude Include="KRPTSceneSelectableBtnItem.h" />
     <ClInclude Include="KRPTSceneEllipseItem.h" />
     <ClInclude Include="KRPTSceneEvent.h" />
     <ClInclude Include="KRPTSceneBtnItem.h" />

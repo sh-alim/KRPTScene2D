@@ -208,6 +208,23 @@ private:
         }
         FlagT mask(KRPTSceneItem::FState state)                     const noexcept {return state.flag() & _mask     ;}
         FlagT mask(const Color &color, KRPTSceneItem::FState state) const noexcept {return state.flag() & color.mask;}
+        void clear() noexcept
+        {
+            _colors.clear();
+        }
+        void del(uint32_t id, KRPTSceneItem::FState state) noexcept
+        {
+            auto it0 = _colors.find(id);
+            if(it0 == _colors.end())return;
+            FlagT flag = mask(state);
+            auto it1 = it0->second.colors.find(flag);
+            if(it1 != it0->second.colors.end())it0->second.colors.erase(it1);
+        }
+        void del(uint32_t id) noexcept
+        {
+            auto it = _colors.find(id);
+            if(it != _colors.end())_colors.erase(it);
+        }
         void set(uint32_t id, const QColor &color, KRPTSceneItem::FState state) noexcept
         {
             auto it0 = _colors.find(id);
@@ -219,6 +236,7 @@ private:
             auto it1 = it0->second.colors.find(flag);
             if(it1 == it0->second.colors.end())
                 it1 = it0->second.colors.emplace(flag, color).first;
+            else it1->second = color;
         }
         const QColor& color(uint32_t id, KRPTSceneItem::FState state) const noexcept
         {
@@ -816,6 +834,21 @@ void KRPTSceneItem::setColor(uint32_t id, const QColor &color, KRPTSceneItem::FS
     _data->colors.set(id, color, state);
 }
 
+void KRPTSceneItem::clearColors() noexcept
+{
+    _data->colors.clear();
+}
+
+void KRPTSceneItem::delColor(uint32_t id, KRPTSceneItem::FState state) noexcept
+{
+    _data->colors.del(id, state);
+}
+
+void KRPTSceneItem::delColor(uint32_t id) noexcept
+{
+    _data->colors.del(id);
+}
+
 void KRPTSceneItem::setCheckable(bool checkable) noexcept
 {
     if(checkable)upMust(Must::Checked);
@@ -824,11 +857,7 @@ void KRPTSceneItem::setCheckable(bool checkable) noexcept
 
 void KRPTSceneItem::setChecked(bool checked) noexcept
 {
-    if(!mustAny(Must::Checked) || _state[State::Checked] == checked)return;
-    KRPTSceneItem::FState oldState = _state;
-    if(checked)_state += KRPTSceneItem::State::Checked;
-    else _state -= KRPTSceneItem::State::Checked;
-    if(_state != oldState)stateChangeImpl(_state, oldState);
+    setCheckedImpl(checked);
 }
 
 void KRPTSceneItem::lockUpdate(bool lock) noexcept 
@@ -1123,6 +1152,27 @@ bool KRPTSceneItem::setOpaqImpl(double opaq) noexcept
 {
     if(qFuzzyCompare(_opaq, opaq))return false;
     _opaq = opaq;
+    return true;
+}
+
+bool KRPTSceneItem::setCheckedImpl(bool checked) noexcept
+{
+    if(!mustAny(Must::Checked) || _state[State::Checked] == checked)return false;
+    KRPTSceneItem::FState oldState = _state;
+    if(checked)_state += KRPTSceneItem::State::Checked;
+    else _state -= KRPTSceneItem::State::Checked;
+    if(_state != oldState)
+    {
+        stateChangeImpl(_state, oldState);
+        if(!eventLocked())
+        {
+            checkedEvent(checked);
+            if(_parent && mustAny(Must::CheckedToParentEvent))
+                _parent->childCheckedEvent(this, checked);
+            if(mustAny(Must::CheckedToSceneEvent))
+                _scene->childCheckedEvent(this, checked);
+        }
+    }
     return true;
 }
 

@@ -9,8 +9,27 @@
 //#
 //########################################################################################################################
 
-KRPTSceneRectItem::KRPTSceneRectItem(KRPTScene *scene, KRPTSceneItem *parent) noexcept
-    : KRPTSceneItem(scene, parent)
+KRPTSceneRectItem::KRPTSceneRectItem(KRPTScene *scene, KRPTSceneItem *parent, const QRectF &geometry) noexcept
+    : KRPTSceneItem(scene, parent, geometry,
+        Must::NoClipPainter          | 
+        Must::NoCheckChildVisibled   |
+        Must::TransformAnim          |
+//        Must::ColorAnim              |
+//        Must::AccuracyClip           |
+        Must::AccuracyCheckContains  |
+        Must::Checked                |
+        Must::MouseChecked           | 
+        Must::MouseTracking          |
+        Must::TransformEvent         |
+        Must::StateChangeEvent       |
+        Must::MousePressEvent        |
+        Must::MouseMoveEvent         |
+        Must::MouseEnterEvent        |
+        Must::MousePressToParentEvent|
+        Must::MousePressToSceneEvent |
+        Must::CheckedToParentEvent   |
+        Must::CheckedToSceneEvent)
+//    ,_cornerRadius(6)
 {
     setColor(0, QColor( 50,  50,  50));
     setColor(1, QColor(250, 250, 250));

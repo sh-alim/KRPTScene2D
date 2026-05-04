@@ -84,7 +84,7 @@ void KRPTSceneScrolledAreaCanvasItem::paintBackground(QPainter &painter, uint32_
 void KRPTSceneScrolledAreaCanvasItem::paintForeground(QPainter &painter, uint32_t stage) noexcept
 {
     (void)stage;
-#if 1
+#if 0
     painter.setRenderHint(QPainter::Antialiasing);
     QPen pen(color(1), 1);
     pen.setCosmetic(true);
@@ -147,14 +147,10 @@ KRPTSceneScrolledAreaItem::KRPTSceneScrolledAreaItem(KRPTScene *scene, KRPTScene
         Must::WhellEvent), 
     _area(nullptr), _areaSizePolicy(AreaSizePolicy::AutoSize), 
     _scrollPolicy(ScrollPolicy::Mouse | ScrollPolicy::Whell | ScrollPolicy::Vertical | ScrollPolicy::Horisontal),
-    _mouseMoveDistance(0)
+    _mouseMoveDistance(0), _posGrid(50, 50), _invertWheel(false)
 {
-//    setColor(0, QColor( 50,  50,  50));
-    setColor(0, QColor(  23, 33, 43, 255));
-
-    setColor(1, QColor(  40, 40, 40, 255));
-
-
+    setColor(0, QColor(  0,   0,   0, 255));
+    setColor(1, QColor(255, 255, 255, 255));
     _area = addChild<KRPTSceneScrolledAreaCanvasItem>(QRectF(0, 0, 500, 500));
     resetAreaMinMax();
 }
@@ -210,6 +206,11 @@ KRPTSceneScrolledAreaItem::AreaSizePolicy KRPTSceneScrolledAreaItem::areaSizePol
 QPointF KRPTSceneScrolledAreaItem::margin() const noexcept
 {
     return _margin;
+}
+
+QPointF KRPTSceneScrolledAreaItem::cornerRadius() const noexcept
+{
+    return _cornerRadius;
 }
 
 void KRPTSceneScrolledAreaItem::setAreaSizePolicy(AreaSizePolicy policy) noexcept 
@@ -303,6 +304,29 @@ void KRPTSceneScrolledAreaItem::setMargin(const QPointF &margin) noexcept
     update();
 }
 
+void KRPTSceneScrolledAreaItem::setMargin(double x, double y) noexcept
+{
+    setMargin(QPointF(x, y));
+}
+
+void KRPTSceneScrolledAreaItem::setCornerRadius(const QPointF &radius) noexcept
+{
+    if(radius == _cornerRadius)return;
+    _cornerRadius = radius;
+    update();
+}
+
+void KRPTSceneScrolledAreaItem::setCornerRadius(double x, double y) noexcept
+{
+    setCornerRadius(QPointF(x, y));
+}
+
+void KRPTSceneScrolledAreaItem::setInvertWheel(bool invert) noexcept
+{
+    if(invert == _invertWheel)return;
+    _invertWheel = invert;
+}
+
 //************************************************************************************************************************
 //*
 //************************************************************************************************************************
@@ -328,10 +352,8 @@ void KRPTSceneScrolledAreaItem::paintBackground(QPainter &painter, uint32_t stag
     painter.setRenderHint(QPainter::Antialiasing);
     painter.setPen(Qt::NoPen); 
     painter.setBrush(color(0)); 
-    if(qFuzzyIsNull(_radius))
-        painter.drawRect(_rect.adjusted(0.5, 0.5, -0.5, -0.5));
-    else
-        painter.drawRoundedRect(_rect.adjusted(0.5, 0.5, -0.5, -0.5), _radius, _radius);
+    if(qFuzzyIsNull(_cornerRadius))painter.drawRect(_rect.adjusted(0.5, 0.5, -0.5, -0.5));
+    else painter.drawRoundedRect(_rect.adjusted(0.5, 0.5, -0.5, -0.5), _cornerRadius.x(), _cornerRadius.y());
     painter.setBrush(Qt::NoBrush); 
 }
 
@@ -342,8 +364,8 @@ void KRPTSceneScrolledAreaItem::paintForeground(QPainter &painter, uint32_t stag
     QPen pen(color(1), 2);
     pen.setCosmetic(true);
     painter.setPen(pen);
-    if(qFuzzyIsNull(_radius))painter.drawRect(_rect.adjusted(0.5, 0.5, -0.5, -0.5));
-    else painter.drawRoundedRect(_rect.adjusted(0.5, 0.5, -0.5, -0.5), _radius, _radius);
+    if(qFuzzyIsNull(_cornerRadius))painter.drawRect(_rect.adjusted(0.5, 0.5, -0.5, -0.5));
+    else painter.drawRoundedRect(_rect.adjusted(0.5, 0.5, -0.5, -0.5), _cornerRadius.x(), _cornerRadius.y());
 //    painter.drawRect(_areaRect);
 }
 
@@ -353,8 +375,8 @@ void KRPTSceneScrolledAreaItem::paintForeground(QPainter &painter, uint32_t stag
 
 void KRPTSceneScrolledAreaItem::outlineImpl() noexcept
 {
-    if(qFuzzyIsNull(_radius))_outline.addRect(_rect);
-    else _outline.addRoundedRect(_rect, _radius, _radius);
+    if(qFuzzyIsNull(_cornerRadius))_outline.addRect(_rect);
+    else _outline.addRoundedRect(_rect, _cornerRadius.x(), _cornerRadius.y());
 }
 
 void KRPTSceneScrolledAreaItem::transformImpl(SceneTransformEvent *e) noexcept
@@ -413,7 +435,13 @@ void KRPTSceneScrolledAreaItem::mouseReleaseImpl(SceneMouseEvent *e) noexcept
     if(_scrollPolicy.any(ScrollPolicy::Mouse) && _scrollPolicy.any(ScrollPolicy::Horisontal, ScrollPolicy::Vertical))
     {
         int64_t dt = _mouseVelocityTimer.restart(); 
-        if(dt > 0)translateArea(_mouseVelocity * _mouseMoveDistance / dt * 5, 1000);
+        if(dt > 0)
+        {
+            QPointF dp = areaPos() + _mouseVelocity * _mouseMoveDistance / dt * 50;
+            dp.setX(std::round(dp.x() / _posGrid.x()) * _posGrid.x());
+            dp.setY(std::round(dp.y() / _posGrid.y()) * _posGrid.y());
+            setAreaPos(dp, 1000);
+        }
     }
 }
 
@@ -437,12 +465,13 @@ void KRPTSceneScrolledAreaItem::mouseMoveImpl(SceneMouseEvent *e) noexcept
 
 void KRPTSceneScrolledAreaItem::whellImpl(SceneMouseEvent *e) noexcept
 {
-    QPointF _posGrid(110, 110);
-
     if(_scrollPolicy(ScrollPolicy::Whell) && _scrollPolicy.any(ScrollPolicy::Vertical | ScrollPolicy::Horisontal))
     {
         double dx0 = e->delta().x() == 0 ? 0 : e->delta().x() > 0 ? _posGrid.x() : -_posGrid.x();
         double dy0 = e->delta().y() == 0 ? 0 : e->delta().y() > 0 ? _posGrid.y() : -_posGrid.y();
+
+        if(_invertWheel)std::swap(dx0, dy0);
+
         double dx1 = std::round((_areaRect.x() + dx0) / _posGrid.x()) * _posGrid.x();
         double dy1 = std::round((_areaRect.y() + dy0) / _posGrid.y()) * _posGrid.y();
         setAreaPos(dx1, dy1, 500);

@@ -58,13 +58,16 @@
     <ClCompile Include="KRPTSceneAreaItem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="KRPTSceneBtnGroupItem.cpp">
+    <ClCompile Include="KRPTSceneSelectableBtnItem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="KRPTImageCache.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="KRPTStaticImage.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="KRPTSceneGroupItem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -107,7 +110,7 @@
     <ClInclude Include="KRPTSceneAreaItem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="KRPTSceneBtnGroupItem.h">
+    <ClInclude Include="KRPTSceneSelectableBtnItem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="KRPTImageCache.h">
@@ -117,6 +120,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="KRPTImageCacheData.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="KRPTSceneGroupItem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -89,17 +89,19 @@ public:
 public:
     virtual void       update                ()                                       noexcept;
 public:
-    virtual void       transformEvent        (SceneTransformEvent *e)                 noexcept {(void)e            ;}
+    virtual void       transformEvent        (SceneTransformEvent *e)                 noexcept {(void)e                  ;}
     virtual void       childTransformEvent   (KRPTSceneItem::Ptr item, 
-                                              SceneTransformEvent *e)                 noexcept {(void)e; (void)item;}
+                                              SceneTransformEvent *e)                 noexcept {(void)e; (void)item      ;}
     virtual void       childMousePressEvent  (KRPTSceneItem::Ptr item, 
-                                              SceneMouseEvent *e)                     noexcept {(void)e; (void)item;}
+                                              SceneMouseEvent *e)                     noexcept {(void)e; (void)item      ;}
     virtual void       childMouseReleaseEvent(KRPTSceneItem::Ptr item, 
-                                              SceneMouseEvent *e)                     noexcept {(void)e; (void)item;}
+                                              SceneMouseEvent *e)                     noexcept {(void)e; (void)item      ;}
     virtual void       childMouseMoveEvent   (KRPTSceneItem::Ptr item, 
-                                              SceneMouseEvent *e)                     noexcept {(void)e; (void)item;}
+                                              SceneMouseEvent *e)                     noexcept {(void)e; (void)item      ;}
     virtual void       childWhellEvent       (KRPTSceneItem::Ptr item, 
-                                              SceneMouseEvent *e)                     noexcept {(void)e; (void)item;}
+                                              SceneMouseEvent *e)                     noexcept {(void)e; (void)item      ;}
+    virtual void       childCheckedEvent     (KRPTSceneItem::Ptr item, 
+                                              bool checked)                           noexcept {(void)checked; (void)item;}
     virtual void       mousePressEvent       (SceneMouseEvent *e)                     noexcept;
     virtual void       mouseReleaseEvent     (SceneMouseEvent *e)                     noexcept;
     virtual void       mouseMoveEvent        (SceneMouseEvent *e)                     noexcept;

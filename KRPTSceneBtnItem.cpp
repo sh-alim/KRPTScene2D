@@ -22,46 +22,49 @@ class KRPTSceneBtnItemData
 
 KRPTSceneBtnItem::KRPTSceneBtnItem(KRPTScene *scene, KRPTSceneItem *parent, const QRectF &geometry) noexcept
     : KRPTSceneItem(scene, parent, geometry,
-        Must::NoClipPainter         | 
-        Must::NoCheckChildVisibled  |
-        Must::TransformAnim         |
-//        Must::ColorAnim             |
-        Must::AccuracyCheckContains |
-        Must::Checked               |
-        Must::MouseChecked          | 
-        Must::MouseTracking         |
-        Must::StateChangeEvent      |
-        Must::MousePressEvent       |
-        Must::MouseMoveEvent        |
-        Must::MouseEnterEvent
-    ), _d(new KRPTSceneBtnItemData()), _cornerRadius(6), _imageRect(3, 3, geometry.width() - 6, geometry.height() - 6)
-
+        Must::NoClipPainter          | 
+        Must::NoCheckChildVisibled   |
+        Must::TransformAnim          |
+//        Must::ColorAnim              |
+//        Must::AccuracyClip           |
+        Must::AccuracyCheckContains  |
+        Must::Checked                |
+        Must::MouseChecked           | 
+        Must::MouseTracking          |
+        Must::TransformEvent         |
+        Must::StateChangeEvent       |
+        Must::MousePressEvent        |
+        Must::MouseMoveEvent         |
+        Must::MouseEnterEvent        |
+        Must::MousePressToParentEvent|
+        Must::MousePressToSceneEvent |
+        Must::CheckedToParentEvent   |
+        Must::CheckedToSceneEvent), _d(new KRPTSceneBtnItemData()), _cornerRadius(6),
+       _imageMargin(5, 5),
+       _imageRect(_imageMargin.x(), _imageMargin.y(), geometry.width() - _imageMargin.x() * 2, geometry.height() - _imageMargin.y() * 2)
 {
-//            KRPTSceneItem::Must::AccuracyClip,
-//            KRPTSceneItem::Must::NoSceneRotate,
-//            KRPTSceneItem::Must::NoSceneScale,
-
 #if 1
-//    setColor(0, QColor( 0,  0,   0, 255));
-//    setColor(0, QColor( 255, 255,   255, 255), State::MouseOver);
+    setColor(0, QColor( 0,  0,   0, 0));
+    setColor(1, QColor( 0,  0,   0, 255));
+    setColor(2, QColor( 255,  255,   255, 255));
 
 
-    setColor(0, QColor( 50,  50,   50, 255));
-    setColor(0, QColor( 55, 55,   155, 255), State::MouseOver);
+//    setColor(0, QColor( 0,  0,   0, 0));
+//    setColor(0, QColor( 55, 55,   155, 255), State::MouseOver);
 
-    setColor(0, QColor(  200, 200,   0, 255), State::MousePressed);
+//    setColor(0, QColor(  200, 200,   0, 255), State::MousePressed);
 //    setColor(0, QColor(  0,  50,   255, 255), State::MouseOver | State::MousePressed);
 
-//    setColor(0, QColor(  60, 60,   60, 255), State::Checked);
+//    setColor(0, QColor(  60, 200,   60, 255), State::Checked);
 //    setColor(0, QColor(  0, 150,   0, 255), State::Checked | State::MouseOver);
 //    setColor(0, QColor(  0,  50,   0, 255), State::Checked | State::MouseOver | State::MousePressed);
  
 
-    setColor(1, QColor( 200, 200,   200, 255));
-    setColor(1, QColor( 205, 205,   205, 255), State::MouseOver);
+//    setColor(1, QColor( 200, 200,   200, 255));
+//    setColor(1, QColor( 205, 205,   205, 255), State::MouseOver);
 //    setColor(1, QColor(255, 255,   0, 255), State::Checked);
 
-    setColor(1, QColor(  0, 255,   0, 255), State::MouseOver | State::MousePressed);
+//    setColor(1, QColor(  0, 255,   0, 255), State::MouseOver | State::MousePressed);
 //    setColor(1, QColor(255, 255,   0, 255), State::Checked | State::MouseOver);
 //    setColor(1, QColor(255, 255,   0, 255), State::Checked | State::MouseOver | State::MousePressed);
 
@@ -129,7 +132,7 @@ void KRPTSceneBtnItem::setCornerRadius(double radius) noexcept
 {
     if(qFuzzyCompare(_cornerRadius, radius))return;
     _cornerRadius = radius;
-//    update();
+    update();
 }
 
 void KRPTSceneBtnItem::setImageSrc(const QByteArray &src) noexcept
@@ -141,7 +144,7 @@ void KRPTSceneBtnItem::setImageRect(const QRectF &rect) noexcept
 {
     if(qFuzzyCompare(_imageRect, rect))return;
     _imageRect = rect;
-//    update();
+    update();
 }
 
 void KRPTSceneBtnItem::setImage(const QByteArray &src, const QRectF &rect) noexcept
@@ -179,10 +182,30 @@ void KRPTSceneBtnItem::mouseEnterEvent(bool enter) noexcept
 //*
 //************************************************************************************************************************
 
+void KRPTSceneBtnItem::transformImpl(SceneTransformEvent *e) noexcept
+{
+    if(e->resized())
+    {
+       _imageRect = QRectF(_imageMargin.x(), _imageMargin.y(), 
+                           _geometry.width() - _imageMargin.x() * 2, _geometry.height() - _imageMargin.y() * 2);
+    }
+    KRPTSceneItem::transformImpl(e);
+}
+
 void KRPTSceneBtnItem::outlineImpl() noexcept
 {
     if(qFuzzyIsNull(_cornerRadius))_outline.addRect(_rect);
     else _outline.addRoundedRect(_rect, _cornerRadius, _cornerRadius);
+}
+
+bool KRPTSceneBtnItem::stateChangeImpl(const FState &cur, const FState &old) noexcept
+{
+    return KRPTSceneItem::stateChangeImpl(cur, old);
+}
+
+bool KRPTSceneBtnItem::setCheckedImpl(bool checked) noexcept
+{
+    return KRPTSceneItem::setCheckedImpl(checked);
 }
 
 void KRPTSceneBtnItem::animImpl(uint32_t id, const std::vector<double> &value, 
@@ -193,7 +216,7 @@ void KRPTSceneBtnItem::animImpl(uint32_t id, const std::vector<double> &value,
 
 void KRPTSceneBtnItem::paintBackground(QPainter &painter, uint32_t stage) noexcept
 {
-    (void)stage;    
+    (void)stage;
     painter.setRenderHint(QPainter::Antialiasing, true);
     painter.setPen(Qt::NoPen); 
     painter.setBrush(color(0));
@@ -207,7 +230,7 @@ void KRPTSceneBtnItem::paintBackground(QPainter &painter, uint32_t stage) noexce
 
 
     if(_d->_imageKey.enable())
-        KRPTImageCache::draw(_d->_imageKey, painter, _imageRect, color(1));
+        KRPTImageCache::draw(_d->_imageKey, painter, _imageRect, color(2));
 }
 
 void KRPTSceneBtnItem::paintForeground(QPainter &painter, uint32_t stage) noexcept
@@ -220,8 +243,9 @@ void KRPTSceneBtnItem::paintForeground(QPainter &painter, uint32_t stage) noexce
     pen.setCosmetic(true);
     painter.setPen(pen);
 //    painter.drawRoundedRect(_rect.adjusted(0.5, 0.5, -0.5, -0.5), _radius, _radius);
-//    painter.drawRoundedRect(_rect, _radius, _radius);
+    if(qFuzzyIsNull(_cornerRadius))painter.drawRect(_rect);
+    else painter.drawRoundedRect(_rect, _cornerRadius, _cornerRadius);
 //    painter.drawRect(_rect.adjusted(0.5, 0.5, -0.5, -0.5));
 //    painter.drawRect(_rect.toRect());
-//    painter.drawRect(_rect);
+//    painter.drawRect(_imageRect);
 }

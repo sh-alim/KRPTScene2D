@@ -68,42 +68,44 @@ protected:
         User                    = 5
     };
 public:
-    enum class Must : uint32_t
+    enum class Must : uint64_t
     {
-        No                      = 0x00000000,
-        NoPaint                 = 0x00000001,
-        NoClipChilds            = 0x00000002,
-        NoClipPainter           = 0x00000004,
-        NoCheckChildVisibled    = 0x00000008,
-        NoSceneScale            = 0x00000010,
-        NoSceneRotate           = 0x00000020,
-        TransformAnim           = 0x00000040,
-        ColorAnim               = 0x00000080,
-        AccuracyCheckContains   = 0x00000100,
-        AccuracyClip            = 0x00000200,
-        NoMouseEventTranslate   = 0x00000400,
-        MouseTracking           = 0x00000800,
-        StateChangeEvent        = 0x00001000,
-        MousePressEvent         = 0x00002000,
-        MouseMoveEvent          = 0x00004000,
-        MouseEnterEvent         = 0x00008000,
-        WhellEvent              = 0x00010000,
-        TransformEvent          = 0x00020000,
-        SceneTransformEvent     = 0x00040000,
-        SceneScaleEvent         = 0x00080000,
-        SceneRotateEvent        = 0x00100000,
-        TransformToParentEvent  = 0x00200000,
-        TransformToSceneEvent   = 0x00400000,
-        MousePressToParentEvent = 0x00800000,
-        MousePressToSceneEvent  = 0x01000000,
-        MouseMoveToParentEvent  = 0x02000000,
-        MouseMoveToSceneEvent   = 0x04000000,
-        WhellToParentEvent      = 0x08000000,
-        WhellToSceneEvent       = 0x10000000,
-        Checked                 = 0x20000000,
-        MouseMoved              = 0x40000000,
-        MouseChecked            = 0x80000000,
-        All                     = 0xFFFFFFFF
+        No                      = 0x0000000000,
+        NoPaint                 = 0x0000000001,
+        NoClipChilds            = 0x0000000002,
+        NoClipPainter           = 0x0000000004,
+        NoCheckChildVisibled    = 0x0000000008,
+        NoSceneScale            = 0x0000000010,
+        NoSceneRotate           = 0x0000000020,
+        TransformAnim           = 0x0000000040,
+        ColorAnim               = 0x0000000080,
+        AccuracyCheckContains   = 0x0000000100,
+        AccuracyClip            = 0x0000000200,
+        NoMouseEventTranslate   = 0x0000000400,
+        MouseTracking           = 0x0000000800,
+        StateChangeEvent        = 0x0000001000,
+        MousePressEvent         = 0x0000002000,
+        MouseMoveEvent          = 0x0000004000,
+        MouseEnterEvent         = 0x0000008000,
+        WhellEvent              = 0x0000010000,
+        TransformEvent          = 0x0000020000,
+        SceneTransformEvent     = 0x0000040000,
+        SceneScaleEvent         = 0x0000080000,
+        SceneRotateEvent        = 0x0000100000,
+        TransformToParentEvent  = 0x0000200000,
+        TransformToSceneEvent   = 0x0000400000,
+        MousePressToParentEvent = 0x0000800000,
+        MousePressToSceneEvent  = 0x0001000000,
+        MouseMoveToParentEvent  = 0x0002000000,
+        MouseMoveToSceneEvent   = 0x0004000000,
+        WhellToParentEvent      = 0x0008000000,
+        WhellToSceneEvent       = 0x0010000000,
+        CheckedToParentEvent    = 0x0020000000,
+        CheckedToSceneEvent     = 0x0040000000,
+        Checked                 = 0x0080000000,
+        MouseMoved              = 0x0100000000,
+        MouseChecked            = 0x0200000000,
+        All                     = 0xFFFFFFFFFF
     };
     enum class State : uint8_t
     {
@@ -271,6 +273,9 @@ public:
                                                 uint32_t time, QEasingCurve curve)                                   noexcept;
     void                 setId                 (uint32_t id)                                                         noexcept;
     void                 setColor              (uint32_t id, const QColor &color, FState state = State::No)          noexcept;
+    void                 clearColors           ()                                                                    noexcept;
+    void                 delColor              (uint32_t id, KRPTSceneItem::FState state)                            noexcept;
+    void                 delColor              (uint32_t id)                                                         noexcept;
     void                 setCheckable          (bool checkable)                                                      noexcept;
     void                 setChecked            (bool checked)                                                        noexcept;
 
@@ -310,6 +315,7 @@ protected:
     virtual void         mouseEnterEvent       (bool enter)                                                          noexcept {(void)enter                       ;}
     virtual void         mouseOutEvent         (KRPTSceneItem::Ptr newItem, SceneMouseEvent *e)                      noexcept {(void)newItem; (void)e            ;}
     virtual void         whellEvent            (SceneMouseEvent *e)                                                  noexcept {(void)e                           ;}
+    virtual void         checkedEvent          (bool checked)                                                        noexcept {(void)checked                     ;}
     virtual void         childTransformEvent   (KRPTSceneItem::Ptr item, SceneTransformEvent *e)                     noexcept {(void)item; (void)e               ;}
     virtual void         childMousePressEvent  (KRPTSceneItem::Ptr item, SceneMouseEvent *e)                         noexcept {(void)item; (void)e               ;}
     virtual void         childMouseReleaseEvent(KRPTSceneItem::Ptr item, SceneMouseEvent *e)                         noexcept {(void)item; (void)e               ;}
@@ -317,6 +323,8 @@ protected:
     virtual void         childMouseOutEvent    (KRPTSceneItem::Ptr item, 
                                                 KRPTSceneItem::Ptr newItem, SceneMouseEvent *e)                      noexcept {(void)item; (void)newItem; (void)e;}
     virtual void         childWhellEvent       (KRPTSceneItem::Ptr item, SceneMouseEvent *e)                         noexcept {(void)item; (void)e               ;}
+    virtual void         childCheckedEvent     (KRPTSceneItem::Ptr item, 
+                                                bool checked)                                                        noexcept {(void)item; (void)checked         ;}
     virtual void         sceneTransformEvent   (const QTransform &transform)                                         noexcept {(void)transform                   ;}
     virtual void         sceneScaleEvent       (double scale, double oldScale)                                       noexcept {(void)scale; (void)oldScale       ;}
     virtual void         sceneRotateEvent      (double angle, double oldAngle)                                       noexcept {(void)angle; (void)oldAngle       ;}
@@ -333,6 +341,7 @@ protected:
     virtual bool         setAngleImpl          (double angle)                                                        noexcept;
     virtual bool         setScaleImpl          (double scale)                                                        noexcept;
     virtual bool         setOpaqImpl           (double opaq)                                                         noexcept;
+    virtual bool         setCheckedImpl        (bool checked)                                                        noexcept;
     virtual void         transformImpl         (SceneTransformEvent *e)                                              noexcept;
     virtual void         outlineImpl           ()                                                                    noexcept;
     virtual bool         stateChangeImpl       (const FState &cur, const FState &old)                                noexcept;
