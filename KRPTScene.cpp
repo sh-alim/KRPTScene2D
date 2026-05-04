@@ -443,7 +443,8 @@ void KRPTScene::paintImpl(QPainter &painter, KRPTSceneItem *item, uint32_t stage
     painter.save();
     painter.setTransform(item->transform(), true);
     painter.setOpacity(painter.opacity() * item->opaq());
-    if(item->needPaint())
+    if(item->needPaint() && !item->mustAny(KRPTSceneItem::Must::NoPaintBackground))
+//    if(item->needPaint())
         item->paintBackground(painter, stage);
     if(!childs.empty() && !item->mustAny(KRPTSceneItem::Must::NoClipChilds, KRPTSceneItem::Must::NoClipPainter))
     {
@@ -475,7 +476,8 @@ void KRPTScene::paintImpl(QPainter &painter, KRPTSceneItem *item, uint32_t stage
             ch.splice(ch.end(), tch);
         }
     }
-    if(item->needPaint())
+    if(item->needPaint() && !item->mustAny(KRPTSceneItem::Must::NoPaintForeground))
+//    if(item->needPaint())
         item->paintForeground(painter, stage);
     painter.restore();
 #endif

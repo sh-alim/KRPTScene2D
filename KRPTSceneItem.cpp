@@ -981,7 +981,7 @@ KRPTSceneItem::Ptr KRPTSceneItem::commonParent(KRPTSceneItem::Ptr item) const no
 
 bool KRPTSceneItem::needPaint() const noexcept
 {
-    bool needPaint = !mustAny(Must::NoPaint) && 
+    bool needPaint = !mustAll(Must::NoPaint) && 
         (!_parent || _state[State::NeedPaint]) && _visible && 
         !qFuzzyIsNull(_opaq) && !qFuzzyIsNull(_scale);
     return needPaint;
@@ -989,7 +989,7 @@ bool KRPTSceneItem::needPaint() const noexcept
 
 bool KRPTSceneItem::canBeUpdated() const noexcept
 {
-    bool canBeUpdated = (!_childItems.empty() || !mustAny(Must::NoPaint)) && 
+    bool canBeUpdated = (!_childItems.empty() || !mustAll(Must::NoPaint)) && 
         (!_parent || _state[State::NeedPaint] || _dirty[Dirty::Transform]) && 
         _visible && !qFuzzyIsNull(_opaq) && !qFuzzyIsNull(_scale);
     return canBeUpdated;

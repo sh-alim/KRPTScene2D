@@ -11,15 +11,20 @@
 
 KRPTSceneAreaItem::KRPTSceneAreaItem(KRPTScene *scene, KRPTSceneItem *parent, const QRectF &geometry) noexcept
     : KRPTSceneItem(scene, parent, geometry, 
+//      Must::NoPaint         |
+//      Must::NoPaintBackground |
+      Must::NoPaintForeground |
       Must::NoClipPainter   |
       Must::TransformEvent  |
       Must::MousePressEvent |
       Must::MouseMoveEvent  |
-      Must::WhellEvent), _margin(5, 5), _sizePolicy(SizePolicy::AutoPosSize), _cornerRadius(6), _lockAutoUpdate(false)
+      Must::WhellEvent
+    
+    ), _margin(5, 5), _sizePolicy(SizePolicy::AutoPosSize), _cornerRadius(6), _lockAutoUpdate(false)
 {
     resetMinMax();
-    setColor(0, QColor( 50,  50,  50));
-    setColor(1, QColor(250, 250, 250));
+    setColor(0, QColor(50,  50,  50));
+    setColor(1, QColor(80, 80, 80));
 }
 
 //************************************************************************************************************************
@@ -87,19 +92,30 @@ void KRPTSceneAreaItem::lockAutoUpdate(bool update) noexcept
 void KRPTSceneAreaItem::paintBackground(QPainter &painter, uint32_t stage) noexcept
 {
     (void)stage;
-    painter.setRenderHint(QPainter::Antialiasing, true);
-    painter.setPen(Qt::NoPen); 
+    painter.setRenderHint(QPainter::Antialiasing);
+#if 0
+    QPen pen(QColor(0, 0, 0, 100), 3.0);
+    painter.setPen(pen);
+    painter.drawRoundedRect(_rect.adjusted(0.5, 0.5, -0.5, -0.5), _cornerRadius, _cornerRadius);
+#endif
+#if 1
+    if(mustAny(Must::NoPaintForeground))
+    {
+        QPen pen(color(1), 1.5);
+        pen.setCosmetic(true);
+        painter.setPen(pen);
+    }else painter.setPen(Qt::NoPen); 
     painter.setBrush(color(0));
     if(qFuzzyIsNull(_cornerRadius))painter.drawRect(_rect.adjusted(0.5, 0.5, -0.5, -0.5));
-    else painter.drawRoundedRect(_rect.adjusted(0.5, 0.5, -0.5, -0.5), _cornerRadius, _cornerRadius);
-    painter.setBrush(Qt::NoBrush); 
+    else painter.drawRoundedRect(_rect.adjusted(2.0, 2.0, -2.0, -2.0), _cornerRadius, _cornerRadius);
+    painter.setBrush(Qt::NoBrush);
+#endif
 }
 
 void KRPTSceneAreaItem::paintForeground(QPainter &painter, uint32_t stage) noexcept
 {
     (void)stage;
-    (void)stage;
-    painter.setRenderHint(QPainter::Antialiasing, true);
+    painter.setRenderHint(QPainter::Antialiasing);
     QPen pen(color(1), 1.5);
     pen.setCosmetic(true);
     painter.setPen(pen);

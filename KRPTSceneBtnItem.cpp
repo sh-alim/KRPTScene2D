@@ -45,12 +45,16 @@ KRPTSceneBtnItem::KRPTSceneBtnItem(KRPTScene *scene, KRPTSceneItem *parent, cons
 {
 #if 1
     setColor(0, QColor( 0,  0,   0, 0));
-    setColor(1, QColor( 0,  0,   0, 255));
-    setColor(2, QColor( 255,  255,   255, 255));
+    setColor(1, QColor( 0,  0,   0, 0));
+    setColor(2, QColor( 200,  200,   200, 255));
 
 
 //    setColor(0, QColor( 0,  0,   0, 0));
-//    setColor(0, QColor( 55, 55,   155, 255), State::MouseOver);
+    setColor(0, QColor( 65, 65,   65, 255), State::MouseOver);
+
+    setColor(2, QColor( 255, 255,  255, 255), State::MouseOver);
+    setColor(2, QColor(255, 255,   0, 255), State::Checked);
+
 
 //    setColor(0, QColor(  200, 200,   0, 255), State::MousePressed);
 //    setColor(0, QColor(  0,  50,   255, 255), State::MouseOver | State::MousePressed);
