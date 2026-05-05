@@ -21,22 +21,24 @@ public:
     enum class ExpandDirect{Left, Top, Right, Bottom};
 public:
     KRPTSceneSelectableBtnItem (KRPTScene *scene, KRPTSceneItem *parent, 
-                                const QRectF &geometry = QRectF(0, 0, 100, 100))                     noexcept;
-    ~KRPTSceneSelectableBtnItem()                                                                    noexcept;
+                                const QRectF &geometry = QRectF(0, 0, 100, 100))                noexcept;
+    ~KRPTSceneSelectableBtnItem()                                                               noexcept;
 public:
     ExpandDirect expandDirect              ()                                             const noexcept;
-    QSizeF       childSize                 ()                                             const noexcept;
     void         setExpandDirect           (ExpandDirect direct) noexcept;
-    void         setChildSize              (const QSizeF &size) noexcept;
 protected:
     void         addChildImpl              (KRPTSceneItem::Ptr item, KRPTSceneItem::Ptr parent) noexcept override;
+    void         transformImpl             (SceneTransformEvent *e)                             noexcept override;
     void         mousePressImpl            (SceneMouseEvent *e)                                 noexcept override;
     void         mouseReleaseImpl          (SceneMouseEvent *e)                                 noexcept override;
     void         mouseMoveImpl             (SceneMouseEvent *e)                                 noexcept override;
     void         mouseOutImpl              (KRPTSceneItem::Ptr item, SceneMouseEvent *e)        noexcept override;
+    void         animImpl                  (uint32_t id, const std::vector<double> &value, 
+                                            uint32_t time, bool completed, int loop)            noexcept override;
     void         areaChildMousePressEvent  (KRPTSceneItem::Ptr item, SceneMouseEvent *e)        noexcept override;
     void         areaChildMouseReleaseEvent(KRPTSceneItem::Ptr item, SceneMouseEvent *e)        noexcept override;
     void         areaChildMouseMoveEvent   (KRPTSceneItem::Ptr item, SceneMouseEvent *e)        noexcept override;
+    void         setMarginImpl             (const QPointF &margin)                              noexcept override;
 protected:
     enum class Expanded{No, Yes, To, From};
 protected:
@@ -50,4 +52,6 @@ protected:
     QRectF             _expandedRect[2] ;
     Expanded           _expanded        ;
     ExpandDirect       _expandDirect    ;
+
+    bool _inAnim = false;
 };

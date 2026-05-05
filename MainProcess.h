@@ -21,6 +21,7 @@
 #include "KRPTSceneScrolledAreaItem.h"
 #include "KRPTSceneAreaItem.h"
 #include "KRPTSceneSelectableBtnItem.h"
+#include "KRPTSceneGroupItem.h"
 
 //########################################################################################################################
 //#
@@ -48,7 +49,6 @@ private:
     std::vector<QPushButton*> _mustBtns;
 
     KRPTSceneRectItem::Ptr _root;
-    KRPTSceneRectItem::Ptr _i0;
     QPointF              _mousePos      ;
     uint32_t    _tag = 0;
 

@@ -275,12 +275,14 @@ public:
                                                 uint32_t time, QEasingCurve curve)                                   noexcept;
     void                 setId                 (uint32_t id)                                                         noexcept;
     void                 setColor              (uint32_t id, const QColor &color, FState state = State::No)          noexcept;
+    void                 setColor              (uint32_t id, uint8_t r, uint8_t g, uint8_t b, uint8_t a, 
+                                                KRPTSceneItem::FState state = State::No)                             noexcept;
     void                 clearColors           ()                                                                    noexcept;
     void                 delColor              (uint32_t id, KRPTSceneItem::FState state)                            noexcept;
     void                 delColor              (uint32_t id)                                                         noexcept;
     void                 setCheckable          (bool checkable)                                                      noexcept;
     void                 setChecked            (bool checked)                                                        noexcept;
-
+    void                 setColorAnimTime      (uint32_t time, QEasingCurve curve = QEasingCurve::Linear)            noexcept;
     void                 lockUpdate            (bool lock)                                                           noexcept;
     void                 lockEvents            (bool lock)                                                           noexcept;
     QPointF              mapToParent           (const QPointF &point)                                                noexcept;

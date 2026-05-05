@@ -43,83 +43,21 @@ KRPTSceneBtnItem::KRPTSceneBtnItem(KRPTScene *scene, KRPTSceneItem *parent, cons
        _imageMargin(5, 5),
        _imageRect(_imageMargin.x(), _imageMargin.y(), geometry.width() - _imageMargin.x() * 2, geometry.height() - _imageMargin.y() * 2)
 {
-#if 1
-    setColor(0, QColor( 0,  0,   0, 0));
-    setColor(1, QColor( 0,  0,   0, 0));
-    setColor(2, QColor( 200,  200,   200, 255));
-
-
-//    setColor(0, QColor( 0,  0,   0, 0));
-    setColor(0, QColor( 65, 65,   65, 255), State::MouseOver);
-
-    setColor(2, QColor( 255, 255,  255, 255), State::MouseOver);
-    setColor(2, QColor(255, 255,   0, 255), State::Checked);
-
-
-//    setColor(0, QColor(  200, 200,   0, 255), State::MousePressed);
-//    setColor(0, QColor(  0,  50,   255, 255), State::MouseOver | State::MousePressed);
-
-//    setColor(0, QColor(  60, 200,   60, 255), State::Checked);
-//    setColor(0, QColor(  0, 150,   0, 255), State::Checked | State::MouseOver);
-//    setColor(0, QColor(  0,  50,   0, 255), State::Checked | State::MouseOver | State::MousePressed);
- 
-
-//    setColor(1, QColor( 200, 200,   200, 255));
-//    setColor(1, QColor( 205, 205,   205, 255), State::MouseOver);
-//    setColor(1, QColor(255, 255,   0, 255), State::Checked);
-
-//    setColor(1, QColor(  0, 255,   0, 255), State::MouseOver | State::MousePressed);
-//    setColor(1, QColor(255, 255,   0, 255), State::Checked | State::MouseOver);
-//    setColor(1, QColor(255, 255,   0, 255), State::Checked | State::MouseOver | State::MousePressed);
-
+#if 0
+    setColor(0,  50,  50,  50, 255);
+    setColor(1, 100, 100, 100, 255);
+    setColor(2, 200, 200, 200, 255);
+    setColor(0,  60,  60,  60, 255, State::MouseOver);
+    setColor(1, 110, 110, 110, 255, State::MouseOver);
+    setColor(2, 210, 210, 210, 255, State::MouseOver);
+    setColor(0,  70,  70,  70, 255, State::MousePressed);
+    setColor(1, 120, 120, 120, 255, State::MousePressed);
+    setColor(2, 220, 220, 220, 255, State::MousePressed);
+    setColor(2, 101, 203, 255, 255, State::Checked);
 #else
-
-    setColor(0, QColor(  50, 50, 50, 255));
-    setColor(0, QColor(  32, 43, 54, 255), State::MouseOver);
-    setColor(0, QColor(  32, 43, 54, 255), State::MouseOver | State::MousePressed);
-
-    setColor(0, QColor(  82, 136, 193, 255), State::Checked);
-    setColor(0, QColor(  82, 136, 193, 255), State::Checked | State::MouseOver);
-    setColor(0, QColor(  82, 136, 193, 255), State::Checked | State::MouseOver | State::MousePressed);
-
-//    setColor(0, QColor(  32, 43, 54, 255));
-
-
-    setColor(1, QColor(  255,  255,   255, 255));
-
-
-    setColor(2, QColor(  200, 200, 200, 255));
-    setColor(2, QColor(  210, 210, 210, 255), State::MouseOver);
-    setColor(2, QColor(  210, 210, 210, 255), State::MouseOver | State::MousePressed);
-
-    setColor(2, QColor(  255, 255,   0, 255), State::Checked);
-    setColor(2, QColor(  255, 255,   0, 255), State::Checked | State::MouseOver);
-    setColor(2, QColor(  255, 255,   0, 255), State::Checked | State::MouseOver | State::MousePressed);
-
-
-//    setTransformAnchor(TransformAnchor::LeftTop);
-
-//    _image.setSource("D:/Desktop/иконки/3/chart.svg");
-//    _image.setSource("D:/Desktop/иконки/3/star.svg");
-//    _image.setSource("D:/Desktop/иконки/3/setting 3.svg");
-//    _image.setSource("D:/Desktop/иконки/1/Expand/104-Map.svg");
-
-//    _image.setSource("D:/Desktop/иконки/4/Line/Settings.svg");
-//    _image.setSource("D:/Desktop/иконки/4/Line/Quill.svg");
-//    _image.setSource("D:/Desktop/иконки/4/Line/Bug.svg");
-
-//    _image.setSource("D:/Desktop/иконки/6/broken/broken-command.svg");
-//    _image.setSource("D:/Desktop/иконки/6/broken/broken-location-1.svg");
-//    _image.setSource("D:/Desktop/иконки/6/broken/broken-settings.svg");
-
-//    _image.setSource("D:/Desktop/иконки/7/activity.svg");
-//    _image.setSource("D:/Desktop/иконки/7/cursor.svg");
-//    _image.setSource("D:/Desktop/иконки/8/brush.svg");
-
-//    _imageKey = KRPTImageCache::key("D:/Desktop/иконки/8/brush.svg");
-//    _imageKey = KRPTImageCache::key("setting_1");
-
-    
+    setColor(0,  50,  50,  50, 255);
+    setColor(1, 100, 100, 100, 255);
+    setColor(2, 200, 200, 200, 255);
 #endif
 }
 

@@ -25,7 +25,8 @@ public:
     };
 public:
     KRPTSceneAreaItem             (KRPTScene *scene, KRPTSceneItem *parent, 
-                                   const QRectF &geometry = QRectF(0, 0, 100, 100))       noexcept;
+                                   const QRectF &geometry = QRectF(0, 0, 100, 100), 
+                                   FMust must = Must::No)                                 noexcept;
 public:
     QPointF    margin             ()                                                const noexcept;
     SizePolicy sizePolicy         ()                                                const noexcept;

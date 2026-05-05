@@ -113,6 +113,8 @@ protected:
     void           animImpl                  (uint32_t id, const std::vector<double> &value, 
                                               uint32_t time, bool completed, int loop)                             noexcept override;
 protected:
+    virtual void   setMarginImpl             (const QPointF &margin)                                               noexcept;
+    virtual bool   setAreaGeometryImpl       (const QRectF &geometry, uint32_t time, QEasingCurve curve)           noexcept;
     virtual void   areaChildTransformEvent   (KRPTSceneItem::Ptr item, SceneTransformEvent *e)                     noexcept; 
     virtual void   areaChildMousePressEvent  (KRPTSceneItem::Ptr item, SceneMouseEvent *e)                         noexcept;
     virtual void   areaChildMouseReleaseEvent(KRPTSceneItem::Ptr item, SceneMouseEvent *e)                         noexcept;

@@ -13,14 +13,29 @@ KRPTSceneSelectableBtnItem::KRPTSceneSelectableBtnItem(KRPTScene *scene, KRPTSce
     : KRPTSceneScrolledAreaItem(scene, parent, geometry), _mousePressedItem(nullptr), _selectedItem(nullptr),
       _childSize(40, 40), _expanded(Expanded::No), _expandDirect(ExpandDirect::Bottom)
 {
+    upMust(Must::Checked, Must::ColorAnim);
+
     _scrollPolicy.up(ScrollPolicy::MouseChildOver);
     setExpandDirect(ExpandDirect::Bottom);
-    setColor(0, QColor( 50,  50,  50));
-    setColor(1, QColor( 155,  155,  155));
+
+#if 0
+    setColorAnimTime(300, QEasingCurve::InOutSine);
+    setColor(0,  50,   50,   50, 0);
+    setColor(1, 100,  100,  100, 0);
+    setColor(0,  50,   50,   50, 255, State::Checked);
+    setColor(1, 100,  100,  100, 255, State::Checked);
+#else
+    setColor(0,  50,   50,   50, 255);
+    setColor(1, 100,  100,  100, 255);
+#endif
+
     setCornerRadius(5, 5);
     setMargin(2, 2);
+
+
     _posGrid = QPointF(_childSize.width() + _margin.y(), _childSize.height() + _margin.y());
-    setSize(childFullSize(1, 1));
+ 
+//    setSize(childFullSize(1, 1));
 }
 
 KRPTSceneSelectableBtnItem::~KRPTSceneSelectableBtnItem() noexcept
@@ -43,19 +58,6 @@ void KRPTSceneSelectableBtnItem::setExpandDirect(ExpandDirect direct) noexcept
     updateChildGeometry();
 }
 
-QSizeF KRPTSceneSelectableBtnItem::childSize() const noexcept
-{
-    return _childSize;
-}
-
-void KRPTSceneSelectableBtnItem::setChildSize(const QSizeF &size) noexcept
-{
-    if(qFuzzyCompare(_childSize, size))return;
-    _childSize = size;
-    updateChildGeometry();
-    setSize(_expandedRect[0].size());
-}
-
 //************************************************************************************************************************
 //*
 //************************************************************************************************************************
@@ -69,6 +71,8 @@ QSizeF KRPTSceneSelectableBtnItem::childFullSize(size_t xCount, size_t yCount) n
 
 void KRPTSceneSelectableBtnItem::updateChildGeometry() noexcept
 {
+    _childSize.setWidth (_rect.width () - _margin.x() * 2); 
+    _childSize.setHeight(_rect.height() - _margin.y() * 2);
     const auto &childs = areaChildItems();
     size_t sz = childs.size();
     switch(_expandDirect)
@@ -77,7 +81,8 @@ void KRPTSceneSelectableBtnItem::updateChildGeometry() noexcept
         case ExpandDirect::Right  : 
             _scrollPolicy.up  (ScrollPolicy::Horisontal);
             _scrollPolicy.down(ScrollPolicy::Vertical);
-            _expandedRect[0].setSize(childFullSize(1, 1));
+//            _expandedRect[0].setSize(childFullSize(1, 1));
+            _expandedRect[0].setSize(_rect.size());
             _expandedRect[1].setSize(childFullSize(sz, 1));
             setInvertWheel(true);
             break;
@@ -85,7 +90,8 @@ void KRPTSceneSelectableBtnItem::updateChildGeometry() noexcept
         case ExpandDirect::Bottom :
             _scrollPolicy.up  (ScrollPolicy::Vertical);
             _scrollPolicy.down(ScrollPolicy::Horisontal);
-            _expandedRect[0].setSize(childFullSize(1, 1));
+//            _expandedRect[0].setSize(childFullSize(1, 1));
+            _expandedRect[0].setSize(_rect.size());
             _expandedRect[1].setSize(childFullSize(1, sz));
             setInvertWheel(false);
             break;
@@ -119,7 +125,6 @@ void KRPTSceneSelectableBtnItem::expand(bool exp) noexcept
     if(exp)
     {
         QRectF r = _expandedRect[1];
-
         switch(_expandDirect)
         {
             case ExpandDirect::Top    :
@@ -127,7 +132,6 @@ void KRPTSceneSelectableBtnItem::expand(bool exp) noexcept
             case ExpandDirect::Left   :
             case ExpandDirect::Right  : setAreaPos(-p.x(), 0, 500); break;
         }
-
         QSizeF s = childFullSize(5, 5);
         switch(_expandDirect)
         {
@@ -136,9 +140,9 @@ void KRPTSceneSelectableBtnItem::expand(bool exp) noexcept
             case ExpandDirect::Left   :
             case ExpandDirect::Right  : r.setWidth(std::min(r.width() , s.width())); break;
         }
-
         setSize(r.size(), 500);
         _expanded = Expanded::Yes;
+        setChecked(true);
     }else
     {
         switch(_expandDirect)
@@ -148,9 +152,9 @@ void KRPTSceneSelectableBtnItem::expand(bool exp) noexcept
             case ExpandDirect::Left   :
             case ExpandDirect::Right  : setAreaPos(-p.x(), 0, 500); break;
         }
-
         setSize(_expandedRect[0].size(), 500);
         _expanded = Expanded::No;
+        setChecked(false);
     }
 }
 
@@ -174,7 +178,8 @@ void KRPTSceneSelectableBtnItem::addChildImpl(KRPTSceneItem::Ptr item, KRPTScene
         x = _margin.x();
         y = (_childSize.height() + _margin.y()) * (sz - 1) + _margin.y();
 
-        _expandedRect[0].setSize(childFullSize(1, 1));
+//        _expandedRect[0].setSize(childFullSize(1, 1));
+        _expandedRect[0].setSize(_rect.size());
         _expandedRect[1].setSize(childFullSize(1, sz));
 
     }else
@@ -183,12 +188,18 @@ void KRPTSceneSelectableBtnItem::addChildImpl(KRPTSceneItem::Ptr item, KRPTScene
         x = (_childSize.width() + _margin.x()) * (sz - 1) + _margin.x();
         y = _margin.y();
 
-        _expandedRect[0].setSize(childFullSize(1, 1));
+//        _expandedRect[0].setSize(childFullSize(1, 1));
+        _expandedRect[0].setSize(_rect.size());
         _expandedRect[1].setSize(childFullSize(sz, 1));
-
     }
     item->setGeometry(x, y, _childSize.width(), _childSize.height());
 
+#if 0
+    item->upMust(Must::NoPaintForeground);
+    item->setColor(0, 0, 0, 0, 0);
+#endif
+
+#if 0
     item->setColor(0, QColor( 0,  0,   0, 0));
     item->setColor(1, QColor( 0,  0,   0, 0));
 
@@ -197,10 +208,18 @@ void KRPTSceneSelectableBtnItem::addChildImpl(KRPTSceneItem::Ptr item, KRPTScene
 //    item->setColor(2, QColor( 255,  255,   0, 255), State::Checked);
 //    item->setColor(2, QColor( 255,  255,   0, 255), State::Checked | State::MouseOver);
     item->setColor(2, QColor( 255,  255,   255, 255), State::MouseOver);
-
+#endif
 
 //    setSize(areaSize());
     item->lockUpdate(false);
+}
+
+void KRPTSceneSelectableBtnItem::transformImpl(SceneTransformEvent *e) noexcept
+{
+    KRPTSceneScrolledAreaItem::transformImpl(e);
+    if(e->resized() && !_inAnim)updateChildGeometry();
+
+//    qDebug() << _inAnim;
 }
 
 void KRPTSceneSelectableBtnItem::mousePressImpl(SceneMouseEvent *e) noexcept
@@ -242,6 +261,22 @@ void KRPTSceneSelectableBtnItem::mouseOutImpl(KRPTSceneItem::Ptr item, SceneMous
     if(_expanded == Expanded::No)return;
     if(item && (item->parent() == (void*)_area || item->parent() == this))return;
     expand(false);
+}
+
+void KRPTSceneSelectableBtnItem::animImpl(uint32_t id, const std::vector<double> &value, 
+    uint32_t time, bool completed, int loop) noexcept
+{
+    KRPTSceneScrolledAreaItem::animImpl(id, value, time, completed, loop);
+
+    if(time == 0)_inAnim = true;
+    if(completed)
+        _inAnim = false;
+}
+
+void KRPTSceneSelectableBtnItem::setMarginImpl(const QPointF &margin) noexcept
+{
+    KRPTSceneScrolledAreaItem::setMarginImpl(margin);
+    updateChildGeometry();
 }
 
 //************************************************************************************************************************

@@ -223,15 +223,7 @@ void KRPTSceneScrolledAreaItem::setAreaSizePolicy(AreaSizePolicy policy) noexcep
 bool KRPTSceneScrolledAreaItem::setAreaGeometry(const QRectF &geometry, uint32_t time, QEasingCurve curve) noexcept
 {
     if(qFuzzyCompare(_areaRect, geometry))return false;
-    if(mustAnim(time))
-    {
-        startAnimImpl(AnimDst::User, _areaRect, geometry, time, curve);
-        return true;
-    }
-    if(mustAny(Must::TransformAnim))stopAnimImpl(AnimDst::User);
-    _areaRect = geometry;
-    updateAreaRect();
-    return true;
+    return setAreaGeometryImpl(geometry, time, curve);
 }
 
 bool KRPTSceneScrolledAreaItem::setAreaGeometry(const QPointF &p, const QSizeF &size, 
@@ -300,8 +292,7 @@ void KRPTSceneScrolledAreaItem::translateArea(double x, double y, uint32_t time,
 void KRPTSceneScrolledAreaItem::setMargin(const QPointF &margin) noexcept
 {
     if(margin == _margin)return;
-    _margin = margin;
-    update();
+    setMarginImpl(margin);
 }
 
 void KRPTSceneScrolledAreaItem::setMargin(double x, double y) noexcept
@@ -499,6 +490,25 @@ void KRPTSceneScrolledAreaItem::animImpl(uint32_t id, const std::vector<double> 
 //************************************************************************************************************************
 //*
 //************************************************************************************************************************
+
+void KRPTSceneScrolledAreaItem::setMarginImpl(const QPointF &margin) noexcept
+{
+    _margin = margin;
+    update();
+}
+
+bool KRPTSceneScrolledAreaItem::setAreaGeometryImpl(const QRectF &geometry, uint32_t time, QEasingCurve curve) noexcept
+{
+    if(mustAnim(time))
+    {
+        startAnimImpl(AnimDst::User, _areaRect, geometry, time, curve);
+        return true;
+    }
+    if(mustAny(Must::TransformAnim))stopAnimImpl(AnimDst::User);
+    _areaRect = geometry;
+    updateAreaRect();
+    return true;
+}
 
 void KRPTSceneScrolledAreaItem::areaChildTransformEvent(KRPTSceneItem::Ptr item, SceneTransformEvent *e) noexcept 
 {

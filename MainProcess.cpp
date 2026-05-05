@@ -65,11 +65,24 @@ MainProcess::MainProcess(QWidget *parent)
 
     setGeometry(300, 50, 1800, 1400);
 
-//    _root = _scene->addItem<KRPTSceneRectItem>();
-//    _root = _scene->addItem<KRPTSceneScrolledAreaItem>(QRectF(10, 10, 500, 500));
-    _root = _scene->addItem<KRPTSceneAreaItem>(QRectF(50, 50, 500, 500));
+    _root = _scene->addItem<KRPTSceneRectItem>(QRectF(10, 10, 1000, 1000));
 
-//    _root = _scene->addItem<KRPTSceneSelectableBtnItem>(QRectF(10, 10, 70, 70));
+    auto btn_0 = _root->addChild<KRPTSceneSelectableBtnItem>(QRectF(10, 10, 70, 40));
+    btn_0->setMargin(5, 5);
+
+    auto btn_0_child = btn_0->addChild<KRPTSceneBtnItem>();
+    btn_0_child->setImageSrc("D:/Desktop/иконки/8/brush.svg");
+
+    btn_0_child = btn_0->addChild<KRPTSceneBtnItem>();
+    btn_0_child->setImageSrc("D:/Desktop/иконки/8/brush.svg");
+
+    btn_0->setWidth(80);
+
+#if 0
+//    _root = _scene->addItem<KRPTSceneScrolledAreaItem>(QRectF(10, 10, 500, 500));
+//    _root = _scene->addItem<KRPTSceneAreaItem>(QRectF(50, 50, 500, 500));
+//    _root = _scene->addItem<KRPTSceneGroupItem>(QRectF(50, 50, 600, 500));
+
 
 //    _root = _scene->addItem<KRPTSceneBtnItem>(QRectF(100, 100, 50, 50));
 
@@ -87,8 +100,8 @@ MainProcess::MainProcess(QWidget *parent)
     _root->setId(++_tag);
 
 
-        double x1 = 0;
-        double y1 = 0;
+        double x1 = 5;
+        double y1 = 5;
         double w1 = 38;
         double h1 = 38;
         double d1 = 3;
@@ -121,8 +134,6 @@ MainProcess::MainProcess(QWidget *parent)
 //        child->setImageRect(ir);
         child->setImageSrc("D:/Desktop/иконки/1/Expand/150-Compass.svg");
      
-#if 1
-
         child = _root->addChild<KRPTSceneBtnItem>(QRectF(x1, y1, w1, h1));
         y1 += h1 + d1;
 //        child->setImageRect(ir);
@@ -231,97 +242,11 @@ MainProcess::MainProcess(QWidget *parent)
 //            itm1->setExpandDirect(KRPTSceneSelectableBtnItem::ExpandDirect::Right);
             itm1->setChildSize(QSizeF(64, 64));
         }
-
-#endif
-        itm->lockAutoUpdate(false);
-
-
-
-#if 0
-    double x1 = 5;
-    double y1 = 5;
-    for(int i = 0; i < 1; ++i)
-    {
-        auto child = _root->addChild<KRPTSceneBtnItem>(QRectF(x1, y1, 148, 48));
-
-//        child->setImageSrc("setting_1");
-        child->setImageSrc("D:/Desktop/иконки/8/brush.svg");
-
-
-//        child->setScale(1.1);
-
-//        auto child = _root->addChild<KRPTSceneRectItem>();
-//        child->setGeometry(x1, y1, 50, 50);
-        x1 += 55;
-
-        if(x1 > 2000)
-        {
-            y1 += 55;
-            x1 = 5;
-        }
-    }
-//    ((KRPTSceneScrolledAreaItem*)_root)->setAreaSize(100, 5 * 60 + 10);
+        if(itm)
+            itm->lockAutoUpdate(false);
 #endif
 
-    _root->upMust
-    (
-//        KRPTSceneItem::Must::NoClipPainter,
-//            KRPTSceneItem::Must::NoClipChilds,
-//        KRPTSceneItem::Must::NoCheckChildVisibled,
 
-//            KRPTSceneItem::Must::NoSceneRotate,
-//            KRPTSceneItem::Must::NoSceneScale,
-//            KRPTSceneItem::Must::AccuracyClip,
-//            KRPTSceneItem::Must::TransformAnim,
-//            KRPTSceneItem::Must::AccuracyClip,
-//            KRPTSceneItem::Must::AccuracyCheckContains,
-//            KRPTSceneItem::Must::MouseMoved,
-//            KRPTSceneItem::Must::MousePressEvent,
-//            KRPTSceneItem::Must::MouseMoveEvent,
-//            KRPTSceneItem::Must::WhellEvent
-    );
-
-#if 0
-//    _i0 = _root->addChild<KRPTSceneRectItem>();
-    _i0 = _scene->addItem<KRPTSceneRectItem>();
-    _i0->setGeometry(QRectF(50, 50, 150, 150));
-//    _i0->setBackgroundColor(QColor(0, 255, 0));
-
-    _i0->upMust
-    (
-//            KRPTSceneItem::Must::NoClipChilds,
-            KRPTSceneItem::Must::NoClipPainter,
-
-//        KRPTSceneItem::Must::NoCheckChildVisibled,
- 
-//            KRPTSceneItem::Must::NoSceneRotate,
-//            KRPTSceneItem::Must::NoSceneScale,
-//            KRPTSceneItem::Must::AccuracyClip,
-            KRPTSceneItem::Must::TransformAnim,
-//            KRPTSceneItem::Must::AccuracyClip,
-//            KRPTSceneItem::Must::AccuracyCheckContains,
-            KRPTSceneItem::Must::MouseMoved,
-            KRPTSceneItem::Must::MousePressEvent,
-            KRPTSceneItem::Must::MouseMoveEvent,
-            KRPTSceneItem::Must::WhellEvent
-    );
-
-//        child->setTransformAnchor(KRPTSceneItem::TransformAnchor::LeftTop);
-//        child->setTransformAnchor(KRPTSceneItem::TransformAnchor::RightTop);
-//        child->setTransformAnchor(KRPTSceneItem::TransformAnchor::LeftBottom);
-//        child->setTransformAnchor(KRPTSceneItem::TransformAnchor::RightCenter);
-//        child->setTransformAnchor(KRPTSceneItem::TransformAnchor::BottomCenter);
- 
-//        child->setPosAnchor(KRPTSceneItem::TransformAnchor::LeftTop);
-//        child->setPosAnchor(KRPTSceneItem::TransformAnchor::Center);
-//        child->setPosAnchor(KRPTSceneItem::TransformAnchor::RightTop);
-//        child->setPosAnchor(KRPTSceneItem::TransformAnchor::LeftBottom);
-//        child->setPosAnchor(KRPTSceneItem::TransformAnchor::RightCenter);
-//        child->setPosAnchor(KRPTSceneItem::TransformAnchor::BottomCenter);
-
-
-    _i0->setTag(++_tag);
-#endif
     _sliders.resize(6);
     int x = 10, y = 10;
     for(int i = 0; i < _sliders.size(); ++i)
@@ -427,7 +352,6 @@ MainProcess::~MainProcess()
 void MainProcess::resizeEvent(QResizeEvent *value)
 {
     _view->setGeometry(200, 10, width() - 210, height() - 20);
-
 //    _root->setGeometry(50, 50, width() - 100, height() - 100);
 }
 

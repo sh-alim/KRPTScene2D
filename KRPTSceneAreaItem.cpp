@@ -9,21 +9,19 @@
 //#
 //########################################################################################################################
 
-KRPTSceneAreaItem::KRPTSceneAreaItem(KRPTScene *scene, KRPTSceneItem *parent, const QRectF &geometry) noexcept
-    : KRPTSceneItem(scene, parent, geometry, 
+KRPTSceneAreaItem::KRPTSceneAreaItem(KRPTScene *scene, KRPTSceneItem *parent, const QRectF &geometry, FMust must) noexcept
+    : KRPTSceneItem(scene, parent, geometry, (Must)must.flag() | 
 //      Must::NoPaint         |
 //      Must::NoPaintBackground |
-      Must::NoPaintForeground |
+//      Must::NoPaintForeground |
       Must::NoClipPainter   |
       Must::TransformEvent  |
       Must::MousePressEvent |
       Must::MouseMoveEvent  |
-      Must::WhellEvent
-    
-    ), _margin(5, 5), _sizePolicy(SizePolicy::AutoPosSize), _cornerRadius(6), _lockAutoUpdate(false)
+      Must::WhellEvent), _margin(5, 5), _sizePolicy(SizePolicy::AutoPosSize), _cornerRadius(6), _lockAutoUpdate(false)
 {
     resetMinMax();
-    setColor(0, QColor(50,  50,  50));
+    setColor(0, QColor(50, 50, 50));
     setColor(1, QColor(80, 80, 80));
 }
 

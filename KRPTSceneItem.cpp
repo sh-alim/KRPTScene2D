@@ -191,6 +191,7 @@ private:
 private:
     class Colors
     {
+    friend class KRPTSceneItem;
     public:
         using FlagT = std::underlying_type_t<KRPTSceneItem::State>;
     private:
@@ -203,9 +204,7 @@ private:
             QColor                            startColor;
         };
     public:
-        Colors() noexcept : _interp(1), _mask(0)
-        {
-        }
+        Colors() noexcept : _interp(1), _mask(0), _animTime(100), _animCurve(QEasingCurve::Linear){}
         FlagT mask(KRPTSceneItem::FState state)                     const noexcept {return state.flag() & _mask     ;}
         FlagT mask(const Color &color, KRPTSceneItem::FState state) const noexcept {return state.flag() & color.mask;}
         void clear() noexcept
@@ -263,6 +262,7 @@ private:
             c2.setRedF  (c0.redF  () + (c1.redF  () - c0.redF  ()) * _interp);
             c2.setGreenF(c0.greenF() + (c1.greenF() - c0.greenF()) * _interp);
             c2.setBlueF (c0.blueF () + (c1.blueF () - c0.blueF ()) * _interp);
+            c2.setAlphaF(c0.alphaF() + (c1.alphaF() - c0.alphaF()) * _interp);
             return c2;
         }
         bool mustAnim(KRPTSceneItem::FState cur, KRPTSceneItem::FState old) noexcept
@@ -283,25 +283,27 @@ private:
             _interp = interp;
         }
     private:
-        std::unordered_map<uint32_t, Color> _colors  ;
-        FlagT                               _mask    ;
-        mutable QColor                      _defColor;
-        double                              _interp  ;
+        std::unordered_map<uint32_t, Color> _colors   ;
+        FlagT                               _mask     ;
+        mutable QColor                      _defColor ;
+        double                              _interp   ;
+        uint32_t                            _animTime ;
+        QEasingCurve                        _animCurve;
     };
 private:
-    KRPTSceneItem::Ptr        owner       ;
-    std::array<QTransform, 8> transforms  ;
-    std::vector<Cache>        cache       ;
-    ParentIndex               parentsIndex;
-    uint32_t                  genTransform;
-    uint32_t                  genScale    ;
-    uint32_t                  genAngle    ;
-    uint32_t                  genMust     ;
-    double                    sceneScale  ;
-    double                    sceneAngle  ;
-    Anim::Map                 anims       ;
-    KRPTSceneAnim::Event      animFunction;
-    Colors                    colors      ;
+    KRPTSceneItem::Ptr        owner         ;
+    std::array<QTransform, 8> transforms    ;
+    std::vector<Cache>        cache         ;
+    ParentIndex               parentsIndex  ;
+    uint32_t                  genTransform  ;
+    uint32_t                  genScale      ;
+    uint32_t                  genAngle      ;
+    uint32_t                  genMust       ;
+    double                    sceneScale    ;
+    double                    sceneAngle    ;
+    Anim::Map                 anims         ;
+    KRPTSceneAnim::Event      animFunction  ;
+    Colors                    colors        ;
 };
 
 //########################################################################################################################
@@ -834,6 +836,12 @@ void KRPTSceneItem::setColor(uint32_t id, const QColor &color, KRPTSceneItem::FS
     _data->colors.set(id, color, state);
 }
 
+void KRPTSceneItem::setColor(uint32_t id, uint8_t r, uint8_t g, uint8_t b, uint8_t a, 
+    KRPTSceneItem::FState state) noexcept
+{
+    _data->colors.set(id, QColor(r, g, b, a), state);
+}
+
 void KRPTSceneItem::clearColors() noexcept
 {
     _data->colors.clear();
@@ -858,6 +866,12 @@ void KRPTSceneItem::setCheckable(bool checkable) noexcept
 void KRPTSceneItem::setChecked(bool checked) noexcept
 {
     setCheckedImpl(checked);
+}
+
+void KRPTSceneItem::setColorAnimTime(uint32_t time, QEasingCurve curve) noexcept
+{
+    _data->colors._animTime  = time;
+    _data->colors._animCurve = curve;
 }
 
 void KRPTSceneItem::lockUpdate(bool lock) noexcept 
@@ -1197,7 +1211,7 @@ bool KRPTSceneItem::stateChangeImpl(const FState &cur, const FState &old) noexce
     }
     if(mustAny(Must::ColorAnim) && _data->colors.mustAnim(cur, old))
     {
-        startAnimImpl(AnimDst::Color, 0, 1, 50, QEasingCurve::Linear);
+        startAnimImpl(AnimDst::Color, 0, 1, _data->colors._animTime, _data->colors._animCurve);
     }else update();
     return true;
 }
