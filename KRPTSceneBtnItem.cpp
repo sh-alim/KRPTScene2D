@@ -58,6 +58,7 @@ KRPTSceneBtnItem::KRPTSceneBtnItem(KRPTScene *scene, KRPTSceneItem *parent, cons
     setColor(0,  50,  50,  50, 255);
     setColor(1, 100, 100, 100, 255);
     setColor(2, 200, 200, 200, 255);
+    setColor(2, 0, 255, 0, 255, State::Checked);
 #endif
 }
 

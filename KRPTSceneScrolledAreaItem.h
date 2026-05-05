@@ -51,6 +51,7 @@ public:
     ~KRPTSceneScrolledAreaItem               ()                                                                    noexcept;
 public:
     const List   & areaChildItems            ()                                                              const noexcept;
+    bool           isChild                   (KRPTSceneItem::Ptr item)                                       const noexcept;
     QPointF        areaPos                   ()                                                              const noexcept;
     double         areaX                     ()                                                              const noexcept;
     double         areaY                     ()                                                              const noexcept;

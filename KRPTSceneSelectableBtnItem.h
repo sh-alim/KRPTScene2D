@@ -10,6 +10,7 @@
 
 #include "KRPTSceneItem.h"
 #include "KRPTSceneScrolledAreaItem.h"
+#include "KRPTSceneBtnItem.h"
 
 //########################################################################################################################
 //#
@@ -23,9 +24,14 @@ public:
     KRPTSceneSelectableBtnItem (KRPTScene *scene, KRPTSceneItem *parent, 
                                 const QRectF &geometry = QRectF(0, 0, 100, 100))                noexcept;
     ~KRPTSceneSelectableBtnItem()                                                               noexcept;
+
+public:
+    KRPTSceneBtnItem * addItem(const QByteArray &imageSrc, const QString &text) noexcept;
+
 public:
     ExpandDirect expandDirect              ()                                             const noexcept;
-    void         setExpandDirect           (ExpandDirect direct) noexcept;
+    void         setExpandDirect           (ExpandDirect direct)                                noexcept;
+    void         setSelectedItem           (KRPTSceneItem::Ptr item, bool anim = true)          noexcept;
 protected:
     void         addChildImpl              (KRPTSceneItem::Ptr item, KRPTSceneItem::Ptr parent) noexcept override;
     void         transformImpl             (SceneTransformEvent *e)                             noexcept override;
@@ -52,6 +58,5 @@ protected:
     QRectF             _expandedRect[2] ;
     Expanded           _expanded        ;
     ExpandDirect       _expandDirect    ;
-
-    bool _inAnim = false;
+    uint32_t           _expandAnimTime  ; 
 };

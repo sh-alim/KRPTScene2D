@@ -168,6 +168,11 @@ const KRPTSceneItem::List& KRPTSceneScrolledAreaItem::areaChildItems() const noe
     return _area->_childItems;
 }
 
+bool KRPTSceneScrolledAreaItem::isChild(KRPTSceneItem::Ptr item) const noexcept
+{
+    return item && item->parent() == _area;
+}
+
 QPointF KRPTSceneScrolledAreaItem::areaPos() const noexcept
 {
     return _areaRect.topLeft();

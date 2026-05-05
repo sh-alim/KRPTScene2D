@@ -8,6 +8,33 @@
 //#
 //########################################################################################################################
 
+static std::vector<QByteArray> srcs = {
+    "D:/Desktop/иконки/1/Expand/40-Gear.svg",
+    "D:/Desktop/иконки/1/Expand/53-Location.svg",
+    "D:/Desktop/иконки/1/Expand/150-Compass.svg",
+    "gear_0",
+    "D:/Desktop/иконки/2/twitter-logo.svg",
+    "D:/Desktop/иконки/2/paper-plane.svg",
+    "D:/Desktop/иконки/2/blending-mode.svg",
+    "D:/Desktop/иконки/2/modulz-logo.svg",
+    "D:/Desktop/иконки/2/lightning-bolt.svg",
+    "D:/Desktop/иконки/2/hand.svg",
+    "D:/Desktop/иконки/2/iconjar-logo.svg",
+    "D:/Desktop/иконки/2/github-logo.svg",
+    "D:/Desktop/иконки/3/heart.svg",
+    "D:/Desktop/иконки/4/Line/Bug.svg",
+    "D:/Desktop/иконки/4/Line/Anchor.svg",
+    "D:/Desktop/иконки/5/1/UI Basic outline-10.svg",
+    "D:/Desktop/иконки/5/1/UI Basic outline-88.svg",
+    "D:/Desktop/иконки/5/1/UI Basic outline-60.svg",
+    "D:/Desktop/иконки/5/1/UI Basic outline-39.svg",
+    "D:/Desktop/иконки/5/1/UI Basic outline-40.svg",
+    "D:/Desktop/иконки/5/1/UI Basic outline-41.svg",
+    "D:/Desktop/иконки/7/public.svg",
+    "D:/Desktop/иконки/7/rocket-fly.svg"
+};
+
+
 static const std::vector<std::pair<KRPTSceneItem::Must, QString>> must =
 {
     {KRPTSceneItem::Must::NoPaint                , "NoPaint"                },
@@ -67,16 +94,19 @@ MainProcess::MainProcess(QWidget *parent)
 
     _root = _scene->addItem<KRPTSceneRectItem>(QRectF(10, 10, 1000, 1000));
 
-    auto btn_0 = _root->addChild<KRPTSceneSelectableBtnItem>(QRectF(10, 10, 70, 40));
-    btn_0->setMargin(5, 5);
+    auto btn_0 = _root->addChild<KRPTSceneSelectableBtnItem>(QRectF(10, 10, 36, 36));
+    btn_0->setMargin(1, 1);
 
-    auto btn_0_child = btn_0->addChild<KRPTSceneBtnItem>();
-    btn_0_child->setImageSrc("D:/Desktop/иконки/8/brush.svg");
+    KRPTSceneBtnItem::Ptr selItem = nullptr;
 
-    btn_0_child = btn_0->addChild<KRPTSceneBtnItem>();
-    btn_0_child->setImageSrc("D:/Desktop/иконки/8/brush.svg");
+    for(auto &src : srcs)
+    {
+        auto child = btn_0->addItem(src, "");
+        selItem = child;
+    }
+    btn_0->setSelectedItem(selItem);
 
-    btn_0->setWidth(80);
+//    btn_0->setWidth(80);
 
 #if 0
 //    _root = _scene->addItem<KRPTSceneScrolledAreaItem>(QRectF(10, 10, 500, 500));
