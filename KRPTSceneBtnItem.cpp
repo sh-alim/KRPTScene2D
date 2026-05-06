@@ -43,23 +43,17 @@ KRPTSceneBtnItem::KRPTSceneBtnItem(KRPTScene *scene, KRPTSceneItem *parent, cons
        _imageMargin(5, 5),
        _imageRect(_imageMargin.x(), _imageMargin.y(), geometry.width() - _imageMargin.x() * 2, geometry.height() - _imageMargin.y() * 2)
 {
-#if 0
-    setColor(0,  50,  50,  50, 255);
-    setColor(1, 100, 100, 100, 255);
+    setColor(0,  60,  60,  60, 255);
+    setColor(1,  40,  40,  40, 255);
     setColor(2, 200, 200, 200, 255);
-    setColor(0,  60,  60,  60, 255, State::MouseOver);
-    setColor(1, 110, 110, 110, 255, State::MouseOver);
+    setColor(0,  65,  65,  65, 255, State::MouseOver);
+    setColor(1,  45,  45,  45, 255, State::MouseOver);
     setColor(2, 210, 210, 210, 255, State::MouseOver);
     setColor(0,  70,  70,  70, 255, State::MousePressed);
-    setColor(1, 120, 120, 120, 255, State::MousePressed);
+    setColor(1,  50,  50,  50, 255, State::MousePressed);
     setColor(2, 220, 220, 220, 255, State::MousePressed);
+    setColor(0,  80,  80,  80, 255, State::Checked);
     setColor(2, 101, 203, 255, 255, State::Checked);
-#else
-    setColor(0,  50,  50,  50, 255);
-    setColor(1, 100, 100, 100, 255);
-    setColor(2, 200, 200, 200, 255);
-    setColor(2, 0, 255, 0, 255, State::Checked);
-#endif
 }
 
 KRPTSceneBtnItem::~KRPTSceneBtnItem() noexcept
@@ -81,20 +75,6 @@ void KRPTSceneBtnItem::setCornerRadius(double radius) noexcept
 void KRPTSceneBtnItem::setImageSrc(const QByteArray &src) noexcept
 {
     _d->_imageKey = KRPTImageCache::key(src);
-}
-
-void KRPTSceneBtnItem::setImageRect(const QRectF &rect) noexcept
-{
-    if(qFuzzyCompare(_imageRect, rect))return;
-    _imageRect = rect;
-    update();
-}
-
-void KRPTSceneBtnItem::setImage(const QByteArray &src, const QRectF &rect) noexcept
-{
-    if(qFuzzyCompare(_imageRect, rect))return;
-    _d->_imageKey = KRPTImageCache::key(src);
-    _imageRect = rect;
 }
 
 //************************************************************************************************************************
@@ -130,7 +110,8 @@ void KRPTSceneBtnItem::transformImpl(SceneTransformEvent *e) noexcept
     if(e->resized())
     {
        _imageRect = QRectF(_imageMargin.x(), _imageMargin.y(), 
-                           _geometry.width() - _imageMargin.x() * 2, _geometry.height() - _imageMargin.y() * 2);
+                           _geometry.width () - _imageMargin.x() * 2, 
+                           _geometry.height() - _imageMargin.y() * 2);
     }
     KRPTSceneItem::transformImpl(e);
 }
@@ -166,12 +147,6 @@ void KRPTSceneBtnItem::paintBackground(QPainter &painter, uint32_t stage) noexce
     if(qFuzzyIsNull(_cornerRadius))painter.drawRect(_rect);
     else painter.drawRoundedRect(_rect, _cornerRadius, _cornerRadius);
     painter.setBrush(Qt::NoBrush); 
-
-//    QPen pen(QColor(255, 0, 0), 1.0);
-//    pen.setCosmetic(true);
-//    painter.setPen(pen); 
-
-
     if(_d->_imageKey.enable())
         KRPTImageCache::draw(_d->_imageKey, painter, _imageRect, color(2));
 }
@@ -180,15 +155,9 @@ void KRPTSceneBtnItem::paintForeground(QPainter &painter, uint32_t stage) noexce
 {
     (void)stage;
     painter.setRenderHint(QPainter::Antialiasing, true);
-//    painter.setRenderHint(QPainter::Antialiasing, false);
     QPen pen(color(1), 1.5);
-//    QPen pen(color(1), 1);
     pen.setCosmetic(true);
     painter.setPen(pen);
-//    painter.drawRoundedRect(_rect.adjusted(0.5, 0.5, -0.5, -0.5), _radius, _radius);
     if(qFuzzyIsNull(_cornerRadius))painter.drawRect(_rect);
     else painter.drawRoundedRect(_rect, _cornerRadius, _cornerRadius);
-//    painter.drawRect(_rect.adjusted(0.5, 0.5, -0.5, -0.5));
-//    painter.drawRect(_rect.toRect());
-//    painter.drawRect(_imageRect);
 }

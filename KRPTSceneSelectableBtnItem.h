@@ -24,10 +24,8 @@ public:
     KRPTSceneSelectableBtnItem (KRPTScene *scene, KRPTSceneItem *parent, 
                                 const QRectF &geometry = QRectF(0, 0, 100, 100))                noexcept;
     ~KRPTSceneSelectableBtnItem()                                                               noexcept;
-
 public:
-    KRPTSceneBtnItem * addItem(const QByteArray &imageSrc, const QString &text) noexcept;
-
+    KRPTSceneBtnItem * addItem(const QByteArray &imageSrc, const QString &text)                 noexcept;
 public:
     ExpandDirect expandDirect              ()                                             const noexcept;
     void         setExpandDirect           (ExpandDirect direct)                                noexcept;

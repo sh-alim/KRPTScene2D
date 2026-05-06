@@ -70,6 +70,9 @@
     <ClCompile Include="KRPTSceneGroupItem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="KRPTSceneBtnGridItem.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="MainProcess.h">
@@ -123,6 +126,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="KRPTSceneGroupItem.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="KRPTSceneBtnGridItem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

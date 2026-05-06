@@ -120,8 +120,8 @@ protected:
     virtual void   areaChildMousePressEvent  (KRPTSceneItem::Ptr item, SceneMouseEvent *e)                         noexcept;
     virtual void   areaChildMouseReleaseEvent(KRPTSceneItem::Ptr item, SceneMouseEvent *e)                         noexcept;
     virtual void   areaChildMouseMoveEvent   (KRPTSceneItem::Ptr item, SceneMouseEvent *e)                         noexcept;
-    virtual void   areaChildMouseOutEvent    (KRPTSceneItem::Ptr item, 
-                                              KRPTSceneItem::Ptr newItem, SceneMouseEvent *e)                      noexcept;
+    virtual void   areaChildMouseOutEvent    (KRPTSceneItem::Ptr item, KRPTSceneItem::Ptr newItem, 
+                                              SceneMouseEvent *e)                                                  noexcept;
 private:
     void           updateAreaRect            ()                                                                    noexcept;
     void           resetAreaMinMax           ()                                                                    noexcept;

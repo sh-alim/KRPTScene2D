@@ -191,6 +191,12 @@ public:
     const List         & childItems            ()                                                              const noexcept;
     const List         & visibleChildItems     ()                                                                    noexcept;
     bool                 visible               ()                                                              const noexcept;
+    bool                 clipChilds            ()                                                              const noexcept;
+    bool                 clipPainter           ()                                                              const noexcept;
+    bool                 paintBackground       ()                                                              const noexcept;
+    bool                 paintForeground       ()                                                              const noexcept;
+    bool                 checkable             ()                                                              const noexcept;
+    bool                 checked               ()                                                              const noexcept;
     const QRectF       & geometry              ()                                                              const noexcept;
     const QRectF       & rect                  ()                                                              const noexcept;
     QPointF              pos                   ()                                                              const noexcept;
@@ -222,11 +228,13 @@ public:
     bool                 eventLocked           ()                                                              const noexcept;
     uint32_t             id                    ()                                                              const noexcept;
     const QColor       & color                 (uint32_t id)                                                         noexcept;
-    bool                 checkable             ()                                                              const noexcept;
-    bool                 checked               ()                                                              const noexcept;
 
     void                 setParent             (KRPTSceneItem::Ptr parent)                                           noexcept;
     void                 setVisible            (bool visible)                                                        noexcept;
+    void                 setClipChilds         (bool clip)                                                           noexcept;
+    void                 setClipPainter        (bool clip)                                                           noexcept;
+    void                 setPaintBackground    (bool paint)                                                          noexcept;
+    void                 setPaintForeground    (bool paint)                                                          noexcept;
     bool                 setGeometry           (const QRectF &geometry, 
                                                 uint32_t time = 0, QEasingCurve curve = QEasingCurve::OutExpo)       noexcept;
     bool                 setGeometry           (const QPointF &pos, const QSizeF &size, 
@@ -309,29 +317,28 @@ public:
     bool                 canBeUpdated          ()                                                              const noexcept;
     bool                 needChildPaint        ()                                                              const noexcept;
 protected:
-    virtual void         addChildEvent         (KRPTSceneItem::Ptr item)                                             noexcept {(void)item                        ;}
-    virtual void         delChildEvent         (KRPTSceneItem::Ptr item)                                             noexcept {(void)item                        ;}
-    virtual void         transformEvent        (SceneTransformEvent *e)                                              noexcept {(void)e                           ;}
-    virtual void         stateChangeEvent      (const FState &newState, const FState &oldState)                      noexcept {(void)newState; (void)oldState    ;}
-    virtual void         mousePressEvent       (SceneMouseEvent *e)                                                  noexcept {(void)e                           ;}
-    virtual void         mouseReleaseEvent     (SceneMouseEvent *e)                                                  noexcept {(void)e                           ;}
-    virtual void         mouseMoveEvent        (SceneMouseEvent *e)                                                  noexcept {(void)e                           ;}
-    virtual void         mouseEnterEvent       (bool enter)                                                          noexcept {(void)enter                       ;}
-    virtual void         mouseOutEvent         (KRPTSceneItem::Ptr newItem, SceneMouseEvent *e)                      noexcept {(void)newItem; (void)e            ;}
-    virtual void         whellEvent            (SceneMouseEvent *e)                                                  noexcept {(void)e                           ;}
-    virtual void         checkedEvent          (bool checked)                                                        noexcept {(void)checked                     ;}
-    virtual void         childTransformEvent   (KRPTSceneItem::Ptr item, SceneTransformEvent *e)                     noexcept {(void)item; (void)e               ;}
-    virtual void         childMousePressEvent  (KRPTSceneItem::Ptr item, SceneMouseEvent *e)                         noexcept {(void)item; (void)e               ;}
-    virtual void         childMouseReleaseEvent(KRPTSceneItem::Ptr item, SceneMouseEvent *e)                         noexcept {(void)item; (void)e               ;}
-    virtual void         childMouseMoveEvent   (KRPTSceneItem::Ptr item, SceneMouseEvent *e)                         noexcept {(void)item; (void)e               ;}
-    virtual void         childMouseOutEvent    (KRPTSceneItem::Ptr item, 
-                                                KRPTSceneItem::Ptr newItem, SceneMouseEvent *e)                      noexcept {(void)item; (void)newItem; (void)e;}
-    virtual void         childWhellEvent       (KRPTSceneItem::Ptr item, SceneMouseEvent *e)                         noexcept {(void)item; (void)e               ;}
-    virtual void         childCheckedEvent     (KRPTSceneItem::Ptr item, 
-                                                bool checked)                                                        noexcept {(void)item; (void)checked         ;}
-    virtual void         sceneTransformEvent   (const QTransform &transform)                                         noexcept {(void)transform                   ;}
-    virtual void         sceneScaleEvent       (double scale, double oldScale)                                       noexcept {(void)scale; (void)oldScale       ;}
-    virtual void         sceneRotateEvent      (double angle, double oldAngle)                                       noexcept {(void)angle; (void)oldAngle       ;}
+    virtual void         addChildEvent         (KRPTSceneItem::Ptr item)                                             noexcept;
+    virtual void         delChildEvent         (KRPTSceneItem::Ptr item)                                             noexcept;
+    virtual void         transformEvent        (SceneTransformEvent *e)                                              noexcept;
+    virtual void         stateChangeEvent      (const FState &newState, const FState &oldState)                      noexcept;
+    virtual void         mousePressEvent       (SceneMouseEvent *e)                                                  noexcept;
+    virtual void         mouseReleaseEvent     (SceneMouseEvent *e)                                                  noexcept;
+    virtual void         mouseMoveEvent        (SceneMouseEvent *e)                                                  noexcept;
+    virtual void         mouseEnterEvent       (bool enter)                                                          noexcept;
+    virtual void         mouseOutEvent         (KRPTSceneItem::Ptr newItem, SceneMouseEvent *e)                      noexcept;
+    virtual void         whellEvent            (SceneMouseEvent *e)                                                  noexcept;
+    virtual void         checkedEvent          (bool checked)                                                        noexcept;
+    virtual void         childTransformEvent   (KRPTSceneItem::Ptr item, SceneTransformEvent *e)                     noexcept;
+    virtual void         childMousePressEvent  (KRPTSceneItem::Ptr item, SceneMouseEvent *e)                         noexcept;
+    virtual void         childMouseReleaseEvent(KRPTSceneItem::Ptr item, SceneMouseEvent *e)                         noexcept;
+    virtual void         childMouseMoveEvent   (KRPTSceneItem::Ptr item, SceneMouseEvent *e)                         noexcept;
+    virtual void         childMouseOutEvent    (KRPTSceneItem::Ptr item, KRPTSceneItem::Ptr newItem, 
+                                                SceneMouseEvent *e)                                                  noexcept;
+    virtual void         childWhellEvent       (KRPTSceneItem::Ptr item, SceneMouseEvent *e)                         noexcept;
+    virtual void         childCheckedEvent     (KRPTSceneItem::Ptr item, bool checked)                               noexcept;
+    virtual void         sceneTransformEvent   (const QTransform &transform)                                         noexcept;
+    virtual void         sceneScaleEvent       (double scale, double oldScale)                                       noexcept;
+    virtual void         sceneRotateEvent      (double angle, double oldAngle)                                       noexcept;
 protected:
     virtual void         update                ()                                                                    noexcept;
     virtual CList      & filterChildItems      ()                                                                    noexcept;

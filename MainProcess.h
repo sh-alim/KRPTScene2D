@@ -22,6 +22,7 @@
 #include "KRPTSceneAreaItem.h"
 #include "KRPTSceneSelectableBtnItem.h"
 #include "KRPTSceneGroupItem.h"
+#include "KRPTSceneBtnGridItem.h"
 
 //########################################################################################################################
 //#

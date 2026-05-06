@@ -18,18 +18,8 @@ KRPTSceneSelectableBtnItem::KRPTSceneSelectableBtnItem(KRPTScene *scene, KRPTSce
     setExpandDirect(ExpandDirect::Bottom);
     setCornerRadius(5, 5);
     setMargin(2, 2);
-
-#if 0
-    setColorAnimTime(300, QEasingCurve::InOutSine);
-    setColor(0,  50,   50,   50, 0);
-    setColor(1, 100,  100,  100, 0);
-    setColor(0,  50,   50,   50, 255, State::Checked);
-    setColor(1, 100,  100,  100, 255, State::Checked);
-#else
-    setColor(0,  50,   50,   50, 255);
-    setColor(1, 100,  100,  100, 255);
-#endif
-
+    setColor(0, 50, 50, 50, 255);
+    setColor(1, 40, 40, 40, 255);
 }
 
 KRPTSceneSelectableBtnItem::~KRPTSceneSelectableBtnItem() noexcept
@@ -192,18 +182,17 @@ void KRPTSceneSelectableBtnItem::addChildImpl(KRPTSceneItem::Ptr item, KRPTScene
 
 #if 1
     item->upMust(Must::NoPaintForeground);
-//    item->setColor(0, 0, 0, 0, 0);
-#endif
+    item->delColor(0, State::Checked);
+    item->delColor(1, State::Checked);
 
-#if 0
     item->setColor(0, QColor( 0,  0,   0, 0));
     item->setColor(1, QColor( 0,  0,   0, 0));
 
-    item->setColor(2, QColor( 200,  200,   200, 255));
-    item->setColor(2, QColor( 255,  255,   0, 255), State::Checked);
+//    item->setColor(2, QColor( 200,  200,   200, 255));
+//    item->setColor(2, QColor( 255,  255,   0, 255), State::Checked);
 //    item->setColor(2, QColor( 255,  255,   0, 255), State::Checked);
 //    item->setColor(2, QColor( 255,  255,   0, 255), State::Checked | State::MouseOver);
-    item->setColor(2, QColor( 255,  255,   255, 255), State::MouseOver);
+//    item->setColor(2, QColor( 255,  255,   255, 255), State::MouseOver);
 #endif
     item->lockUpdate(false);
 }

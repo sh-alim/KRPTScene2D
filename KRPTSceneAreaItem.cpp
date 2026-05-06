@@ -14,6 +14,7 @@ KRPTSceneAreaItem::KRPTSceneAreaItem(KRPTScene *scene, KRPTSceneItem *parent, co
 //      Must::NoPaint         |
 //      Must::NoPaintBackground |
 //      Must::NoPaintForeground |
+//      Must::AccuracyCheckContains |
       Must::NoClipPainter   |
       Must::TransformEvent  |
       Must::MousePressEvent |
@@ -42,9 +43,12 @@ KRPTSceneAreaItem::SizePolicy KRPTSceneAreaItem::sizePolicy() const noexcept
 void KRPTSceneAreaItem::setMargin(const QPointF &margin) noexcept
 {
     if(qFuzzyCompare(_margin, margin))return;
-    _margin = margin;
-    resetMinMax();
-    updateMinMax();
+    setMarginImpl(margin);
+}
+
+void KRPTSceneAreaItem::setMargin(double x, double y) noexcept
+{
+    setMargin(QPointF(x, y));
 }
 
 void KRPTSceneAreaItem::setSizePolicy(SizePolicy policy) noexcept
@@ -127,13 +131,16 @@ void KRPTSceneAreaItem::paintForeground(QPainter &painter, uint32_t stage) noexc
 
 void KRPTSceneAreaItem::outlineImpl() noexcept
 {
-    _outline.addRect(_rect);
+    if(qFuzzyIsNull(_cornerRadius))_outline.addRect(_rect);
+    else _outline.addRoundedRect(_rect, _cornerRadius, _cornerRadius);
 }
 
+#if 0
 void KRPTSceneAreaItem::transformImpl(SceneTransformEvent *e) noexcept
 {
     KRPTSceneItem::transformImpl(e);
 }
+#endif
 
 void KRPTSceneAreaItem::childTransformEvent(KRPTSceneItem::Ptr item, SceneTransformEvent *e)noexcept 
 {
@@ -259,4 +266,11 @@ void KRPTSceneAreaItem::updateClentRect() noexcept
         lockEvents(false);
         lockUpdate(false);
     }
+}
+
+void KRPTSceneAreaItem::setMarginImpl(const QPointF &margin) noexcept
+{
+    _margin = margin;
+    resetMinMax();
+    updateMinMax();
 }

@@ -68,6 +68,7 @@ void KRPTSceneGroupItem::paintForeground(QPainter &painter, uint32_t stage) noex
 //*
 //************************************************************************************************************************
 
+#if 0
 void KRPTSceneGroupItem::outlineImpl() noexcept
 {
     _outline.addRect(_rect);
@@ -77,6 +78,7 @@ void KRPTSceneGroupItem::transformImpl(SceneTransformEvent *e) noexcept
 {
     KRPTSceneItem::transformImpl(e);
 }
+#endif
 
 void KRPTSceneGroupItem::childTransformEvent(KRPTSceneItem::Ptr item, SceneTransformEvent *e)noexcept 
 {
@@ -85,9 +87,9 @@ void KRPTSceneGroupItem::childTransformEvent(KRPTSceneItem::Ptr item, SceneTrans
 
 void KRPTSceneGroupItem::addChildImpl(KRPTSceneItem::Ptr item, KRPTSceneItem::Ptr parent) noexcept
 {
-    KRPTSceneItem::addChildImpl(item, parent);
-    item->upMust(Must::NoPaintForeground);
-    item->setColor(0, 0, 0, 0, 0);
+    KRPTSceneAreaItem::addChildImpl(item, parent);
+//    item->upMust(Must::NoPaintForeground);
+//    item->setColor(0, 0, 0, 0, 0);
 }
 
 //************************************************************************************************************************

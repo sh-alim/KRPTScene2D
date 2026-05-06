@@ -94,19 +94,65 @@ MainProcess::MainProcess(QWidget *parent)
 
     _root = _scene->addItem<KRPTSceneRectItem>(QRectF(10, 10, 1000, 1000));
 
-    auto btn_0 = _root->addChild<KRPTSceneSelectableBtnItem>(QRectF(10, 10, 36, 36));
-    btn_0->setMargin(1, 1);
+    auto btn_0 = _root->addChild<KRPTSceneBtnItem>(QRectF(10, 10, 36, 36));
+    btn_0->setImageSrc("D:/Desktop/иконки/1/Expand/40-Gear.svg");
+
+
+    auto btn_1 = _root->addChild<KRPTSceneSelectableBtnItem>(QRectF(50, 10, 36, 36));
+    btn_1->setMargin(0, 0);
 
     KRPTSceneBtnItem::Ptr selItem = nullptr;
 
     for(auto &src : srcs)
     {
-        auto child = btn_0->addItem(src, "");
+        auto child = btn_1->addItem(src, "");
         selItem = child;
     }
-    btn_0->setSelectedItem(selItem);
+    btn_1->setSelectedItem(selItem);
 
 //    btn_0->setWidth(80);
+
+//    KRPTSceneGroupItem *grp_0 = _scene->addItem<KRPTSceneGroupItem>(QRectF(150, 50, 600, 500));
+//    KRPTSceneBtnGridItem *grp_0 = _root->addChild<KRPTSceneBtnGridItem>(QRectF(10, 50, 600, 500));
+    KRPTSceneBtnGridItem *grp_0 = _root->addChild<KRPTSceneBtnGridItem>(QPointF(100, 10), QSizeF(36, 36));
+    
+    grp_0->setMargin(5, 5);
+//    grp_0->setClipChilds(true);
+//    grp_0->setClipPainter(true);
+//    grp_0->setPaintBackground(false);
+//    grp_0->setPaintForeground(false);
+
+    double x0 = 10;
+    double y0 = 0;
+    size_t i0 = 0;
+    for(auto &src : srcs)
+    {
+        if(i0 == 0)
+        {
+//            auto btn = grp_0->addChild<KRPTSceneSelectableBtnItem>(QRectF(x0, y0, 36, 36));
+            auto btn = grp_0->addSelectableBtn();
+//            btn->setMargin(3, 3);
+            for(auto &src : srcs)
+            {
+                auto child = btn->addItem(src, "");
+                selItem = child;
+            }
+//            x0 += 41; 
+//            y0 += 41;
+            ++i0;
+            continue;
+        }
+
+//        if(i0 == 10)break;
+
+
+//        auto child = grp_0->addChild<KRPTSceneBtnItem>(QRectF(x0, y0, 36, 36));
+        auto child = grp_0->addBtn(src, "");
+//        child->setImageSrc(src);
+//        x0 += 41; ++i0;
+    }
+
+    qDebug() << grp_0->width();
 
 #if 0
 //    _root = _scene->addItem<KRPTSceneScrolledAreaItem>(QRectF(10, 10, 500, 500));

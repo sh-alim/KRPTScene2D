@@ -28,8 +28,6 @@ public:
 
     void    setCornerRadius  (double radius)                                          noexcept;
     void    setImageSrc      (const QByteArray &src)                                  noexcept;
-    void    setImageRect     (const QRectF &rect) noexcept;
-    void    setImage         (const QByteArray &src, const QRectF &rect)              noexcept;
 protected:
     void    stateChangeEvent (const FState &newState, const FState &oldState)         noexcept override;
     void    mousePressEvent  (SceneMouseEvent *e)                                     noexcept override;
@@ -46,11 +44,8 @@ protected:
     void    paintBackground  (QPainter &painter, uint32_t stage)                      noexcept override;
     void    paintForeground  (QPainter &painter, uint32_t stage)                      noexcept override;
 protected:
-    KRPTSceneBtnItemData *_d;
-    double   _cornerRadius;
-
-    QPointF _imageMargin;
-    QRectF   _imageRect;
-
-
+    KRPTSceneBtnItemData *_d           ;
+    double                _cornerRadius;
+    QPointF               _imageMargin ;
+    QRectF                _imageRect   ;
 };

@@ -217,7 +217,11 @@ private:
             if(it0 == _colors.end())return;
             FlagT flag = mask(state);
             auto it1 = it0->second.colors.find(flag);
-            if(it1 != it0->second.colors.end())it0->second.colors.erase(it1);
+            if(it1 != it0->second.colors.end())
+            {
+                it0->second.colors.erase(it1);
+                it0->second.mask &= ~flag;
+            }
         }
         void del(uint32_t id) noexcept
         {
@@ -357,6 +361,36 @@ const KRPTSceneItem::List& KRPTSceneItem::childItems() const noexcept
 bool KRPTSceneItem::visible() const noexcept 
 {
     return _visible;
+}
+
+bool KRPTSceneItem::clipChilds() const noexcept
+{
+    return !mustAny(Must::NoClipChilds);
+}
+
+bool KRPTSceneItem::clipPainter() const noexcept
+{
+    return !mustAny(Must::NoClipPainter);
+}
+
+bool KRPTSceneItem::paintBackground() const noexcept
+{
+    return !mustAny(Must::NoPaintBackground);
+}
+
+bool KRPTSceneItem::paintForeground() const noexcept
+{
+    return !mustAny(Must::NoPaintForeground);
+}
+
+bool KRPTSceneItem::checkable() const noexcept
+{
+    return mustAny(Must::Checked);
+}
+
+bool KRPTSceneItem::checked() const noexcept
+{
+    return _state.any(State::Checked);
 }
 
 const QRectF & KRPTSceneItem::geometry() const noexcept 
@@ -615,16 +649,6 @@ const QColor& KRPTSceneItem::color(uint32_t id) noexcept
     return _data->colors.get(id, _state);
 }
 
-bool KRPTSceneItem::checkable() const noexcept
-{
-    return mustAny(Must::Checked);
-}
-
-bool KRPTSceneItem::checked() const noexcept
-{
-    return _state.any(State::Checked);
-}
-
 void KRPTSceneItem::setParent(KRPTSceneItem::Ptr parent) noexcept
 {
     setParentImpl(parent);
@@ -637,6 +661,26 @@ void KRPTSceneItem::setVisible(bool visible) noexcept
     if(_parent)
         _parent->_dirty += Dirty::VisibleChildItems;
     update();
+}
+
+void KRPTSceneItem::setClipChilds(bool clip) noexcept
+{
+    if(clip)downMust(Must::NoClipChilds); else upMust(Must::NoClipChilds);
+}
+
+void KRPTSceneItem::setClipPainter(bool clip) noexcept
+{
+    if(clip)downMust(Must::NoClipPainter); else upMust(Must::NoClipPainter);
+}
+
+void KRPTSceneItem::setPaintBackground(bool paint) noexcept
+{
+    if(paint)downMust(Must::NoPaintBackground); else upMust(Must::NoPaintBackground);
+}
+
+void KRPTSceneItem::setPaintForeground(bool paint) noexcept
+{
+    if(paint)downMust(Must::NoPaintForeground); else upMust(Must::NoPaintForeground);
 }
 
 bool KRPTSceneItem::setGeometry(const QRectF &geometry, 
@@ -1013,6 +1057,115 @@ bool KRPTSceneItem::needChildPaint() const noexcept
 {
     bool needPaint = (!_parent || _state[State::NeedChildPaint]) && _visible;
     return needPaint;
+}
+
+//************************************************************************************************************************
+//*
+//************************************************************************************************************************
+
+void KRPTSceneItem::addChildEvent(KRPTSceneItem::Ptr item) noexcept 
+{
+    (void)item;
+}
+
+void KRPTSceneItem::delChildEvent(KRPTSceneItem::Ptr item) noexcept 
+{
+    (void)item;
+}
+
+void KRPTSceneItem::transformEvent(SceneTransformEvent *e) noexcept 
+{
+    (void)e;
+}
+
+void KRPTSceneItem::stateChangeEvent(const FState &newState, const FState &oldState) noexcept 
+{
+    (void)newState; (void)oldState;
+}
+
+void KRPTSceneItem::mousePressEvent(SceneMouseEvent *e) noexcept 
+{
+    (void)e;
+}
+
+void KRPTSceneItem::mouseReleaseEvent(SceneMouseEvent *e) noexcept 
+{
+    (void)e;
+}
+
+void KRPTSceneItem::mouseMoveEvent(SceneMouseEvent *e) noexcept 
+{
+    (void)e;
+}
+
+void KRPTSceneItem::mouseEnterEvent(bool enter) noexcept 
+{
+    (void)enter;
+}
+
+void KRPTSceneItem::mouseOutEvent(KRPTSceneItem::Ptr newItem, SceneMouseEvent *e) noexcept 
+{
+    (void)newItem; (void)e;
+}
+
+void KRPTSceneItem::whellEvent(SceneMouseEvent *e) noexcept 
+{
+    (void)e;
+}
+
+void KRPTSceneItem::checkedEvent(bool checked) noexcept 
+{
+    (void)checked;
+}
+
+void KRPTSceneItem::childTransformEvent(KRPTSceneItem::Ptr item, SceneTransformEvent *e) noexcept 
+{
+    (void)item; (void)e;
+}
+
+void KRPTSceneItem::childMousePressEvent(KRPTSceneItem::Ptr item, SceneMouseEvent *e) noexcept 
+{
+    (void)item; (void)e;
+}
+
+void KRPTSceneItem::childMouseReleaseEvent(KRPTSceneItem::Ptr item, SceneMouseEvent *e) noexcept 
+{
+    (void)item; (void)e;
+}
+
+void KRPTSceneItem::childMouseMoveEvent(KRPTSceneItem::Ptr item, SceneMouseEvent *e) noexcept 
+{
+    (void)item; (void)e;
+}
+
+void KRPTSceneItem::childMouseOutEvent(KRPTSceneItem::Ptr item, KRPTSceneItem::Ptr newItem, SceneMouseEvent *e) noexcept 
+{
+    (void)item; (void)newItem; (void)e;
+}
+
+void KRPTSceneItem::childWhellEvent(KRPTSceneItem::Ptr item, SceneMouseEvent *e) noexcept 
+{
+    (void)item; (void)e;
+}
+
+void KRPTSceneItem::childCheckedEvent(KRPTSceneItem::Ptr item, bool checked) noexcept 
+{
+    (void)item; (void)checked;
+}
+
+void KRPTSceneItem::sceneTransformEvent(const QTransform &transform) noexcept 
+{
+    (void)transform;
+}
+
+void KRPTSceneItem::sceneScaleEvent(double scale, double oldScale) noexcept 
+{
+    (void)scale; (void)oldScale;
+}
+
+void KRPTSceneItem::sceneRotateEvent(double angle, double oldAngle) noexcept 
+{
+    (void)angle; (void)oldAngle;
 }
 
 //************************************************************************************************************************
